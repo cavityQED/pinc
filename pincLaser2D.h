@@ -9,7 +9,6 @@
 #include "panel/loadMenu.h"
 
 #include <QHBoxLayout>
-#include <QMenu>
 #include <QDebug>
 
 #define SYNC_PIN	18
@@ -38,6 +37,10 @@ public:
 	void update();
 	void run_next();
 
+public slots:
+
+	void loadFromFile(const QString& str) {m_file_program = new gProgram(str);}
+
 protected:
 	
 	bool						m_reset				= true;
@@ -53,7 +56,6 @@ protected:
 	laserPanel*					m_laser_panel;
 	gProgram*					m_file_program;
 	gProgram*					m_cur_program;
-	loadMenu*					m_load_menu;
 
 	QMenu*						m_program_menu;
 

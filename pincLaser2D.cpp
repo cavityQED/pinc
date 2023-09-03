@@ -16,13 +16,11 @@ pincLaser2D::pincLaser2D(	const espStepperMotor::config_t& xconfig,
 	m_control_panel		= new controlPanel();
 	m_position_readout	= new positionReadout();
 	m_laser_panel		= new laserPanel();
-	m_load_menu			= new loadMenu();
 
 	QHBoxLayout* layout = new QHBoxLayout();
 	QVBoxLayout* vlayout = new QVBoxLayout();
 	vlayout->addWidget(m_position_readout);
 	vlayout->addWidget(m_laser_panel);
-	layout->setMenuBar(m_load_menu);
 	layout->addLayout(vlayout);
 	layout->addWidget(m_control_panel);
 
@@ -50,8 +48,6 @@ pincLaser2D::pincLaser2D(	const espStepperMotor::config_t& xconfig,
 				&espStepperGroup::blockCompleted,
 				this,
 				&pincLaser2D::run_next);
-
-	connect(m_load_menu, &loadMenu::gProgramLoadRequest, m_file_program, &gProgram::getBlocks);
 }
 
 void pincLaser2D::modeChange(controlPanel::panelMode_t mode)

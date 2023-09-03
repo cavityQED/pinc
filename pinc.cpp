@@ -60,8 +60,14 @@ int main(int argc, char *argv[])
 	yconfig.min_speed	= 10;
 	yconfig.max_speed	= 60;
 
-	pincLaser2D* laserController = new pincLaser2D(xconfig, yconfig);
-	laserController->show();
+	QMainWindow*	mainWindow		= new QMainWindow();
+	loadMenu*		load_menu		= new loadMenu();
+	pincLaser2D* 	laserController	= new pincLaser2D(xconfig, yconfig);
+
+	QObject::connect(load_menu, &loadMenu::gProgramLoadRequest, laserController, &pincLaser2D::loadFromFile);
+	mainWindow->menuBar()->addMenu(load_menu);
+	mainWindow->setCentralWidget(laserController);
+	mainWindow->show();
 
 	return app.exec();
 }
