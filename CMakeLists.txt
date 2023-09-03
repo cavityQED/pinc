@@ -18,8 +18,7 @@ add_subdirectory(gcode)
 
 include_directories(${CMAKE_SOURCE_DIR})
 
-set(libdocs	pinc.cpp
-			pincLaser2D.cpp)
+set(libdocs	pincLaser2D.cpp)
 
 set(LINKED_LIBRARIES	Qt5::Core
 						Qt5::Widgets
@@ -35,10 +34,6 @@ add_library				(pincLib ${libdocs})
 target_link_libraries	(pincLib ${LINKED_LIBRARIES})
 target_compile_options	(pincLib PRIVATE "-Wno-psabi")
 
-add_executable			(motorTest motorTest.cpp)
-target_link_libraries	(motorTest pincLib)
-target_compile_options	(motorTest PRIVATE "-Wno-psabi")
-
-add_executable			(playTest testplay.cpp)
-target_link_libraries	(playTest Qt5::Core Qt5::Widgets pthread)
-target_compile_options	(playTest PRIVATE "-Wno-psabi")
+add_executable			(pinc pinc.cpp)
+target_link_libraries	(pinc pincLib)
+target_compile_options	(pinc PRIVATE "-Wno-psabi")
