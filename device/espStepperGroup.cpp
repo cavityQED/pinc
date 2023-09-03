@@ -100,7 +100,6 @@ void espStepperGroup::move(const move_msg_t& msg)
 	waitUntil(SYNC_READY);
 
 	gpioWrite(SYNC_PIN, 1);
-	gpioWrite(SYNC_PIN, 0);
 }
 
 void espStepperGroup::runBlock(const gBlock& blk)
@@ -234,6 +233,8 @@ void espStepperGroup::runBlock(const gBlock& blk)
 		default:
 			break;
 	}
+
+	gpioWrite(SYNC_PIN, 0);
 }
 
 void espStepperGroup::set_jog_mm(double mm)
