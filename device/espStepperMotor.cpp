@@ -17,6 +17,10 @@ espStepperMotor::espStepperMotor(	const config_t& config,
 									QWidget* parent)
 	: spiDevice(name, parent), m_handshake_pin(config.pin)
 {
+	gpioSetMode(m_handshake_pin, PI_OUTPUT);
+	gpioSetPullUpDown(m_handshake_pin, PI_PUD_DOWN);
+	gpioWrite(m_handshake_pin, 0);
+
 	set_axis(config.axis);
 	set_spr(config.spr);
 	set_mmpr(config.mmpr);
@@ -32,10 +36,6 @@ espStepperMotor::espStepperMotor(	const config_t& config,
 	m_msgJOG.mode	= JOG_MODE;
 	m_msgJOG.dir	= true;
 	m_msgJOG.end.x	= 1;
-
-	gpioSetMode(m_handshake_pin, PI_OUTPUT);
-	gpioSetPullUpDown(m_handshake_pin, PI_PUD_DOWN);
-	gpioWrite(m_handshake_pin, 0);
 }
 
 void espStepperMotor::send(const stepper_msg_in_t& msg)
