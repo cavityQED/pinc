@@ -19,11 +19,10 @@ class pincLaser2D : public QGroupBox
 
 public:
 
-	pincLaser2D(	const espStepperMotor::config_t& xconfig,
-					const espStepperMotor::config_t& yconfig,
+	pincLaser2D(	const espStepperMotor::config_t& xconfig = {17, X_AXIS, 3200, 8, 40, 10, 60, 320000},
+					const espStepperMotor::config_t& yconfig = {27, Y_AXIS, 1600, 4, 40, 10, 60, 160000},
 					QWidget* parent = nullptr);
 	~pincLaser2D() {}
-
 
 public:
 
@@ -38,8 +37,9 @@ public:
 	void run_next();
 
 public slots:
-
-	void loadFromFile(const QString& str) {m_file_program = new gProgram(str);}
+	
+	void loadFromFile(const QString& filename);
+	void loadFromString(const QString& str) {m_file_program = new gProgram(str);}
 
 protected:
 	

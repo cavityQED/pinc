@@ -15,26 +15,6 @@
 #include <map>
 #include <iostream>
 
-class lineEditSet : public QWidget
-{
-	Q_OBJECT
-
-public:
-
-	lineEditSet(const QString& name = "", QWidget* parent = nullptr);
-	virtual ~lineEditSet() {}
-
-signals:
-
-	void set(const QString& text);
-
-protected:
-
-	QLabel*			m_label;
-	QLineEdit*		m_edit;
-	QPushButton*	m_button;
-};
-
 class pincDevice : public QWidget
 {
 	Q_OBJECT

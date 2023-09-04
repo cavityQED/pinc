@@ -3,23 +3,6 @@
 uint32_t							pincDevice::id	= 0;
 std::map<uint32_t, pincDevice*>		pincDevice::deviceIDmap		= {};
 
-lineEditSet::lineEditSet(const QString& name, QWidget* parent) : QWidget(parent)
-{
-	m_label		= new QLabel(name);
-	m_edit		= new QLineEdit();
-	m_button	= new QPushButton("set");
-
-	QHBoxLayout* layout = new QHBoxLayout();
-	layout->addWidget(m_label);
-	layout->addWidget(m_edit);
-	layout->addWidget(m_button);
-
-	setLayout(layout);
-
-	connect(m_button, &QPushButton::released, [this](){emit set(m_edit->text());});
-}
-
-
 pincDevice::pincDevice(const QString& name, QWidget* parent) : QWidget(parent), m_name(name)
 {
 	m_groupbox = new QGroupBox(this);

@@ -40,14 +40,15 @@ pincLaser2D::pincLaser2D(	const espStepperMotor::config_t& xconfig,
 				&espStepperGroup::positionChange,
 				m_position_readout,
 				&positionReadout::setPosition);
-
-	connect(m_control_panel, &controlPanel::axisButton, this, &pincLaser2D::jog);
-	connect(m_control_panel, &controlPanel::modeChange, this, &pincLaser2D::modeChange);
-	connect(m_control_panel, &controlPanel::run, this, &pincLaser2D::run);
+	
 	connect(	m_group,
 				&espStepperGroup::blockCompleted,
 				this,
 				&pincLaser2D::run_next);
+
+	connect(m_control_panel, &controlPanel::axisButton, this, &pincLaser2D::jog);
+	connect(m_control_panel, &controlPanel::modeChange, this, &pincLaser2D::modeChange);
+	connect(m_control_panel, &controlPanel::run, this, &pincLaser2D::run);
 }
 
 void pincLaser2D::modeChange(controlPanel::panelMode_t mode)
@@ -194,4 +195,14 @@ void pincLaser2D::reset()
 void pincLaser2D::update()
 {
 
+}
+
+void pincLaser2D::loadFromFile(const QString& filename)
+{
+	QFile file(filename);
+
+	if(!file.open(QFile::ReadOnly))
+		return;
+	else
+		loadFromString(file.readAll());
 }

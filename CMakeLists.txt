@@ -18,7 +18,8 @@ add_subdirectory(gcode)
 
 include_directories(${CMAKE_SOURCE_DIR})
 
-set(libdocs	pincLaser2D.cpp)
+set(libdocs		pincMainWindow.cpp
+				pincLaser2D.cpp)
 
 set(LINKED_LIBRARIES	Qt5::Core
 						Qt5::Widgets
