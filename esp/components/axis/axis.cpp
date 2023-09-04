@@ -254,6 +254,7 @@ void axis::stop()
 	gpio_set_level(MOTION_PIN, 0);
 	reset_timers();
 	m_status &= ~IN_MOTION;
+	m_status |= MOVE_READY;
 }
 
 void axis::linear_interpolation_2D()

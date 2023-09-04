@@ -26,16 +26,6 @@ pincLaser2D::pincLaser2D(	const espStepperMotor::config_t& xconfig,
 
 	setLayout(layout);
 
-	connect(	m_xaxis,
-				&espStepperMotor::positionChange,
-				m_position_readout,
-				&positionReadout::setX);
-
-	connect(	m_yaxis,
-				&espStepperMotor::positionChange,
-				m_position_readout,
-				&positionReadout::setY);
-
 	connect(	m_group,
 				&espStepperGroup::positionChange,
 				m_position_readout,
@@ -179,7 +169,6 @@ void pincLaser2D::hold()
 	if(m_in_program)
 	{
 		m_group->pause();
-		m_laser_panel->laser()->off();
 		m_paused = true;
 		m_in_program = false;
 	}
@@ -187,7 +176,11 @@ void pincLaser2D::hold()
 
 void pincLaser2D::reset()
 {
-	hold();
+	if(m_in_program && !m_paused)
+		hold();
+
+	m_laser_panel->laser()->off();
+	m_group->stop();
 	m_cur_program = nullptr;
 	m_cur_program_id = 0;
 	m_in_program = false;
