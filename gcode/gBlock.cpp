@@ -43,42 +43,6 @@ void gBlock::setArguments()
 	}
 }
 
-void gBlock::makeBlocks(QString& str, std::vector<gBlock*>& blocks)
-{
-	QRegularExpression		commRegex("\\([\\w\\W]*\\)");
-	str.replace(commRegex, "");
-
-	blocks.clear();
-	QRegularExpressionMatch	gMatch;
-	QRegularExpression		gRegex("[GMLgml]");
-	auto					iter = gRegex.globalMatch(str);
-	if(!iter.isValid())
-	{
-		std::cout << "No iterator\n";
-		return;
-	}
-
-	while(iter.hasNext())
-	{
-		std::cout << "Got Match\n";
-		gMatch = iter.next();
-		blocks.push_back(new gBlock());
-		blocks.back()->start() = gMatch.capturedStart();
-	}
-
-	int end = str.size();
-	auto blk = blocks.rbegin();
-	while(blk != blocks.rend())
-	{
-		int length = end - (*blk)->start();
-		(*blk)->str() = QStringRef(&str, (*blk)->start(), length).toString();
-		(*blk)->setArguments();
-		end = (*blk)->start();
-		std::cout << "Made Block:" << *blk;
-		blk++;
-	}
-}
-
 std::ostream& operator<<(std::ostream& out, const gBlock* block)
 {
 	out << "\nBlock " << block->ltr() << block->num() << ":\n";

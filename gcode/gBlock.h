@@ -38,8 +38,6 @@ public:
 
 	const std::map<char, double>&	args()	const {return m_args;}
 
-	static void makeBlocks(QString& str, std::vector<gBlock*>& blocks);
-
 protected:
 
 	int							m_start;

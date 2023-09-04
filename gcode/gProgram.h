@@ -18,8 +18,6 @@ public:
 	gProgram(const std::string& str, QWidget* parent = nullptr);
 	~gProgram() {}
 
-	void makeBlocks(const QString& str);
-
 	void getBlocks(const QString& str);
 
 	gBlock*			operator[](size_t idx)	{return m_blocks[idx];}
@@ -27,19 +25,6 @@ public:
 	const QString&	str()					{return m_str;}
 
 	size_t size() {return m_blocks.size();}
-
-public slots:
-
-	void start() {}
-	void stop() {}
-	void pause() {}
-	void resume() {}
-	void reset() {}
-	void execute_next() {}
-
-	void save() {}
-	void load() {}
-	void load(const std::string& gfile);
 
 protected:
 

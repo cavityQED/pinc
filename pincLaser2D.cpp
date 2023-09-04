@@ -49,10 +49,15 @@ pincLaser2D::pincLaser2D(	const espStepperMotor::config_t& xconfig,
 	connect(m_control_panel, &controlPanel::axisButton, this, &pincLaser2D::jog);
 	connect(m_control_panel, &controlPanel::modeChange, this, &pincLaser2D::modeChange);
 	connect(m_control_panel, &controlPanel::run, this, &pincLaser2D::run);
+	connect(m_control_panel, &controlPanel::hold, this, &pincLaser2D::hold);
+	connect(m_control_panel, &controlPanel::reset, this, &pincLaser2D::reset);
 }
 
 void pincLaser2D::modeChange(controlPanel::panelMode_t mode)
 {
+	if(m_in_program)
+		return;
+
 	m_panelMode = mode;
 
 	switch(m_panelMode)
@@ -100,6 +105,9 @@ void pincLaser2D::run_next()
 {
 	if(m_cur_program_id < m_cur_program->size())
 	{
+		m_in_program = true;
+		m_reset = false;
+
 		gBlock* tmp = m_cur_program->at(m_cur_program_id++);
 
 		switch(tmp->ltr())
@@ -128,51 +136,37 @@ void pincLaser2D::run_next()
 
 void pincLaser2D::run()
 {
+	if(m_in_program)
+		return;
+
 	switch(m_panelMode)
 	{
 		case controlPanel::panelMode_t::AUTO:
 		{
-			m_in_program = true;
-
 			if(m_reset)
 			{
-
+				m_cur_program = m_file_program;
+				run_next();
 			}
 			else if(!m_reset && m_paused)
-			{
-
-			}
-
-			break;
-		}
-
-		case controlPanel::panelMode_t::JOG:
-		{
-
-
-			break;
-		}
-
-		case controlPanel::panelMode_t::HOME:
-		{
+				m_group->resume();
 
 			break;
 		}
 
 		case controlPanel::panelMode_t::MDI:
 		{
+			reset();
 			m_cur_program = new gProgram(m_control_panel->text());
-			m_cur_program_id = 0;
 			run_next();
 
 			break;
 		}
 
 		case controlPanel::panelMode_t::EDIT:
-		{
-
+		case controlPanel::panelMode_t::HOME:
+		case controlPanel::panelMode_t::JOG:
 			break;
-		}
 
 		default:
 			break;
@@ -182,14 +176,22 @@ void pincLaser2D::run()
 
 void pincLaser2D::hold()
 {
-	m_file_program->stop();
-	m_group->stop();
-	m_laser_panel->laser()->off();
+	if(m_in_program)
+	{
+		m_group->pause();
+		m_laser_panel->laser()->off();
+		m_paused = true;
+		m_in_program = false;
+	}
 }
 
 void pincLaser2D::reset()
 {
-
+	hold();
+	m_cur_program = nullptr;
+	m_cur_program_id = 0;
+	m_in_program = false;
+	m_reset = true;
 }
 
 void pincLaser2D::update()

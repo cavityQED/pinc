@@ -251,9 +251,9 @@ void axis::move(	const position_t<double>&	start,
 
 void axis::stop()
 {
+	gpio_set_level(MOTION_PIN, 0);
 	reset_timers();
 	m_status &= ~IN_MOTION;
-	gpio_set_level(MOTION_PIN, 0);
 }
 
 void axis::linear_interpolation_2D()

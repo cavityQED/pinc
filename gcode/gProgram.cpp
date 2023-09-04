@@ -17,18 +17,6 @@ gProgram::gProgram(const std::string& str, QWidget* parent) : QWidget(parent)
 	getBlocks(m_str);
 }
 
-void gProgram::makeBlocks(const QString& str)
-{
-	m_str = str;
-	gBlock::makeBlocks(m_str, m_blocks);
-}
-
-void gProgram::load(const std::string& gfile)
-{
-	m_str = std::move(gfile.c_str());
-	getBlocks(m_str);
-}
-
 void gProgram::getBlocks(const QString& str)
 {
 	m_str = str;
