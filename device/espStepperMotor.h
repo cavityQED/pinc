@@ -79,7 +79,7 @@ public:
 	uint32_t	accel()			const	{return m_accel;}
 
 	double		jog_speed()		const	{return m_msgJOG.vf_mmps;}
-	double		mm_position()	const	{return std::round(100*(double)m_step_position / (double)spmm())/100;}
+	double		mm_position()	const	{return std::round(1000*(double)m_step_position / (double)spmm())/1000;}
 
 signals:
 

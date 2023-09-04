@@ -40,6 +40,14 @@ position_t<double> espStepperGroup::position()
 	return pos;
 }
 
+position_t<int> espStepperGroup::step_position()
+{
+	position_t<int> pos = {0,0,0};
+	pos.x = m_steppers.at(X_AXIS)->step_position();
+	pos.y = m_steppers.at(Y_AXIS)->step_position();
+	return pos;
+}
+
 void espStepperGroup::updatePosition()
 {
 	position_t<double> position = {};
@@ -207,7 +215,7 @@ void espStepperGroup::runBlock(const gBlock& blk)
 
 			std::cout << "\t\tAbs. Start:\t" << msg.start << '\n';
 			std::cout << "\t\tAbs. End\t" << msg.end << '\n';
-			
+
 			position_t<double> d = msg.end - position();
 			std::cout << "\t\tD:\t\t" << d << '\n';
 			msg.end = msg.start + d;

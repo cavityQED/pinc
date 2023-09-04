@@ -20,8 +20,6 @@ public:
 
 	bool addStepper(espStepperMotor* stepper);
 
-	position_t<double> position();
-
 	void updatePosition();
 	void stop();
 	void pause();
@@ -30,6 +28,9 @@ public:
 	void jog(AXIS axis, bool dir);
 	void move(const move_msg_t& msg);
 	void runBlock(const gBlock& blk);
+
+	position_t<double>	position();
+	position_t<int> 	step_position();
 
 	virtual void timerEvent(QTimerEvent* event) override;
 
