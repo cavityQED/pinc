@@ -68,12 +68,24 @@ void espStepperGroup::updatePosition()
 
 void espStepperGroup::stop()
 {
+	if(m_timerID)
+	{
+		killTimer(m_timerID);
+		m_timerID = 0;
+	}
+	updatePosition();
 	for(auto s : m_steppers)
 		s.second->stop();
 }
 
 void espStepperGroup::pause()
 {
+	if(m_timerID)
+	{
+		killTimer(m_timerID);
+		m_timerID = 0;
+	}
+	updatePosition();
 	for(auto s : m_steppers)
 		s.second->pause();
 }
@@ -82,6 +94,7 @@ void espStepperGroup::resume()
 {
 	for(auto s : m_steppers)
 		s.second->resume();
+	startTimer(m_timerID);
 }
 
 void espStepperGroup::jog(AXIS axis, bool dir)
@@ -221,7 +234,7 @@ void espStepperGroup::runBlock(const gBlock& blk)
 			}
 
 			move(msg);
-			startTimer(m_timerPeriod);
+			m_timerID = startTimer(m_timerPeriod, Qt::PreciseTimer);
 			break;
 		}
 
@@ -251,7 +264,6 @@ void espStepperGroup::timerEvent(QTimerEvent* event)
 	if(status(MOVE_READY, false))
 	{
 		killTimer(event->timerId());
-		//updatePosition();
 		emit blockCompleted();
 	}
 }

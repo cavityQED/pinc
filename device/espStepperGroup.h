@@ -48,6 +48,7 @@ protected:
 	static const int 					m_timerPeriod = 5;
 	double								m_feedrate;
 	std::map<AXIS, espStepperMotor*>	m_steppers;
+	int									m_timerID;
 };
 
 #endif
