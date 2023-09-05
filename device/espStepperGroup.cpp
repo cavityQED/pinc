@@ -7,6 +7,7 @@ espStepperGroup::espStepperGroup(QWidget* parent) : QGroupBox(parent)
 
 bool espStepperGroup::status(uint8_t mask, bool get)
 {
+
 	for(auto s : m_steppers)
 	{
 		if(get)
@@ -16,6 +17,20 @@ bool espStepperGroup::status(uint8_t mask, bool get)
 	}
 
 	return true;
+}
+
+bool espStepperGroup::anyStatus(uint8_t mask, bool get)
+{
+	bool result = false;
+
+	for(auto s : m_steppers)
+	{
+		if(get)
+			s.second->receive();
+		result = result | (s.second->status() & mask);
+	}
+
+	return result;
 }
                               
 void espStepperGroup::waitUntil(uint8_t mask, uint32_t delay)

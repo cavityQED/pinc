@@ -16,6 +16,7 @@ public:
 	~espStepperGroup() {}
 
 	bool status(uint8_t mask, bool get = true);
+	bool anyStatus(uint8_t mask, bool get = true);
 	void waitUntil(uint8_t mask, uint32_t delay = 200);
 
 	bool addStepper(espStepperMotor* stepper);

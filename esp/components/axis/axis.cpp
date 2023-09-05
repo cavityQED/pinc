@@ -131,11 +131,12 @@ void axis::reset_timers()
 
 void axis::pause_timers(bool pause)
 {
-	if(!pause && (m_status & IN_MOTION))
+	if(!pause && !(m_status & MOVE_READY))
 	{
 		gpio_set_level(MOTION_PIN, 1);
 		timer_start(STEP_GROUP, STEP_TIMER);
 		timer_start(STEP_GROUP, SECONDS_TIMER);
+		m_status |= IN_MOTION;
 	}
 
 	else if(pause)
@@ -143,6 +144,7 @@ void axis::pause_timers(bool pause)
 		gpio_set_level(MOTION_PIN, 0);
 		timer_pause(STEP_GROUP, STEP_TIMER);
 		timer_pause(STEP_GROUP, SECONDS_TIMER);
+		m_status &= ~IN_MOTION;
 	}
 }
 
