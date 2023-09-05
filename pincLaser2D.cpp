@@ -17,6 +17,8 @@ pincLaser2D::pincLaser2D(	const espStepperMotor::config_t& xconfig,
 	m_position_readout	= new positionReadout();
 	m_laser_panel		= new laserPanel();
 
+	m_group->updatePosition();
+
 	QHBoxLayout* layout = new QHBoxLayout();
 	QVBoxLayout* vlayout = new QVBoxLayout();
 	vlayout->addWidget(m_position_readout);

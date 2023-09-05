@@ -2,7 +2,9 @@
 
 espStepperGroup::espStepperGroup(QWidget* parent) : QGroupBox(parent)
 {
-
+	gpioSetMode(SYNC_PIN, PI_OUTPUT);
+	gpioSetPullUpDown(SYNC_PIN, PI_PUD_DOWN);
+	gpioWrite(SYNC_PIN, 0);
 }
 
 bool espStepperGroup::allStatus(uint8_t mask, bool get)
@@ -117,7 +119,10 @@ void espStepperGroup::resume()
 {
 	for(auto s : m_steppers)
 		s.second->resume();
+	waitUntil(SYNC_READY);
+	gpioWrite(SYNC_PIN, 1);
 	startTimer(m_timerID);
+	gpioWrite(SYNC_PIN, 0);
 }
 
 void espStepperGroup::jog(AXIS axis, bool dir)
@@ -287,6 +292,7 @@ void espStepperGroup::timerEvent(QTimerEvent* event)
 	if(allStatus(MOVE_READY, false))
 	{
 		killTimer(event->timerId());
+		m_timerID = 0;
 		emit blockCompleted();
 	}
 }

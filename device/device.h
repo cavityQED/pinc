@@ -32,8 +32,8 @@ public:
 
 protected:
 
-	static uint32_t	id;
-	static std::map<uint32_t, pincDevice*>	deviceIDmap;
+	static uint32_t							__id;
+	static std::map<uint32_t, pincDevice*>	__deviceIDmap;
 
 	QString		m_name;
 	uint32_t	m_id;

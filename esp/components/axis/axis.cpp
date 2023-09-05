@@ -133,10 +133,17 @@ void axis::pause_timers(bool pause)
 {
 	if(!pause && !(m_status & MOVE_READY))
 	{
+		if(m_status & SYNC_MODE)
+		{
+			m_status |= SYNC_READY;
+			m_esp_err = xSemaphoreTake(m_syncSem, portMAX_DELAY);
+		}
+
 		gpio_set_level(MOTION_PIN, 1);
 		timer_start(STEP_GROUP, STEP_TIMER);
 		timer_start(STEP_GROUP, SECONDS_TIMER);
 		m_status |= IN_MOTION;
+		m_status &= ~SYNC_READY;
 	}
 
 	else if(pause)
