@@ -5,7 +5,7 @@ espStepperGroup::espStepperGroup(QWidget* parent) : QGroupBox(parent)
 
 }
 
-bool espStepperGroup::status(uint8_t mask, bool get)
+bool espStepperGroup::allStatus(uint8_t mask, bool get)
 {
 
 	for(auto s : m_steppers)
@@ -35,7 +35,7 @@ bool espStepperGroup::anyStatus(uint8_t mask, bool get)
                               
 void espStepperGroup::waitUntil(uint8_t mask, uint32_t delay)
 {
-	while(!status(mask))
+	while(!allStatus(mask))
 		gpioDelay(delay);
 
 	return;
@@ -284,7 +284,7 @@ void espStepperGroup::timerEvent(QTimerEvent* event)
 	updatePosition();
 
 	//check status without sending new messages to esp motors
-	if(status(MOVE_READY, false))
+	if(allStatus(MOVE_READY, false))
 	{
 		killTimer(event->timerId());
 		emit blockCompleted();

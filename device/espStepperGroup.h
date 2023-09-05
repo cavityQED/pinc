@@ -15,7 +15,7 @@ public:
 	espStepperGroup(QWidget* parent = nullptr);
 	~espStepperGroup() {}
 
-	bool status(uint8_t mask, bool get = true);
+	bool allStatus(uint8_t mask, bool get = true);
 	bool anyStatus(uint8_t mask, bool get = true);
 	void waitUntil(uint8_t mask, uint32_t delay = 200);
 
