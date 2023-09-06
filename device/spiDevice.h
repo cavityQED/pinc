@@ -18,6 +18,8 @@ public:
 	virtual void trigger()	= 0;
 	virtual void reload()	= 0;
 
+	spiHost* host() {return __spi_host;}
+
 protected:
 
 	static spiHost*	__spi_host;

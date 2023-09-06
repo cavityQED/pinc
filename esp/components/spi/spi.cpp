@@ -73,11 +73,12 @@ void spiClient::recv(spiMsg& msg)
 void spiClient::spi_post_setup_callback(spi_slave_transaction_t* t)
 {
 	WRITE_PERI_REG(GPIO_OUT_W1TS_REG, 1ULL<<READY);
+	ets_delay_us(10);
+	WRITE_PERI_REG(GPIO_OUT_W1TC_REG, 1ULL<<READY);
 }
 
 void spiClient::spi_post_trans_callback(spi_slave_transaction_t* t)
 {
-	WRITE_PERI_REG(GPIO_OUT_W1TC_REG, 1ULL<<READY);
 }
 
 void spiClient::handshake_isr(void* arg)

@@ -28,6 +28,7 @@ public:
 	~spiHost() {sem_close(m_spi_sem);}
 
 	void send(spiDevice* dev, spiMsg* msg);
+	void groupSend(const std::vector<spiDevice*>& devs, spiMsg* msg);
 
 	std::mutex& lock() {return m_lock;}
 

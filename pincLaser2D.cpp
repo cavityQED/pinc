@@ -122,7 +122,10 @@ void pincLaser2D::run_next()
 	}
 
 	else
+	{
+		m_in_program = false;
 		hold();
+	}
 }
 
 void pincLaser2D::run()

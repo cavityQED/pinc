@@ -21,6 +21,11 @@ espStepperMotor::espStepperMotor(	const config_t& config,
 	gpioSetPullUpDown(m_handshake_pin, PI_PUD_DOWN);
 	gpioWrite(m_handshake_pin, 0);
 
+	m_msgJOG.func	= MOVE;
+	m_msgJOG.mode	= JOG_MODE;
+	m_msgJOG.dir	= true;
+	m_msgJOG.end.x	= 1;
+
 	set_axis(config.axis);
 	set_spr(config.spr);
 	set_mmpr(config.mmpr);
@@ -31,11 +36,6 @@ espStepperMotor::espStepperMotor(	const config_t& config,
 	set_jog_speed(config.jog_speed);
 	espPrint();
 	receive();
-
-	m_msgJOG.func	= MOVE;
-	m_msgJOG.mode	= JOG_MODE;
-	m_msgJOG.dir	= true;
-	m_msgJOG.end.x	= 1;
 }
 
 void espStepperMotor::send(const stepper_msg_in_t& msg)

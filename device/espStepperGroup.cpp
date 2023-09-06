@@ -10,7 +10,7 @@ espStepperGroup::espStepperGroup(QWidget* parent) : QGroupBox(parent)
 bool espStepperGroup::allStatus(uint8_t mask, bool get)
 {
 
-	for(auto s : m_steppers)
+	for(auto s : m_stepper_map)
 	{
 		if(get)
 			s.second->receive();
@@ -25,7 +25,7 @@ bool espStepperGroup::anyStatus(uint8_t mask, bool get)
 {
 	bool result = false;
 
-	for(auto s : m_steppers)
+	for(auto s : m_stepper_map)
 	{
 		if(get)
 			s.second->receive();
@@ -46,22 +46,23 @@ void espStepperGroup::waitUntil(uint8_t mask, uint32_t delay)
 bool espStepperGroup::addStepper(espStepperMotor* stepper)
 {
 
-	return m_steppers.insert(std::make_pair((AXIS)stepper->axis(), stepper)).second;
+	m_steppers.push_back(stepper);
+	return m_stepper_map.insert(std::make_pair((AXIS)stepper->axis(), stepper)).second;
 }
 
 position_t<double> espStepperGroup::position()
 {
 	position_t<double> pos = {0,0,0};
-	pos.x = m_steppers.at(X_AXIS)->mm_position();
-	pos.y = m_steppers.at(Y_AXIS)->mm_position();
+	pos.x = m_stepper_map.at(X_AXIS)->mm_position();
+	pos.y = m_stepper_map.at(Y_AXIS)->mm_position();
 	return pos;
 }
 
 position_t<int> espStepperGroup::step_position()
 {
 	position_t<int> pos = {0,0,0};
-	pos.x = m_steppers.at(X_AXIS)->step_position();
-	pos.y = m_steppers.at(Y_AXIS)->step_position();
+	pos.x = m_stepper_map.at(X_AXIS)->step_position();
+	pos.y = m_stepper_map.at(Y_AXIS)->step_position();
 	return pos;
 }
 
@@ -69,7 +70,7 @@ void espStepperGroup::updatePosition()
 {
 	position_t<double> position = {};
 
-	for(auto s : m_steppers)
+	for(auto s : m_stepper_map)
 	{
 		s.second->receive();
 		switch(s.first)
@@ -99,7 +100,7 @@ void espStepperGroup::stop()
 		m_timerID = 0;
 	}
 	updatePosition();
-	for(auto s : m_steppers)
+	for(auto s : m_stepper_map)
 		s.second->stop();
 }
 
@@ -111,13 +112,13 @@ void espStepperGroup::pause()
 		m_timerID = 0;
 	}
 	updatePosition();
-	for(auto s : m_steppers)
+	for(auto s : m_stepper_map)
 		s.second->pause();
 }
 
 void espStepperGroup::resume()
 {
-	for(auto s : m_steppers)
+	for(auto s : m_stepper_map)
 		s.second->resume();
 	waitUntil(SYNC_READY);
 	gpioWrite(SYNC_PIN, 1);
@@ -127,16 +128,22 @@ void espStepperGroup::resume()
 
 void espStepperGroup::jog(AXIS axis, bool dir)
 {
-	if(m_steppers.count(axis))
-		m_steppers.at(axis)->jog(dir);
+	if(m_stepper_map.count(axis))
+		m_stepper_map.at(axis)->jog(dir);
 }
 
 void espStepperGroup::move(const move_msg_t& msg)
 {
 	std::cout << msg << '\n';
 
-	for(auto s : m_steppers)
-		s.second->send(msg);
+//	for(auto s : m_stepper_map)
+//		s.second->send(msg);
+
+	std::scoped_lock(m_steppers[0]->host()->lock());
+
+	spiMsg* tmp = new spiMsg();
+	msg >> tmp->sendbuf();
+	m_steppers[0]->host()->groupSend(m_steppers, tmp);
 
 	waitUntil(SYNC_READY);
 
@@ -164,11 +171,11 @@ void espStepperGroup::runBlock(const gBlock& blk)
 				{
 
 					case 'X': case 'x':
-						msg.end.x = val - m_steppers.at(X_AXIS)->mm_position();
+						msg.end.x = val - m_stepper_map.at(X_AXIS)->mm_position();
 						break;
 
 					case 'Y': case 'y':
-						msg.end.y = val - m_steppers.at(Y_AXIS)->mm_position();
+						msg.end.y = val - m_stepper_map.at(Y_AXIS)->mm_position();
 						break;
 
 					case 'U': case 'u':
@@ -280,7 +287,7 @@ void espStepperGroup::runBlock(const gBlock& blk)
 
 void espStepperGroup::set_jog_mm(double mm)
 {
-	for(auto s : m_steppers)
+	for(auto s : m_stepper_map)
 		s.second->set_jog_mm(mm);
 }
 

@@ -52,3 +52,16 @@ void spiHost::send(spiDevice* dev, spiMsg* msg)
 		send(dev, msg);
 	}
 }
+
+void spiHost::groupSend(const std::vector<spiDevice*>& devs, spiMsg* msg)
+{
+	for(auto d : devs)
+	{
+		m_spi_waiting = true;
+		d->trigger();
+		sem_wait(m_spi_sem);
+		d->reload();
+	}
+
+	ioctl(m_file_descriptor, SPI_IOC_MESSAGE(1), msg->tr_ptr());
+}
