@@ -27,10 +27,13 @@ public:
 	spiHost(const char* pathname, const uint8_t spiMode);
 	~spiHost() {sem_close(m_spi_sem);}
 
+	void send(spiMsg* msg);
 	void send(spiDevice* dev, spiMsg* msg);
 	void groupSend(const std::vector<spiDevice*>& devs, spiMsg* msg);
 
 	std::mutex& lock() {return m_lock;}
+
+	void wait_for_sem() {sem_wait(m_spi_sem);}
 
 	static void spi_sem_post_alertFunc(int gpio, int level, uint32_t tick)
 	{

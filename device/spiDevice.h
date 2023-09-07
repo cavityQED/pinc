@@ -25,4 +25,21 @@ protected:
 	static spiHost*	__spi_host;
 };
 
+
+class spiGroup : public spiDevice
+{
+	Q_OBJECT
+
+public:
+
+	spiGroup(const QString& name = "", QWidget* parent = nullptr);
+	~spiGroup() {}
+
+	void addDevice(spiDevice* dev);
+
+protected:
+
+	std::vector<spiDevice*> m_devices;
+};
+
 #endif

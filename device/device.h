@@ -15,7 +15,7 @@
 #include <map>
 #include <iostream>
 
-class pincDevice : public QWidget
+class pincDevice : public QGroupBox
 {
 	Q_OBJECT
 
@@ -24,7 +24,8 @@ public:
 	pincDevice(const QString& name = "", QWidget* parent = nullptr);
 	virtual ~pincDevice() {}
 
-	QString	name() {return m_name;}
+	QString	name()	{return m_name;}
+	uint32_t id()	{return m_id;}
 
 	static pincDevice* get(uint32_t id);
 

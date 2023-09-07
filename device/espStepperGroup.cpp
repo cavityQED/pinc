@@ -1,6 +1,6 @@
 #include "espStepperGroup.h"
 
-espStepperGroup::espStepperGroup(QWidget* parent) : QGroupBox(parent)
+espStepperGroup::espStepperGroup(QWidget* parent) : spiGroup("ESP Stepper Group", parent)
 {
 	gpioSetMode(SYNC_PIN, PI_OUTPUT);
 	gpioSetPullUpDown(SYNC_PIN, PI_PUD_DOWN);
@@ -45,8 +45,7 @@ void espStepperGroup::waitUntil(uint8_t mask, uint32_t delay)
 
 bool espStepperGroup::addStepper(espStepperMotor* stepper)
 {
-
-	m_steppers.push_back(stepper);
+	m_devices.push_back(stepper);
 	return m_stepper_map.insert(std::make_pair((AXIS)stepper->axis(), stepper)).second;
 }
 
@@ -139,11 +138,11 @@ void espStepperGroup::move(const move_msg_t& msg)
 //	for(auto s : m_stepper_map)
 //		s.second->send(msg);
 
-	std::scoped_lock(m_steppers[0]->host()->lock());
+	std::scoped_lock(__spi_host->lock());
 
 	spiMsg* tmp = new spiMsg();
 	msg >> tmp->sendbuf();
-	m_steppers[0]->host()->groupSend(m_steppers, tmp);
+	__spi_host->groupSend(m_devices, tmp);
 
 	waitUntil(SYNC_READY);
 
@@ -289,6 +288,21 @@ void espStepperGroup::set_jog_mm(double mm)
 {
 	for(auto s : m_stepper_map)
 		s.second->set_jog_mm(mm);
+}
+
+void espStepperGroup::trigger()
+{
+	for(auto dev : m_devices)
+	{
+		dev->trigger();
+		__spi_host->wait_for_sem();
+	}
+}
+
+void espStepperGroup::reload()
+{
+	for(auto dev : m_devices)
+		dev->reload();
 }
 
 void espStepperGroup::timerEvent(QTimerEvent* event)

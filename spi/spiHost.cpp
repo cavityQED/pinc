@@ -31,6 +31,11 @@ spiHost::spiHost(const char* pathname, const uint8_t spiMode)
 	m_spi_sem = sem_open("spi_sem", O_CREAT, S_IRWXO, 0);
 }
 
+void spiHost::send(spiMsg* msg)
+{
+	ioctl(m_file_descriptor, SPI_IOC_MESSAGE(1), msg->tr_ptr());
+}
+
 void spiHost::send(spiDevice* dev, spiMsg* msg)
 {
 	int val;

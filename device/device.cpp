@@ -3,15 +3,9 @@
 uint32_t							pincDevice::__id			= 0;
 std::map<uint32_t, pincDevice*>		pincDevice::__deviceIDmap	= {};
 
-pincDevice::pincDevice(const QString& name, QWidget* parent) : QWidget(parent), m_name(name), m_id(++__id)
+pincDevice::pincDevice(const QString& name, QWidget* parent) : QGroupBox(parent), m_name(name), m_id(++__id)
 {
-	m_groupbox = new QGroupBox(this);
-	m_groupbox->resize(320,480);
-	m_groupbox->setTitle(m_name);
-
-	QGridLayout* layout = new QGridLayout(this);
-	layout->addWidget(m_groupbox);
-	setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+	setTitle(m_name);
 
 	__deviceIDmap.insert(std::make_pair(m_id, this));
 }

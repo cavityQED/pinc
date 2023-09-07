@@ -6,7 +6,7 @@
 
 #define SYNC_PIN 18
 
-class espStepperGroup : public QGroupBox
+class espStepperGroup : public spiGroup
 {
 	Q_OBJECT
 
@@ -33,6 +33,8 @@ public:
 	position_t<double>	position();
 	position_t<int> 	step_position();
 
+	virtual void trigger() override;
+	virtual void reload() override;
 	virtual void timerEvent(QTimerEvent* event) override;
 
 public:
@@ -50,7 +52,6 @@ protected:
 	static const int 					m_timerPeriod = 5;
 	double								m_feedrate;
 	std::map<AXIS, espStepperMotor*>	m_stepper_map;
-	std::vector<spiDevice*>				m_steppers;
 	int									m_timerID;
 };
 

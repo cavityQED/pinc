@@ -6,3 +6,13 @@ spiDevice::spiDevice(const QString& name, QWidget* parent) : pincDevice(name, pa
 {
 
 }
+
+spiGroup::spiGroup(const QString& name, QWidget* parent) : spiDevice(name, parent)
+{
+
+}
+
+void spiGroup::addDevice(spiDevice* dev)
+{
+	m_devices.push_back(dev);
+}
