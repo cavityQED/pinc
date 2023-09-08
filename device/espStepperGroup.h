@@ -33,8 +33,6 @@ public:
 	position_t<double>	position();
 	position_t<int> 	step_position();
 
-	virtual void trigger() override;
-	virtual void reload() override;
 	virtual void timerEvent(QTimerEvent* event) override;
 
 public:

@@ -35,6 +35,9 @@ public:
 	spiGroup(const QString& name = "", QWidget* parent = nullptr);
 	~spiGroup() {}
 
+	virtual void trigger() override;
+	virtual void reload() override;
+
 	void addDevice(spiDevice* dev);
 
 protected:

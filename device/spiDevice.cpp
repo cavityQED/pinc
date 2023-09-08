@@ -16,3 +16,18 @@ void spiGroup::addDevice(spiDevice* dev)
 {
 	m_devices.push_back(dev);
 }
+
+void spiGroup::trigger()
+{
+	for(auto dev : m_devices)
+	{
+		dev->trigger();
+		__spi_host->wait_for_sem();
+	}
+}
+
+void spiGroup::reload()
+{
+	for(auto dev : m_devices)
+		dev->reload();
+}

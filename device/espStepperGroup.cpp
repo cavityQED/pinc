@@ -290,21 +290,6 @@ void espStepperGroup::set_jog_mm(double mm)
 		s.second->set_jog_mm(mm);
 }
 
-void espStepperGroup::trigger()
-{
-	for(auto dev : m_devices)
-	{
-		dev->trigger();
-		__spi_host->wait_for_sem();
-	}
-}
-
-void espStepperGroup::reload()
-{
-	for(auto dev : m_devices)
-		dev->reload();
-}
-
 void espStepperGroup::timerEvent(QTimerEvent* event)
 {
 	updatePosition();
