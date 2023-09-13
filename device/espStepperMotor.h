@@ -33,6 +33,8 @@ public:
 	virtual void trigger()	override	{gpioWrite(m_handshake_pin, 1);}
 	virtual void reload()	override	{gpioWrite(m_handshake_pin, 0);}
 
+	virtual void timerEvent(QTimerEvent* event) override;
+
 	void send(const stepper_msg_in_t& msg);
 	void send(const move_msg_t& msg);
 

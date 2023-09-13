@@ -171,3 +171,13 @@ void espStepperMotor::receive()
 
 	emit positionChange(mm_position());
 }
+
+void espStepperMotor::timerEvent(QTimerEvent* event)
+{
+	receive();
+	if(!(m_status & IN_MOTION))
+	{
+		killTimer(event->timerId());
+		receive();
+	}
+}

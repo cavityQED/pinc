@@ -28,6 +28,16 @@ pincLaser2D::pincLaser2D(	const espStepperMotor::config_t& xconfig,
 
 	setLayout(layout);
 
+	connect(	m_xaxis,
+				&espStepperMotor::positionChange,
+				m_position_readout,
+				&positionReadout::setX);
+
+	connect(	m_yaxis,
+				&espStepperMotor::positionChange,
+				m_position_readout,
+				&positionReadout::setY);
+
 	connect(	m_group,
 				&espStepperGroup::positionChange,
 				m_position_readout,
