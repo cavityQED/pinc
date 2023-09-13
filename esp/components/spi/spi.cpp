@@ -3,12 +3,12 @@
 namespace SPI
 {
 
-QueueHandle_t*			spiClient::m_evtQueue	= nullptr;
+QueueHandle_t*			spiClient::m_eventQueue	= nullptr;
 spi_status_t			spiClient::m_status		= IDLE;
 
 spiClient::spiClient(QueueHandle_t* handle)
 {
-	m_evtQueue = handle;
+	m_eventQueue = handle;
 
 	//Clear the config structures to avoid warnings about
 	//not setting all parameters
@@ -86,8 +86,10 @@ void spiClient::handshake_isr(void* arg)
 	if(m_status == IDLE)
 	{		
 		m_status = RECEIVING;
-		int evt = 1;
-		xQueueSendFromISR(*m_evtQueue, &evt, NULL);
+
+		static constexpr EVENT_TYPE event = SPI_RECV_MSG;
+
+		xQueueSendFromISR(*m_eventQueue, &event, NULL);
 	}
 }
 

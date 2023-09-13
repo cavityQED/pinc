@@ -20,6 +20,7 @@
 
 #include "spi_common.h"
 #include "motor_common.h"
+#include "spi.h"
 
 #define PULSE_PIN	(gpio_num_t) 17
 #define DIR_PIN		(gpio_num_t) 16
@@ -48,6 +49,8 @@ public:
 	void reset_timers();
 	void pause_timers(bool pause);
 	void reset();
+
+	void limit_switch_hit() {std::cout << "Limit Switch Hit\n";}
 
 	/*	Check error function; prints the input and then the error	*/
 	void check_error(const char* msg);
@@ -93,6 +96,8 @@ public:
 
 	void set_accel		(uint32_t accel)	{m_accel = accel;}
 
+	void set_msg_queue	(QueueHandle_t* h)	{m_msgQueue = h;}
+
 public:
 
 	/*	Getters	*/
@@ -134,6 +139,7 @@ protected:
 	static step_vec_t		m_cur_pos;
 	static step_vec_t		m_end_pos;
 	
+	static bool				m_homed;
 	static uint8_t			m_status;
 	static uint8_t			m_axis;
 	static uint8_t			m_step_axis;
@@ -164,6 +170,7 @@ protected:
 
 	static esp_err_t		m_esp_err;
 	static xQueueHandle 	m_syncSem;			//Sync semaphore; used to signal start of sync move
+	static QueueHandle_t*	m_msgQueue;
 };
 
 #endif	

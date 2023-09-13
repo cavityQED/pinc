@@ -2,9 +2,11 @@
 
 /*	Initialize static variables	*/
 
+
 step_vec_t		axis::m_cur_pos			= {};
 step_vec_t		axis::m_end_pos			= {};
 
+bool			axis::m_homed			= false;
 uint8_t			axis::m_status			= 0x00;
 uint8_t			axis::m_axis			= 0x00;
 uint8_t			axis::m_step_axis		= 0xFF;
@@ -35,6 +37,7 @@ double			axis::m_cur_time		= 0;
 
 esp_err_t		axis::m_esp_err			= ESP_OK;
 xQueueHandle	axis::m_syncSem			= xSemaphoreCreateBinary();
+QueueHandle_t*	axis::m_msgQueue		= nullptr;
 
 void axis::check_error(const char* msg)
 {

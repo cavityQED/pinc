@@ -15,6 +15,7 @@
 #include <vector>
 #include <cmath>
 
+#include "esp_common.h"
 #include "spi_common.h"
 #include "motor_common.h"
 
@@ -81,7 +82,7 @@ protected:
 	spi_slave_interface_config_t	slave_config;
 	gpio_config_t					io_config;
 
-	static QueueHandle_t*			m_evtQueue;					
+	static QueueHandle_t*			m_eventQueue;					
 	static spi_status_t				m_status;
 };
 

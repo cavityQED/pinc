@@ -10,6 +10,7 @@
 #include "esp_timer.h"
 #include "esp_types.h"
 
+#include "esp_common.h"
 #include "spi_common.h"
 #include "motor_common.h"
 #include "spi.h"
@@ -17,108 +18,114 @@
 
 #include <memory>
 
+#define LIMIT_PIN	(gpio_num_t) 27
+
 static QueueHandle_t					msg_queue;
-
+static QueueHandle_t					event_queue;
 static std::shared_ptr<axis>			motor;
-static std::shared_ptr<SPI::spiMsg>		msg_ptr;
+static std::shared_ptr<SPI::spiClient>	spi_client;
 
-void printBytes(const std::vector<uint8_t>& buf)
+static move_msg_t						moveMsg;
+static SPI::spiMsg						SPImsg;
+static stepper_msg_out_t				stepperMsgOUT;
+static stepper_msg_in_t					stepperMsgIN;
+static EVENT_TYPE						event;
+
+static void limit_switch_isr(void* arg)
 {
-	size_t count = 0;
-	while(count < buf.size())
-	{
-		if(!(count % 8))
-			printf("\n%u:\t", count / 8);
-		printf("\t%#02x", buf[count++]);
-	}
-	printf("\n\n");
+	static constexpr EVENT_TYPE	limit_event	= LIMIT_SWITCH;
+	BaseType_t wait = pdFALSE; 
+
+	xQueueSendFromISR(event_queue, &limit_event, &wait);
 }
 
-static void spi_task(void* arg)
+static void recv_spi_msg()
 {
-	QueueHandle_t					spi_queue	= xQueueCreate(1, sizeof(int));
-	std::shared_ptr<SPI::spiClient> spi_client	= std::make_shared<SPI::spiClient>(&spi_queue);
+	stepperMsgOUT = {};
 
-	stepper_msg_out_t	msgOUT;
-	stepper_msg_in_t	msgIN;
-	move_msg_t			movemsg;
-	std::shared_ptr<SPI::spiMsg> 	msg;
+	std::memset(SPImsg.m_recvbuf.data(), 0, SPImsg.m_recvbuf.size());
+	
+	stepperMsgOUT.status			= motor->status();
+	stepperMsgOUT.step_position		= motor->step_position();
+	stepperMsgOUT.cur_pulse			= motor->cur_step();
+	stepperMsgOUT.decel_pulse		= motor->dec_step();
+	stepperMsgOUT.ticks				= motor->ticks();
+	stepperMsgOUT.divider			= motor->divider();
+	stepperMsgOUT.cur_time			= motor->cur_time();
 
-	msg_ptr = std::make_shared<SPI::spiMsg>();
+	stepperMsgOUT >> SPImsg.m_sendbuf;
 
+	SPImsg.m_tr.length				= 8*SPImsg.m_recvbuf.size();
+	SPImsg.m_tr.tx_buffer			= SPImsg.m_sendbuf.data();
+	SPImsg.m_tr.rx_buffer			= SPImsg.m_recvbuf.data();
+
+	spi_client->recv(SPImsg);
+
+	xQueueSend(msg_queue, &SPImsg, 1);
+}
+
+static void event_task(void* arg)
+{
 	while(1)
 	{
-		msg		= std::make_shared<SPI::spiMsg>();
-		msgOUT	= {};
-
-		int recv_evt;
-
-		if(xQueueReceive(spi_queue, &recv_evt, portMAX_DELAY))
+		if(xQueueReceive(event_queue, &event, portMAX_DELAY))
 		{
-			std::memset(msg_ptr->m_recvbuf.data(), 0, msg_ptr->m_recvbuf.size());
+			switch(event)
+			{
+				case SPI_RECV_MSG:
+					recv_spi_msg();
+					break;
 
-			msgOUT.status			= motor->status();
-			msgOUT.step_position	= motor->step_position();
-			msgOUT.cur_pulse		= motor->cur_step();
-			msgOUT.decel_pulse		= motor->dec_step();
-			msgOUT.ticks			= motor->ticks();
-			msgOUT.divider			= motor->divider();
-			msgOUT.cur_time			= motor->cur_time();
+				case LIMIT_SWITCH:
+					motor->limit_switch_hit();
+					break;
 
-			msgOUT >> msg_ptr->m_sendbuf;
-			msg_ptr->m_tr.length		= 8*msg_ptr->m_recvbuf.size();
-			msg_ptr->m_tr.tx_buffer		= msg_ptr->m_sendbuf.data();
-			msg_ptr->m_tr.rx_buffer		= msg_ptr->m_recvbuf.data();
-
-			spi_client->recv(*msg_ptr);
-
-			if(msg_ptr->m_err == ESP_OK)
-				xQueueSend(msg_queue, &msg_ptr, 1);
+				default:
+					break;
+			}
 		}
 	}
 }
 
 static void msg_task(void* arg)
 {
-	std::shared_ptr<SPI::spiMsg>	msg;
-	stepper_msg_in_t 				msgIN;
-	move_msg_t						movemsg;
+	SPI::spiMsg		msg;
 
 	while(1)
 	{
 		if(xQueueReceive(msg_queue, &msg, portMAX_DELAY))
 		{
-			msgIN << msg->m_recvbuf;
+			stepperMsgIN << msg.m_recvbuf;
 
-			switch(msgIN.func)
+			switch(stepperMsgIN.func)
 			{
 				case MOVE:
 				{
-					movemsg << msg->m_recvbuf;
-					motor->set_mode(movemsg.mode);
-					motor->move(	movemsg.start,
-									movemsg.end,
-									movemsg.vf_mmps,
-									movemsg.radius,
-									movemsg.cw,
-									movemsg.dir);
+					moveMsg << msg.m_recvbuf;
+					motor->set_mode(moveMsg.mode);
+					motor->move(	moveMsg.start,
+									moveMsg.end,
+									moveMsg.vf_mmps,
+									moveMsg.radius,
+									moveMsg.cw,
+									moveMsg.dir);
 					break;
 				}
 
-				case PRINT_INFO:			motor->print_info();						break;
+				case PRINT_INFO:			motor->print_info();								break;
 
-				case SET_AXIS:				motor->set_axis(msgIN.set_data);			break;
-				case SET_MODE:				motor->set_mode(msgIN.set_data);			break;
-				case SET_SPMM:				motor->set_spmm(msgIN.set_data);			break;
+				case SET_AXIS:				motor->set_axis(stepperMsgIN.set_data);				break;
+				case SET_MODE:				motor->set_mode(stepperMsgIN.set_data);				break;
+				case SET_SPMM:				motor->set_spmm(stepperMsgIN.set_data);				break;
 
-				case SET_MIN_SPEED:			motor->set_min_speed(msgIN.set_data);		break;
-				case SET_JOG_SPEED:			motor->set_jog_speed(msgIN.set_data);		break;
-				case SET_MAX_SPEED:			motor->set_max_speed(msgIN.set_data);		break;
+				case SET_MIN_SPEED:			motor->set_min_speed(stepperMsgIN.set_data);		break;
+				case SET_JOG_SPEED:			motor->set_jog_speed(stepperMsgIN.set_data);		break;
+				case SET_MAX_SPEED:			motor->set_max_speed(stepperMsgIN.set_data);		break;
 
-				case SET_ACCELERATION:		motor->set_accel(msgIN.set_data);			break;
+				case SET_ACCELERATION:		motor->set_accel(stepperMsgIN.set_data);			break;
 
-				case STOP:					motor->stop();								break;
-				case PAUSE:					motor->pause_timers((bool)msgIN.set_data);	break;
+				case STOP:					motor->stop();										break;
+				case PAUSE:					motor->pause_timers((bool)stepperMsgIN.set_data);	break;
 
 				default:
 					break;
@@ -132,15 +139,26 @@ extern "C" void app_main(void)
 {
 	gpio_install_isr_service(0);
 
-	motor = std::make_shared<axis>();
+	gpio_config_t io_conf;
+	memset(&io_conf, 0, sizeof(io_conf));
+	io_conf.intr_type		= GPIO_INTR_POSEDGE;
+	io_conf.mode 			= GPIO_MODE_INPUT;
+	io_conf.pull_down_en	= GPIO_PULLDOWN_ENABLE;
+	io_conf.pin_bit_mask	= (1ULL << LIMIT_PIN);
+
+	gpio_config(&io_conf);
+	gpio_set_intr_type(LIMIT_PIN, GPIO_INTR_POSEDGE);
+	gpio_isr_handler_add(LIMIT_PIN, limit_switch_isr, NULL);
+
+	event_queue	= xQueueCreate(1, sizeof(EVENT_TYPE));
+	msg_queue	= xQueueCreate(1, sizeof(SPI::spiMsg));
+	spi_client	= std::make_shared<SPI::spiClient>(&event_queue);
+	motor		= std::make_shared<axis>();
 
 	motor->setup_gpio();
 	motor->setup_timers();
+	motor->set_msg_queue(&msg_queue);
 
-	std::shared_ptr<SPI::spiMsg> tmp;
-
-	msg_queue = xQueueCreate(1, sizeof(tmp));
-
-	xTaskCreatePinnedToCore(spi_task, "spi_task", 4096, NULL, 1, NULL, 0);
+	xTaskCreatePinnedToCore(event_task, "event_task", 4096, NULL, 1, NULL, 0);
 	xTaskCreatePinnedToCore(msg_task, "msg_task", 4096, NULL, 1, NULL, 1);
 }
