@@ -16,6 +16,3 @@ target_include_directories	(c_pinc INTERFACE ${CMAKE_SOURCE_DIR}	)
 
 add_executable			(c_pinc_test	host_main.c)
 target_link_libraries	(c_pinc_test	pigpio pthread c_pinc)
-
-add_executable			(c_lcd_test		lcd_test.c)
-target_link_libraries	(c_lcd_test		pigpio pthread c_pinc)
