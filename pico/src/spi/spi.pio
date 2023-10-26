@@ -1,0 +1,14 @@
+.program spi_mode0
+
+.wrap_target
+	wait 0 pin, 0x2		// wait for cs low
+
+bitloop:
+	out pins, 1			// shift out 1 bit to miso
+	wait 1 pin, 0x1		// wait for clk high
+	in pins, 1			// shift in 1 bit from mosi
+	wait 0 pin, 0x1		// wait for clk low
+
+	jmp !osre bitloop
+	jmp x-- bitloop
+.wrap

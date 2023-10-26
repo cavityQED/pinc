@@ -1,0 +1,5 @@
+add_library					(spilib INTERFACE)
+pico_generate_pio_header    (spilib ${CMAKE_CURRENT_LIST_DIR}/spi.pio)
+target_sources				(spilib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/spi_client.c)
+target_link_libraries		(spilib INTERFACE pico_stdlib hardware_gpio hardware_dma hardware_pio )
+target_include_directories	(spilib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
