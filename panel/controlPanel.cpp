@@ -24,7 +24,7 @@ controlPanel::controlPanel(QWidget* parent) : QWidget(parent)
 	setLayout(main);
 
 	setStyleSheet(	"QPushButton{"	
-						"background-color: #75B8C8;"
+						"background-color: #38B8E0;"
 						"border-style: outset;"
 						"border-width: 3px;"
 						"border-color: #408DA0;"
@@ -37,11 +37,11 @@ controlPanel::controlPanel(QWidget* parent) : QWidget(parent)
 						"max-height: 40px;}"
 						
 					"QPushButton:pressed{"
-						"background-color: #408DA0;"
+						"background-color: #C1FFFF;"
 						"border-style: inset;}"
 						
 					"QPushButton:checked{"
-						"background-color: #0EFF5E;"
+						"background-color: #C1FFFF;"
 						"border-color: #049434;}"
 
 					"QGroupBox{"
