@@ -53,6 +53,7 @@ void lcd_draw_segment(lcdSegment* seg)
 void lcd_draw_string(lcdSegment* seg, lcd_font_t* font, char* str)
 {
 	seg->data = malloc(2*font->w*font->h);
+	uint16_t tmpx = seg->x;
 	
 	int n = strlen(str);
 	for(int i = 0; i < n; i++)
@@ -62,6 +63,7 @@ void lcd_draw_string(lcdSegment* seg, lcd_font_t* font, char* str)
 		seg->x = seg->x + font->w;
 	}
 
+	seg->x = tmpx;
 	free(seg->data);
 }
 

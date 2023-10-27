@@ -4,8 +4,6 @@ void stepper_status_isr(int gpio, int level, uint32_t tick, void* dev)
 {
 	stepper_t* s = (stepper_t*)dev;
 
-	// stepper_lock(s);
-
 	pcf_get_signal(&s->pcf_sig);
 
 	if(request_check(s->spi_req.req, &s->pcf_sig.sig))
@@ -20,8 +18,6 @@ void stepper_status_isr(int gpio, int level, uint32_t tick, void* dev)
 		pthread_create(&thread, NULL, stepper_update_loop, s);
 		pthread_detach(thread);
 	}
-
-	// stepper_unlock(s);
 }
 
 void* stepper_spi_send(void* dev)
@@ -103,26 +99,12 @@ void stepper_move(stepper_t* s, stepper_move_t* move)
 
 void stepper_lcd_draw_pos(stepper_t* s)
 {
-	lcdSegment lcdseg = {.x = 8, .y = 24, .on_clr = ST7735_BLACK, .off_clr = ST7735_BLUE};
-	lcd_font_t font =
-		{
-			.w = 8,
-			.h = 12,
-			.n = 95,
-			.offset = 32,
-			.data = ascii_font_8x12
-		};	
-
 	float pos = (float)s->step_pos/s->config.spmm;
 	int len = snprintf(NULL, 0, "%5.3f", pos);
 	char* str = malloc(len + 1);
 	snprintf(str, len + 1, "%5.3f", pos);
 
-	printf("LCD Drawing String\n");
-	lcd_draw_string(&lcdseg, &font, str);
-	printf("Drew String\n");
+	lcd_draw_string(&s->lcd_seg, s->lcd_font, str);
 
 	free(str);
-	printf("End lcd Draw\n");
-
 }
