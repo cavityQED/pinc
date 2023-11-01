@@ -27,7 +27,7 @@
 #define LINE_MODE	0x20
 #define POS_CHANGE	0x40
 
-#define STATUS_MOTION	0x08
+#define STATUS_MOTION	0x01
 
 typedef struct
 {

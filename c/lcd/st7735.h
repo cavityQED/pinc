@@ -66,9 +66,9 @@
 #define POS_GAMMA_CONTROL			0xE0
 #define NEG_GAMMA_CONTROL			0xE1
 
-#define PIN_DCX		17
-#define PIN_RESET	27
-#define PIN_CS		22
+#define PIN_DCX		20
+#define PIN_RESET	16
+#define PIN_CS		13
 
 #define ST7735_BLACK	0x0000
 #define ST7735_BLUE		0x137F

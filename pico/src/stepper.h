@@ -12,9 +12,9 @@
 
 #include "c/stepper/stepper_common.h"
 
-#define PICO_STEP_PIN		21
-#define PICO_DIR_PIN		20
-#define PICO_ENA_PIN		18
+#define PICO_STEP_PIN		16
+#define PICO_DIR_PIN		17
+#define PICO_ENA_PIN		28
 
 typedef struct repeating_timer picoTimer_t;
 struct stepper
