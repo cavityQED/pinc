@@ -95,14 +95,15 @@ typedef struct
 	bool			level;
 	bool			fired;
 
-	request_t*		req;
+	uint8_t			sem_max;
 	sem_t			sem;
+	request_t*		req;
 	pthread_mutex_t mutex;
 
 } pin_request_t;
 
 
-static inline void pin_request_init(pin_request_t* pin_req, request_t* req, int pin, bool level)
+static inline void pin_request_init(pin_request_t* pin_req, request_t* req, int pin, bool level, uint8_t max)
 {
 	pin_req->fired	= false;
 	pin_req->req	= req;
@@ -116,13 +117,14 @@ static inline void pin_request_init(pin_request_t* pin_req, request_t* req, int 
 	pthread_mutex_lock(&pin_req->mutex);
 
 	sem_init(&pin_req->sem, 0, 0);
+	pin_req->sem_max = max;
 }
 
 static inline void pin_request_trigger(pin_request_t* pin_req)
 {
 	int sval;
 	sem_getvalue(&pin_req->sem, &sval);
-	if(sval)
+	if(sval > pin_req->sem_max)
 	{
 		sem_wait(&pin_req->sem);
 		pin_request_trigger(pin_req);
@@ -144,7 +146,6 @@ static inline void pin_request_reset(pin_request_t* pin_req)
 
 static inline void pin_request_ack(pin_request_t* pin_req)
 {
-	// pthread_mutex_unlock(&pin_req->mutex);
 	sem_post(&pin_req->sem);
 	printf("\tRequest Unlocked on Pin %d\n", pin_req->pin);
 }
@@ -153,7 +154,6 @@ static inline void pin_request_wait(pin_request_t* pin_req)
 {
 	printf("\tRequest Waiting on Pin %d\n", pin_req->pin);
 	sem_wait(&pin_req->sem);
-	// pthread_mutex_lock(&pin_req->mutex);
 }
 
 static inline void pin_request_blocking(pin_request_t* pin_req)
