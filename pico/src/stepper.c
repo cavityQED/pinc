@@ -96,22 +96,26 @@ void stepper_move(struct stepper* s, stepper_move_t* m)
 
 void stepper_msg_handle(struct stepper* s, stepper_msg_t* msg)
 {
-
+	static stepper_move_t move;
+	static stepper_config_t config;
+	printf("MSG CMD:\t0x%4X\n", msg->cmd);
 	switch(msg->cmd)
 	{
 		case STEPPER_MOVE:
 			if(s->status & MOTION)
 				return;
-			stepper_move(s, &msg->move);
+			memcpy(&move, msg, sizeof(move));
+			stepper_move(s, &move);
 			break;
 
 		case STEPPER_CMD_CONFIG:
-			s->axis			= msg->config.axis;
-			s->spmm			= msg->config.spmm;
-			s->accel		= msg->config.accel;
-			s->jog_speed	= msg->config.jog_speed;
-			s->min_speed	= msg->config.min_speed;
-			s->max_speed	= msg->config.max_speed;
+			memcpy(&config, msg, sizeof(config));
+			s->axis			= config.axis;
+			s->spmm			= config.spmm;
+			s->accel		= config.accel;
+			s->jog_speed	= config.jog_speed;
+			s->min_speed	= config.min_speed;
+			s->max_speed	= config.max_speed;
 			break;
 	
 		case STEPPER_CMD_PRINT:
@@ -119,7 +123,7 @@ void stepper_msg_handle(struct stepper* s, stepper_msg_t* msg)
 			break;
 
 		case STEPPER_CMD_AXIS:
-			s->axis = msg->config.axis;
+			// s->axis = msg->config.axis;
 			break;
 
 		case STEPPER_CMD_MODE:
@@ -127,7 +131,7 @@ void stepper_msg_handle(struct stepper* s, stepper_msg_t* msg)
 			break;
 
 		case STEPPER_CMD_SPMM:
-			s->spmm = msg->config.spmm;
+			// s->spmm = msg->config.spmm;
 
 			break;
 

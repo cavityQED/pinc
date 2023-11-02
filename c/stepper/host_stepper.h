@@ -12,38 +12,42 @@ typedef struct
 {
 	uint8_t				status;
 	int					step_pos;
-	stepper_config_t	config;
 	PCF					pcf_sig;
 	spiMsg				spi_msg;
 	spiHost*			spi_host;
 	pin_request_t		spi_req;
 	pin_request_t		sync_req;
-	stepper_msg_t		cmd_msg;
 	lcdSegment			lcd_seg;
 	lcd_font_t*			lcd_font;
 	pthread_mutex_t		mutex;
 
+	stepper_config_t	config;
+	stepper_move_t		move;
+	
 } stepper_t;
+
+
+typedef struct
+{
+	uint8_t 	cmd;
+	stepper_t*	s;
+
+} stepper_event_t;
 
 void stepper_status_isr(int gpio, int level, uint32_t tick, void* dev);
 
 void* stepper_spi_send(void* dev);
 void* stepper_update_loop(void* dev);
+void* stepper_event(void* data);
 
+void stepper_init(stepper_t* s, stepper_config_t* config);
 void stepper_update(stepper_t* s);
 void stepper_config(stepper_t* s);
-void stepper_move(stepper_t* s, stepper_move_t* move);
+void stepper_move(stepper_t* s);
 void stepper_pause(stepper_t* s, bool pause);
 
 void stepper_lcd_draw_pos(stepper_t* s);
 
-static inline void stepper_init(stepper_t* s, stepper_config_t* config)
-{
-	memcpy(&s->config, config, sizeof(stepper_config_t));
-	pthread_mutex_init(&s->mutex, NULL);
-
-	stepper_config(s);
-}
 
 static inline void stepper_lock(stepper_t* s)
 {

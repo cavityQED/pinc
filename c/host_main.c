@@ -2,24 +2,36 @@
 
 void move(jog_mode_config_t* jog)
 {
-	static stepper_move_t m;
-	memset(&m, 0, sizeof(stepper_move_t));
+	stepper_move_t*		move;
+	stepper_event_t*	event = malloc(sizeof(stepper_event_t));
 
-	m.mode	= LINE_MODE;
-	m.sps	= jog->sps;
-	m.end.x = 0;
-	m.end.y = 0;
+	memset(event, 0, sizeof(stepper_event_t));
 
 	if(jog->axis == X_AXIS)
 	{
-		m.end.x = (jog->dir)? xaxis.config.spmm : -xaxis.config.spmm;
-		stepper_move(&xaxis, &m);
+		event->s = &xaxis;
+		move = &xaxis.move;
+		memset(move, 0, sizeof(stepper_move_t));
+		move->end.x = jog->steps;
 	}
+
 	else if(jog->axis == Y_AXIS)
 	{
-		m.end.y = (jog->dir)? yaxis.config.spmm : -yaxis.config.spmm;
-		stepper_move(&yaxis, &m);
+		event->s = &yaxis;
+		move = &yaxis.move;
+		memset(move, 0, sizeof(stepper_move_t));
+		move->end.y = jog->steps;
 	}
+
+	event->cmd	= STEPPER_MOVE;
+	move->mode	= LINE_MODE;
+	move->sps	= jog->sps;
+
+	printf("Steps:\t%d\n", jog->steps);
+
+	pthread_t thread;
+	pthread_create(&thread, NULL, stepper_event, event);
+	pthread_detach(thread);
 }
 
 void input_isr(int gpio, int level, uint32_t tick, void* dev)
@@ -59,12 +71,12 @@ void input_isr(int gpio, int level, uint32_t tick, void* dev)
 			printf("Stop Button\n");
 			break;
 		case KNOB_CW:
-			jog_mode.dir = 1;
+			jog_mode.steps = abs(jog_mode.steps);
 			printf("Knob CW\n");
 			move(&jog_mode);
 			break;
 		case KNOB_CCW:
-			jog_mode.dir = 0;
+			jog_mode.steps = -abs(jog_mode.steps);
 			printf("Knob CCW\n");
 			move(&jog_mode);
 			break;
@@ -82,7 +94,7 @@ int main()
 	pthread_mutexattr_settype(&spi_attr, PTHREAD_MUTEX_ERRORCHECK | PTHREAD_MUTEX_DEFAULT);
 	pthread_mutex_init(&spi_mutex, &spi_attr);
 
-	spi_init(&spi_host, "/dev/spidev0.0", -1, 4000000, 0, 8, 0, SPI_MODE_0, &spi_mutex);
+	spi_init(&spi_host, "/dev/spidev0.0", -1, 8000000, 0, 8, 0, SPI_MODE_0, &spi_mutex);
 
 	pcf_init(&input, INPUT_PCF_ADDR, INPUT_PCF_PIN, NULL, input_isr);
 	pcf_init(&xaxis.pcf_sig, X_PCF_ADDR, X_PCF_PIN, &xaxis, stepper_status_isr);
@@ -91,8 +103,8 @@ int main()
 	request_init(&spi_base_req, 0, SPI_STATUS_READY);
 	request_init(&sync_base_req, 0, SYNC_STATUS_READY);
 
-	pin_request_init(&xaxis.spi_req, &spi_base_req, X_SPI_PIN, 1);
-	pin_request_init(&yaxis.spi_req, &spi_base_req, Y_SPI_PIN, 1);
+	pin_request_init(&xaxis.spi_req, &spi_base_req, X_SPI_PIN, 1, 1);
+	pin_request_init(&yaxis.spi_req, &spi_base_req, Y_SPI_PIN, 1, 1);
 
 	lcd_font.w = 8;
 	lcd_font.h = 12;
@@ -134,6 +146,7 @@ int main()
 	stepper_init(&yaxis, &yconfig);
 
 	jog_mode.sps = 40 * X_SPMM;
+	jog_mode.steps = 800;
 
 	lcd_init(&spi_mutex);
 

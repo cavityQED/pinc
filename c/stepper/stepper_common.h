@@ -40,6 +40,7 @@ typedef struct
 
 typedef struct
 {
+	uint16_t	cmd;
 	uint8_t		axis;
 	uint16_t	spmm;
 	uint32_t	accel;
@@ -51,6 +52,7 @@ typedef struct
 
 typedef struct
 {
+	uint16_t		cmd;
 	uint8_t			mode;
 	p_cartesian		cur;
 	p_cartesian		end;
@@ -63,6 +65,7 @@ typedef struct
 
 typedef struct
 {
+	uint16_t	cmd;
 	uint8_t		status;
 	int			pos;
 

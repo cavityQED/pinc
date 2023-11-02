@@ -21,7 +21,7 @@ typedef struct
 
 } spiMsg;
 
-static inline void spi_write_msg(spiMsg* msg, uint8_t* tx_data, uint32_t bytes)
+static inline void spi_write_msg(spiMsg* msg, void* tx_data, uint32_t bytes)
 {
 	msg->tx = malloc(bytes);
 	msg->rx = malloc(bytes);
@@ -29,7 +29,7 @@ static inline void spi_write_msg(spiMsg* msg, uint8_t* tx_data, uint32_t bytes)
 	memcpy(msg->tx, tx_data, bytes);
 }
 
-static inline void spi_read_msg(spiMsg* msg, uint8_t* rx_data, uint32_t bytes)
+static inline void spi_read_msg(spiMsg* msg, void* rx_data, uint32_t bytes)
 {
 	memcpy(rx_data, msg->rx, bytes);
 	free(msg->tx);

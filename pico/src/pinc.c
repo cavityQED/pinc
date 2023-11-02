@@ -46,6 +46,7 @@ static void get_spi_msg()
 	stepper_info_t info;
 	info.status = motor.status;
 	info.pos = motor.pos;
+	memset(spi_in_buf, 0, SPI_TRANSFER_LENGTH);
 	memset(spi_out_buf, 0, SPI_TRANSFER_LENGTH);
 	memcpy(spi_out_buf, (unsigned long*)&info, sizeof(stepper_info_t));
 	spi.tx_buf = spi_out_buf;

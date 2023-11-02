@@ -1,5 +1,20 @@
 #include "host_stepper.h"
 
+void stepper_init(stepper_t* s, stepper_config_t* config)
+{
+	pthread_mutex_init(&s->mutex, NULL);
+
+	stepper_event_t* event = malloc(sizeof(stepper_event_t));
+	event->cmd = STEPPER_CMD_CONFIG;
+	event->s = s;
+	memcpy(&s->config, config, sizeof(stepper_config_t));
+
+	pthread_t thread;
+	pthread_create(&thread, NULL, stepper_event, event);
+	pthread_detach(thread);
+}
+
+
 void stepper_status_isr(int gpio, int level, uint32_t tick, void* dev)
 {
 	stepper_t* s = (stepper_t*)dev;
@@ -28,8 +43,6 @@ void* stepper_spi_send(void* dev)
 
 	stepper_lock(s);
 
-	spi_write_msg(&s->spi_msg, (uint8_t*)&s->cmd_msg, sizeof(s->cmd_msg));
-
 	pin_request_blocking(&s->spi_req);
 
 	spi_send(s->spi_host, &s->spi_msg);
@@ -47,7 +60,15 @@ void* stepper_spi_send(void* dev)
 
 void stepper_update(stepper_t* s)
 {
-	s->cmd_msg.cmd = STEPPER_CMD_UPDATE;
+	uint16_t bytes = sizeof(stepper_info_t);
+	stepper_info_t info;
+	info.cmd = STEPPER_CMD_UPDATE;
+	stepper_lock(s);
+	s->spi_msg.tx = malloc(bytes);
+	s->spi_msg.rx = malloc(bytes);
+	s->spi_msg.len = bytes;
+	memcpy(s->spi_msg.tx, &info, bytes);
+	stepper_unlock(s);
 	stepper_spi_send(s);
 }
 
@@ -71,30 +92,24 @@ void* stepper_update_loop(void* dev)
 void stepper_config(stepper_t* s)
 {
 	stepper_lock(s);
-	s->cmd_msg.cmd = STEPPER_CMD_CONFIG;
-	memset(&s->cmd_msg.config, 0, sizeof(stepper_config_t));
-	memcpy(&s->cmd_msg.config, &s->config, sizeof(stepper_config_t));
+	s->config.cmd = STEPPER_CMD_CONFIG;
+	spi_write_msg(&s->spi_msg, &s->config, sizeof(stepper_config_t));
 	stepper_unlock(s);
 
-	pthread_t thread;
-	pthread_create(&thread, NULL, stepper_spi_send, s);
-	pthread_detach(thread);
+	stepper_spi_send(s);
 }
 
-void stepper_move(stepper_t* s, stepper_move_t* move)
+void stepper_move(stepper_t* s)
 {
 	if(s->status & MOTION)
 		return;
 
 	stepper_lock(s);
-	s->cmd_msg.cmd = STEPPER_MOVE;
-	memset(&s->cmd_msg.move, 0, sizeof(stepper_move_t));
-	memcpy(&s->cmd_msg.move, move, sizeof(stepper_move_t));
+	s->move.cmd = STEPPER_MOVE;
+	spi_write_msg(&s->spi_msg, &s->move, sizeof(stepper_move_t));
 	stepper_unlock(s);
 
-	pthread_t thread;
-	pthread_create(&thread, NULL, stepper_spi_send, s);
-	pthread_detach(thread);
+	stepper_spi_send(s);
 }
 
 void stepper_lcd_draw_pos(stepper_t* s)
@@ -107,4 +122,65 @@ void stepper_lcd_draw_pos(stepper_t* s)
 	lcd_draw_string(&s->lcd_seg, s->lcd_font, str);
 
 	free(str);
+}
+
+
+void* stepper_event(void* data)
+{
+	stepper_event_t* e = (stepper_event_t*)data;
+
+	if(!e->s)
+		return NULL;
+
+	switch(e->cmd)
+	{
+		case STEPPER_MOVE:
+			stepper_move(e->s);
+			break;
+		case STEPPER_CMD_CONFIG:
+			stepper_config(e->s);
+			break;
+		default:
+			break;
+	}
+
+	free(data);
+	return NULL;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+void stepper_group_add(stepper_group_t* group, stepper_t* s)
+{
+	uint8_t size = group->ndevs;
+	stepper_t** devs = malloc((1+size)*sizeof(stepper_t*));
+	memcpy(devs, group->devs, size*sizeof(stepper_t*));
+	devs[size] = s;
+	group->devs = devs;
+	group->ndevs++;
+}
+
+void stepper_group_move(stepper_group_t* group, stepper_move_t* move)
+{
+	// move->mode |= SYNC_MODE;
+
+	// stepper_t* s;
+
+	// for(int n = 0; n < group->ndevs; n++)
+	// {
+	// 	s = group->devs[n];
+	// 	s->cmd_msg.cmd = STEPPER_MOVE;
+	// 	memcpy(&s->cmd_msg.move, move, sizeof(stepper_move_t));
+
+
+	// }
 }

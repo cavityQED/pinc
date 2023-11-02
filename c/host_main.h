@@ -37,9 +37,8 @@ typedef struct
 {
 	uint8_t		axis;
 	uint32_t	sps;
-	uint32_t	steps;
-	bool		dir;
-
+	int			steps;
+	
 } jog_mode_config_t;
 
 static stepper_t			xaxis;
