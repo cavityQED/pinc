@@ -16,7 +16,7 @@
 #define PIN_SPI_MSG_READY		13
 
 #define PIN_SYNC_SIGNAL			26
-#define PIN_SPI_MSG_REQUEST		27
+#define PIN_SPI_MSG_REQUEST		15
 
 static uint8_t spi_in_buf[SPI_TRANSFER_LENGTH];
 static uint8_t spi_out_buf[SPI_TRANSFER_LENGTH];
