@@ -11,6 +11,8 @@ set(LINKED_LIBRARIES		pigpio
 							pthread
 							m)
 
+add_subdirectory(io)							
+
 add_library					(c_pinc	${LIBRARY_SOURCE_FILES}			)
 target_link_libraries		(c_pinc	${LINKED_LIBRARIES}				)
 target_compile_options		(c_pinc	PRIVATE	"-Wno-psabi"			)

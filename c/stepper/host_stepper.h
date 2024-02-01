@@ -3,9 +3,10 @@
 
 #include "io/signal.h"
 #include "io/pcf8574.h"
+#include "io/fpga_signal.h"
 #include "spi/host_spi.h"
 #include "lcd/st7735.h"
-
+#include "algorithm/bst.h"
 #include "host_common.h"
 
 typedef struct
@@ -13,6 +14,7 @@ typedef struct
 	uint8_t				status;
 	int					step_pos;
 	PCF					pcf_sig;
+	Tree*				req_tree;
 	spiMsg				spi_msg;
 	spiHost*			spi_host;
 	pin_request_t		spi_req;
@@ -23,6 +25,8 @@ typedef struct
 
 	stepper_config_t	config;
 	stepper_move_t		move;
+
+	fpga_signal			fpga_sig;
 	
 } stepper_t;
 

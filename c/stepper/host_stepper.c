@@ -14,24 +14,17 @@ void stepper_init(stepper_t* s, stepper_config_t* config)
 	pthread_detach(thread);
 }
 
-
 void stepper_status_isr(int gpio, int level, uint32_t tick, void* dev)
 {
 	stepper_t* s = (stepper_t*)dev;
 
-	pcf_get_signal(&s->pcf_sig);
+	fpga_get_signal(&s->fpga_sig);
 
-	if(request_check(s->spi_req.req, &s->pcf_sig.sig))
-		pin_request_ack(&s->spi_req);
-
-
-	if(s->pcf_sig.sig.low & STATUS_MOTION)
+	Node* node = node_find(s->req_tree->root, s->fpga_sig.sig.mask);
+	if(node)
 	{
-		printf("Motion Started\n");
-
-		pthread_t thread;
-		pthread_create(&thread, NULL, stepper_update_loop, s);
-		pthread_detach(thread);
+		request_t* req = (request_t*)node->data;
+		req->func(req);
 	}
 }
 
@@ -46,11 +39,9 @@ void* stepper_spi_send(void* dev)
 	pin_request_blocking(&s->spi_req);
 
 	spi_send(s->spi_host, &s->spi_msg);
-
 	spi_read_msg(&s->spi_msg, (uint8_t*)&info, sizeof(stepper_info_t));
 	s->step_pos = info.pos;
 	s->status = info.status;
-
 	pin_request_reset(&s->spi_req);
 
 	stepper_unlock(s);
@@ -101,8 +92,8 @@ void stepper_config(stepper_t* s)
 
 void stepper_move(stepper_t* s)
 {
-	if(s->status & MOTION)
-		return;
+	// if(s->status & MOTION)
+	// 	return;
 
 	stepper_lock(s);
 	s->move.cmd = STEPPER_MOVE;
@@ -146,41 +137,4 @@ void* stepper_event(void* data)
 
 	free(data);
 	return NULL;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-void stepper_group_add(stepper_group_t* group, stepper_t* s)
-{
-	uint8_t size = group->ndevs;
-	stepper_t** devs = malloc((1+size)*sizeof(stepper_t*));
-	memcpy(devs, group->devs, size*sizeof(stepper_t*));
-	devs[size] = s;
-	group->devs = devs;
-	group->ndevs++;
-}
-
-void stepper_group_move(stepper_group_t* group, stepper_move_t* move)
-{
-	// move->mode |= SYNC_MODE;
-
-	// stepper_t* s;
-
-	// for(int n = 0; n < group->ndevs; n++)
-	// {
-	// 	s = group->devs[n];
-	// 	s->cmd_msg.cmd = STEPPER_MOVE;
-	// 	memcpy(&s->cmd_msg.move, move, sizeof(stepper_move_t));
-
-
-	// }
 }

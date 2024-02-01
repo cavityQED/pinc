@@ -21,6 +21,13 @@ struct node_t
 	uint32_t	size;
 };
 
+
+typedef struct
+{
+	Node* root;
+
+} Tree;
+
 int		skew				(Node* node);
 void	node_augment		(Node* node);
 void	print_node			(Node* node);

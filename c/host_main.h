@@ -5,7 +5,8 @@
 
 #define X_SPMM				800
 #define X_PCF_PIN			12
-#define X_SPI_PIN			27
+#define X_FPGA_INTR			27
+#define X_SPI_PIN			6
 #define X_PCF_ADDR			0x20
 
 #define Y_SPMM				800
@@ -20,10 +21,10 @@
 #define INPUT_PCF_PIN		26
 #define INPUT_PCF_ADDR		0x22
 
-#define BUTTON_UP			0x0011
-#define BUTTON_DOWN			0x0021
-#define BUTTON_RIGHT		0x0041
-#define BUTTON_LEFT			0x0081
+#define BUTTON_UP			0xDE
+#define BUTTON_DOWN			0xDD
+#define BUTTON_RIGHT		0xD7
+#define BUTTON_LEFT			0xDB
 
 #define BUTTON_BACK			0x0012
 #define BUTTON_MENU			0x0022
@@ -44,11 +45,14 @@ typedef struct
 static stepper_t			xaxis;
 static stepper_t			yaxis;
 static PCF					input;
+static fpga_signal			fpga_input;
 static spiHost				spi_host;
+static spiHost				spi_fpga;
 static request_t			spi_base_req;
 static request_t			sync_base_req;
 static lcd_font_t			lcd_font;
 static jog_mode_config_t	jog_mode;
+static Tree					request_tree;
 
 pthread_mutex_t		spi_mutex;
 pthread_mutexattr_t	spi_attr;

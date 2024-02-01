@@ -5,16 +5,8 @@
 
 #include <semaphore.h>
 
+#include "algorithm/bst.h"
 #include "host_common.h"
-
-
-
-
-
-
-
-
-
 
 
 
@@ -30,36 +22,54 @@ typedef struct
 
 } signal_t;
 
-
-
-
-typedef struct
+typedef struct request_t request_t;
+typedef void (*req_func)(request_t*);
+struct request_t
 {
+	bool			ex;		// exclusive; uses mutex if true
 	bool			level;
 	uint8_t			bit;
+	uint8_t			sem_max;
+	uint16_t		mask;
+	sem_t			sem;
+	req_func		func;
 	pthread_mutex_t mutex;
-
-} request_t;
+};
 
 
 static inline void request_init(request_t* req, bool level, uint8_t bit)
 {
 	req->level		= level;
 	req->bit		= bit;
+	req->mask		= 0xFF00 | bit;
 
 	pthread_mutex_init(&req->mutex, NULL);
+	sem_init(&req->sem, 0, 0);
 }
 
 static inline void request_unclaim(request_t* req)
 {
 	pthread_mutex_unlock(&req->mutex);
-	printf("\tRequest Unclaimed\n");
+	printf("\tRequest Unclaimed:\t0x%4X\n", req->mask);
 }
 
 static inline void request_claim(request_t* req)
 {
+	printf("\tRequest Claiming:\t0x%4X\n", req->mask);
 	pthread_mutex_lock(&req->mutex);
-	printf("\tRequest Claimed\n");
+	printf("\tRequest Claimed:\t0x%4X\n", req->mask);
+}
+
+static inline void request_lock(request_t* req)
+{
+	printf("\tRequest Waiting:\t0x%4X\n", req->mask);
+	sem_wait(&req->sem);
+}
+
+static inline void request_unlock(request_t* req)
+{
+	sem_post(&req->sem);
+	printf("\tRequest Unlocked:\t0x%4X\n", req->mask);
 }
 
 static inline bool request_check(request_t* req, signal_t* sig)
@@ -141,7 +151,8 @@ static inline void pin_request_reset(pin_request_t* pin_req)
 {
 	gpioWrite(pin_req->pin, !pin_req->level);
 	printf("\tPin Request Reset on Pin %d\n", pin_req->pin);
-	request_unclaim(pin_req->req);
+	if(pin_req->req->ex)
+		request_unclaim(pin_req->req);
 }
 
 static inline void pin_request_ack(pin_request_t* pin_req)
@@ -158,9 +169,10 @@ static inline void pin_request_wait(pin_request_t* pin_req)
 
 static inline void pin_request_blocking(pin_request_t* pin_req)
 {
-	request_claim(pin_req->req);
+	if(pin_req->req->ex)
+		request_claim(pin_req->req);
 	pin_request_trigger(pin_req);
-	pin_request_wait(pin_req);
+	request_lock(pin_req->req);
 }
 
 

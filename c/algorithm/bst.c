@@ -54,7 +54,7 @@ void node_swap_data(Node* high, Node* low)
 
 void print_node(Node* node)
 {
-	printf("Node (%d, 0x%X):\t", node->key, ((uint32_t)node) & 0xFFFFFF);
+	printf("Node (%d, 0x%X):\t", node->key, ((uint32_t)node) & 0xFFFF);
 	printf("(L: %d,   P: %d,   R: %d,   H: %d,   S: %d)  \n", 
 					(node->left)?	node->left->key		: -1,
 					(node->parent)?	node->parent->key	: -1,
@@ -118,6 +118,7 @@ Node* node_next(Node* root)
 
 Node* node_find(Node* root, uint32_t key)
 {
+	printf("Node Find Key:\t0x%8X\n", key);
 	if(!root)
 		return NULL;
 
@@ -146,9 +147,10 @@ Node* node_free(Node* root)
 			parent->right = 0;
 	}
 
+	memset(root, 0, sizeof(Node));
 	free(root->data);
 	free(root);
-	return (parent)? NULL : tree_balance(parent);
+	return tree_balance(parent);
 }
 
 
