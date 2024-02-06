@@ -22,7 +22,7 @@ typedef struct pcf8574_t
 
 } PCF;
 
-static inline void pcf_init(PCF* pcf, uint8_t addr, int pin, void* dev, pcf_func func)
+static void pcf_init(PCF* pcf, uint8_t addr, int pin, void* dev, pcf_func func)
 {
 	gpioSetMode(pin, PI_INPUT);
 	gpioSetPullUpDown(pin, PI_PUD_UP);
@@ -31,7 +31,7 @@ static inline void pcf_init(PCF* pcf, uint8_t addr, int pin, void* dev, pcf_func
 	pcf->addr	= addr;
 	pcf->handle	= i2cOpen(1, addr, 0);
 
-	if(pcf->dev && func)
+	if(dev && func)
 		gpioSetISRFuncEx(pin, FALLING_EDGE, 0, func, dev);
 	else if(func)
 		gpioSetISRFuncEx(pin, FALLING_EDGE, 0, func, pcf);
@@ -42,7 +42,7 @@ static inline void pcf_init(PCF* pcf, uint8_t addr, int pin, void* dev, pcf_func
 	pcf->sig.low = 0;
 }
 
-static void pcf_get_signal(void* dev)
+static inline void pcf_get_signal(void* dev)
 {
 	PCF* pcf = (PCF*)dev;
 

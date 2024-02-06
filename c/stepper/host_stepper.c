@@ -49,6 +49,12 @@ void* stepper_spi_send(void* dev)
 	return NULL;
 }
 
+void StepperSPISend(Stepper* s, spiHost* host, spiMsg* msg)
+{
+	
+}
+
+
 void stepper_update(stepper_t* s)
 {
 	uint16_t bytes = sizeof(stepper_info_t);

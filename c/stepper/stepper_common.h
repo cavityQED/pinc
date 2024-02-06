@@ -44,6 +44,7 @@ typedef struct
 	uint8_t		axis;
 	uint16_t	spmm;
 	uint32_t	accel;
+	uint32_t	jog_steps;
 	uint32_t	jog_speed;
 	uint32_t	min_speed;
 	uint32_t	max_speed;
@@ -79,20 +80,19 @@ typedef struct
 
 } stepper_msg_t;
 
-/*
-static void print_stepper_msg(StepperMsg* msg)
+typedef struct
 {
-	printf("\nStepper Msg:\n");
-	printf("\tCommand:\t0x%4X\n", msg->cmd);
-	printf("\tArg Value:\t%d\n", msg->arg);
-	printf("\tBegin:\t\t(%d, %d, %d)\n", msg->beg.x, msg->beg.y, msg->beg.z);
-	printf("\tEnd:\t\t(%d, %d, %d)\n", msg->end.x, msg->end.y, msg->end.z);
-	printf("\tMode:\t\t0x%2X\n", msg->mode);
-	printf("\tSpeed:\t\t%u (steps/s)\n", msg->sps);
-	printf("\tAccel:\t\t%u (steps/s/s)\n", msg->acc);
-	printf("\tRadius:\t\t%u\n", msg->rad);
-	printf("\tCW:\t\t%u\n", msg->cw);
-}*/
+	stepper_config_t	config;
+	uint8_t				status;
+	uint8_t				mode;
+	int					step_pos;
+
+	pthread_mutex_t		mutex;
+
+} Stepper;
+
+
+
 
 #define XPOS	0x01
 #define YPOS	0x02

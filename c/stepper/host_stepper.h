@@ -64,4 +64,15 @@ static inline void stepper_unlock(stepper_t* s)
 }
 
 
+
+
+void* StepperEvent(void* event);
+
+void StepperSPISend(Stepper* s, spiHost* host, spiMsg* msg);
+
+
+static inline void StepperLock(Stepper* s)		{pthread_mutex_lock(&s->mutex);}
+static inline void StepperUnlock(Stepper* s)	{pthread_mutex_unlock(&s->mutex);}
+
+
 #endif

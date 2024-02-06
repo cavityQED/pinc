@@ -1,6 +1,8 @@
 #ifndef HOST_SPI_H
 #define HOST_SPI_H
 
+#include <pigpio.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -92,8 +94,9 @@ static inline void spi_unlock(spiHost* host)
 
 static inline void spi_send(spiHost* host, spiMsg* msg)
 {
+	printf("SPI SEND\n");
 	spi_lock(host);
-
+	printf("SPI HOST LOCKED\n");
 	if(host->cs > 0)
 		gpioWrite(host->cs, 0);
 
