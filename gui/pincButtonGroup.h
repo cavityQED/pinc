@@ -6,7 +6,7 @@
 #include <QButtonGroup>
 #include <QGridLayout>
 #include <QGroupBox>
-
+#include <QVector>
 
 class pincButtonGroup : public QWidget
 {
@@ -16,7 +16,6 @@ public:
 
 	pincButtonGroup(QWidget* parent = nullptr);
 	~pincButtonGroup() {}
-
 
 };
 

@@ -1,6 +1,7 @@
 set(CMAKE_CXX_STANDARD 20)
 set(LIBRARY_SOURCE_FILES	pinc_gui.cpp
-							pinc_buttonGroup.cpp)
+							pincButtonGroup.cpp
+							pincMainWindow.cpp)
 
 set(LINKED_LIBRARIES		Qt5::Core
 							Qt5::Widgets)

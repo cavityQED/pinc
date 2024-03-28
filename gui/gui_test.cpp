@@ -13,9 +13,11 @@ int main(int argc, char *argv[])
 {	
 	QApplication app(argc, argv);
 
-	pincButtonGroup* group = new pincButtonGroup();
+	pincMainWindow*		mainWindow = new pincMainWindow();
+	pincButtonGroup* 	group = new pincButtonGroup();
 
-	group->show();
+	mainWindow->setCentralWidget(group);
+	mainWindow->show();
 
 	return app.exec();
 }
