@@ -17,6 +17,7 @@ if(Qt5Core_FOUND)
 	add_subdirectory(spi)
 	add_subdirectory(panel)
 	add_subdirectory(gcode)
+	add_subdirectory(gui)
 
 	include_directories(${CMAKE_SOURCE_DIR})
 
@@ -37,7 +38,4 @@ if(Qt5Core_FOUND)
 	target_link_libraries	(pincLib ${LINKED_LIBRARIES})
 	target_compile_options	(pincLib PRIVATE "-Wno-psabi")
 
-	add_executable			(pinc pinc.cpp)
-	target_link_libraries	(pinc pincLib)
-	target_compile_options	(pinc PRIVATE "-Wno-psabi")
 endif()
