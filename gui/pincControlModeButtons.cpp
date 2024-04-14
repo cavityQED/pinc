@@ -28,7 +28,7 @@ pincControlModeButtons::pincControlModeButtons(QWidget* parent) : QGroupBox(pare
 		[this](bool checked) 
 		{	
 			if(checked) 
-				controlModeChange(CONTROL_MODE::HOME);		
+				controlModeChange(CONTROL_MODE::AUTO);		
 					else return;
 		});
 
@@ -36,7 +36,7 @@ pincControlModeButtons::pincControlModeButtons(QWidget* parent) : QGroupBox(pare
 		[this](bool checked) 
 		{	
 			if(checked) 
-				controlModeChange(CONTROL_MODE::AUTO);		
+				controlModeChange(CONTROL_MODE::EDIT);
 					else return;
 		});
 
@@ -52,7 +52,7 @@ pincControlModeButtons::pincControlModeButtons(QWidget* parent) : QGroupBox(pare
 		[this](bool checked) 
 		{	
 			if(checked) 
-				controlModeChange(CONTROL_MODE::EDIT);		
+				controlModeChange(CONTROL_MODE::HOME);		
 					else return;
 		});
 
