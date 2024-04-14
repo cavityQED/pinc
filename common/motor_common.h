@@ -48,6 +48,16 @@ enum AXIS : uint8_t
 	C_AXIS = 5
 };
 
+enum CONTROL_MODE : uint8_t
+{
+	AUTO,
+	JOG,
+	HOME,
+	EDIT,
+	MDI,
+	MANUAL
+};
+
 template <typename T>
 struct pos_vec_t
 {
