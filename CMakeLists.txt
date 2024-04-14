@@ -15,14 +15,10 @@ if(Qt5Core_FOUND)
 
 	add_subdirectory(device)
 	add_subdirectory(spi)
-	add_subdirectory(panel)
 	add_subdirectory(gcode)
 	add_subdirectory(gui)
 
 	include_directories(${CMAKE_SOURCE_DIR})
-
-	set(libdocs		pincMainWindow.cpp
-					pincLaser2D.cpp)
 
 	set(LINKED_LIBRARIES	Qt5::Core
 							Qt5::Widgets
@@ -31,11 +27,15 @@ if(Qt5Core_FOUND)
 							pthread
 							pigpio
 							spiLib
-							panelLib
-							gcodeLib)
+							gcodeLib
+							guiLib)
 
-	add_library				(pincLib ${libdocs})
+	add_library				(pincLib)
 	target_link_libraries	(pincLib ${LINKED_LIBRARIES})
 	target_compile_options	(pincLib PRIVATE "-Wno-psabi")
+
+	add_executable			(pinc	pinc.cpp)
+	target_link_libraries	(pinc	pincLib)
+	target_compile_options	(pinc	PRIVATE "-Wno-psabi")
 
 endif()
