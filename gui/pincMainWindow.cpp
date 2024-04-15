@@ -58,19 +58,19 @@ void pincMainWindow::jog(AXIS axis, bool dir)
 	{
 		case X_AXIS:
 		{
-			printf("Jogging X Axis in %c Direction\n", dir_string);
+			printf("Jogging X Axis in %s Direction\n", dir_string);
 			break;
 		}
 
 		case Y_AXIS:
 		{
-			printf("Jogging Y Axis in %c Direction\n", dir_string);
+			printf("Jogging Y Axis in %s Direction\n", dir_string);
 			break;
 		}
 
 		case Z_AXIS:
 		{
-			printf("Jogging Z Axis in %c Direction\n", dir_string);
+			printf("Jogging Z Axis in %s Direction\n", dir_string);
 			break;
 		}
 
