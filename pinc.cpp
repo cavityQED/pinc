@@ -54,10 +54,10 @@ int main(int argc, char *argv[])
 			"}"
 
 		"QPushButton{"	
-			"background-color:	#50918E;"
+			"background-color:	#22AAFF;"
 			"border-style:		outset;"
 			"border-width:		2px;"
-			"border-color:		#408DA0;"
+			"border-color:		#CAEEFF;"
 			"border-radius: 	4px;"
 			"font: 				bold 12pt;"
 			"outline:			0;"
@@ -74,15 +74,16 @@ int main(int argc, char *argv[])
 			
 		"QPushButton:checked{"
 			"background-color:	#FA88A8;"
-			"border-color:		#049434;"
+			"border-color:		#CAEEFF;"
 			"}"
 
 		"QGroupBox{"
 			"border-style:		inset;"
-			"border: 			1px solid #FA5898;"
+			"border: 			1px solid #22AAFF;"
+			"padding-top:		10px;"
 			"margin-top:		10px;"
 			"outline:			0;"
-			"font:				bold 10pt;"
+			"font:				bold 12pt;"
 			"}"
 			
 		"QGroupBox::title{"
@@ -90,6 +91,7 @@ int main(int argc, char *argv[])
 			"subcontrol-origin:		margin;"
 			"top: 					2px;"
 			"left:					10px;"
+			"color:					#CAEEFF;"
 			"}"
 	);
 

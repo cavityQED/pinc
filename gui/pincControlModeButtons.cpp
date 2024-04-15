@@ -85,18 +85,4 @@ pincControlModeButtons::pincControlModeButtons(QWidget* parent) : QGroupBox(pare
 	setLayout(layout);
 	setTitle("Control Mode");
 
-	setStyleSheet(	"QPushButton {"
-						"background-color:	#50918E;"
-						"border-width:		2px;"
-						"min-width:			50px;"
-						"min-height:		50px;"
-						"max-width:			50px;"
-						"max-height:		50px;"
-						"font:				bold 12pt;"
-						"}"
-
-					"QPushButton:checked {"
-						"background-color:	#FA88A8;"
-						"}");
-
 }
