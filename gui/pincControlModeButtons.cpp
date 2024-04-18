@@ -21,7 +21,7 @@ pincControlModeButtons::pincControlModeButtons(QWidget* parent) : QGroupBox(pare
 		{	
 			if(checked) 
 				controlModeChange(CONTROL_MODE::JOG);		
-					else return;
+			else return;
 		});
 
 	connect(m_button_auto, &QPushButton::toggled, 
@@ -29,7 +29,7 @@ pincControlModeButtons::pincControlModeButtons(QWidget* parent) : QGroupBox(pare
 		{	
 			if(checked) 
 				controlModeChange(CONTROL_MODE::AUTO);		
-					else return;
+			else return;
 		});
 
 	connect(m_button_edit, &QPushButton::toggled, 
@@ -37,7 +37,7 @@ pincControlModeButtons::pincControlModeButtons(QWidget* parent) : QGroupBox(pare
 		{	
 			if(checked) 
 				controlModeChange(CONTROL_MODE::EDIT);
-					else return;
+			else return;
 		});
 
 	connect(m_button_mdi, &QPushButton::toggled, 
@@ -45,7 +45,7 @@ pincControlModeButtons::pincControlModeButtons(QWidget* parent) : QGroupBox(pare
 		{	
 			if(checked) 
 				controlModeChange(CONTROL_MODE::MDI);		
-					else return;
+			else return;
 		});
 
 	connect(m_button_home, &QPushButton::toggled, 
@@ -53,7 +53,7 @@ pincControlModeButtons::pincControlModeButtons(QWidget* parent) : QGroupBox(pare
 		{	
 			if(checked) 
 				controlModeChange(CONTROL_MODE::HOME);		
-					else return;
+			else return;
 		});
 
 	connect(m_button_man, &QPushButton::toggled, 
@@ -61,7 +61,7 @@ pincControlModeButtons::pincControlModeButtons(QWidget* parent) : QGroupBox(pare
 		{	
 			if(checked) 
 				controlModeChange(CONTROL_MODE::MANUAL);	
-					else return;
+			else return;
 		});
 
 

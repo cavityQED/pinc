@@ -3,12 +3,13 @@
 pincMainWindow::pincMainWindow(QWidget* parent) : QMainWindow(parent)
 {
 
-
 }
 
 void pincMainWindow::setControlMode(CONTROL_MODE mode)
 {
-	switch(mode)
+	m_ctrl_mode = mode;
+
+	switch(m_ctrl_mode)
 	{
 		case AUTO:
 		{
@@ -53,6 +54,9 @@ void pincMainWindow::setControlMode(CONTROL_MODE mode)
 
 void pincMainWindow::jog(AXIS axis, bool dir)
 {
+	if(m_ctrl_mode != JOG)
+		return;
+
 	const char* dir_string = (dir)? "Positive" : "Negative";
 	switch(axis)
 	{
