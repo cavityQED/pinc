@@ -15,10 +15,6 @@
 #define STEPPER_CMD_UPDATE		0x0B
 #define STEPPER_MOVE			0xF1
 
-#define X_AXIS	0x01
-#define Y_AXIS	0x02
-#define Z_AXIS	0x04
-
 #define MOTION		0x01
 #define DIRECTION	0x02
 #define MOVE_READY	0x04
@@ -92,6 +88,12 @@ typedef struct
 } Stepper;
 
 
+enum PINC_AXIS
+{
+	X_AXIS = 0x01,
+	Y_AXIS = 0x02,
+	Z_AXIS = 0x04
+}; 
 
 
 #define XPOS	0x01
