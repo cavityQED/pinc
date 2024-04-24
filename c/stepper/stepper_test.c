@@ -7,6 +7,11 @@ static pincStepperConfig_t	x_config;
 static pthread_mutex_t		spi_mutex;
 static pthread_mutexattr_t	spi_attr;
 
+void* config(void* data)
+{
+	stepper_config(&x_axis, &x_config);
+}
+
 int main(int argc, char const *argv[])
 {
 	gpioInitialise();
@@ -47,15 +52,14 @@ int main(int argc, char const *argv[])
 	x_axis.pico_spi_client.tr.bits_per_word		= 8;
 	x_axis.pico_spi_client.tr.cs_change			= 0;
 
-	request_t	spi_base_request;
-	request_init(&spi_base_request, 0, 0xFF);
-
-	pin_request_init(&x_axis.spi_request, &spi_base_request, X_SPI_HS_PIN, 1, 1);
+	pin_request_init(&x_axis.spi_request, X_SPI_HS_PIN, 1);
 
 	x_axis.pin_status = X_STATUS_INT;
 	gpioSetISRFuncEx(x_axis.pin_status, FALLING_EDGE, 0, stepper_pin_isr, &x_axis);
 
-	stepper_config(&x_axis, &x_config);
+	pthread_t thread;
+	pthread_create(&thread, NULL, config, NULL);
+	pthread_join(thread, NULL);
 
 	gpioTerminate();
 	return 0;

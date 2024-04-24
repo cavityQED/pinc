@@ -28,7 +28,10 @@ void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 				// printf("\tPico Status:\t0x%2X\n", rx[1]);
 
 				if(~(s->status) & PICO_STATUS_SPI_READY)
-					pin_request_ack(&s->spi_request);
+				{
+					printf("Unlocking Pin %d Request\n", s->spi_request.pin);
+					pin_request_unlock(&s->spi_request);
+				}
 			}
 
 			break;
@@ -52,7 +55,7 @@ void stepper_spi_send(pincPiStepper* s)
 	s->status	= rx[0];
 	s->step_pos	= *(int*)(&rx[1]);
 
-	// printf("\tStepper Status:\t0x%2X\n", s->status);
+	printf("\tStepper Status:\t0x%2X\n", s->status);
 
 	pin_request_reset(&s->spi_request);
 }

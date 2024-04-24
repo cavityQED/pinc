@@ -2,7 +2,7 @@
 #define HOST_STEPPER_H
 
 #include "spi/spi_client.h"
-#include "io/signal.h"
+#include "io/pin_request.h"
 #include "stepper_common.h"
 
 #define X_SPMM					800
