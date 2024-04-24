@@ -1,11 +1,4 @@
 include_directories(${CMAKE_SOURCE_DIR})
 
-set(LIBRARY_SOURCE_FILES	)
-
-set(LINKED_LIBRARIES		)
-
-
-add_library					()
-target_link_libraries		()
-target_compile_options		()
-target_include_directories	()
+add_executable			(stepper_test	stepper_test.c pi_stepper.c)
+target_link_libraries	(stepper_test	pigpio pthread c_pinc)
