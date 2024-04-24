@@ -61,7 +61,6 @@ static inline void pin_request_trigger(pin_request_t* pin_req)
 	{
 		gpioWrite(pin_req->pin, pin_req->level);
 		pin_req->fired = true;
-		printf("\tPin Request Triggered on Pin %d\n", pin_req->pin);
 	}
 }
 
@@ -71,7 +70,6 @@ static inline void pin_request_reset(pin_request_t* pin_req)
 	{
 		gpioWrite(pin_req->pin, !pin_req->level);
 		pin_req->fired = false;
-		printf("\tPin Request Reset on Pin %d\n", pin_req->pin);
 	}
 }
 
