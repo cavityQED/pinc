@@ -156,6 +156,29 @@ static void line_step_2d(LineMove* line)
 	}
 }
 
+typedef struct
+{
+	enum PINC_AXIS	axis;
+	uint32_t		spmm;		// steps per mm
+	uint32_t		accel;		// acceleration [steps/s/s]
+	uint32_t		jog_steps;	// number of steps per each jog pulse
+	uint32_t		jog_speed;	// [steps/s]
+	uint32_t		min_speed;	// [steps/s]
+	uint32_t		max_speed;	// [steps/s]
+
+} pincStepperConfig_t;
+
+typedef struct
+{
+	uint8_t			mode;
+	p_cartesian		beg;	// beginning point
+	p_cartesian		end;	// end point
+	uint32_t		v_sps;	// speed [steps/s]
+	uint32_t		radius;	// [steps]
+	bool			cw;		// 0 - counterclockwise; 1 - clockwise
+
+} pincStepperMove_t;
+
 
 
 
