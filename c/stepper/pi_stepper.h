@@ -31,6 +31,7 @@ typedef struct
 void stepper_spi_send	(pincPiStepper* s);
 void stepper_config		(pincPiStepper* s, pincStepperConfig_t* config);
 void stepper_move		(pincPiStepper* s, pincStepperMove_t* move);
+void stepper_cmd		(pincPiStepper* s, uint8_t cmd, void* data, uint32_t bytes);
 
 void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev);
 

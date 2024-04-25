@@ -179,6 +179,13 @@ typedef struct
 
 } pincStepperMove_t;
 
+typedef struct
+{
+	uint8_t				status;
+	int					step_pos;
+
+} pincStepperUpdate_t;
+
 
 
 
