@@ -62,7 +62,7 @@ static void core1_main()
 	motor.p_ena			= PICO_ENA_PIN;
 	motor.p_motion		= PIN_MOTION;
 	motor.spmm			= 800;
-	motor.delay			= 125;
+	motor.move.delay	= 125;
 	motor.alarmPool		= alarm_pool_create(1, 2);
 	motor.timer			= &step_timer;
 	stepper_init(&motor);

@@ -25,7 +25,6 @@ struct stepper
 	int			p_dir;		// direction pin
 	int			p_motion;	// active low if (status & MOTION)
 	int			pos;		// position (steps)
-	int			delay;		// dleay between steps (us)
 
 	uint8_t		axis;
 	uint8_t		status;
@@ -45,7 +44,7 @@ struct stepper
 static struct stepper	motor;
 
 static inline void set_speed(struct stepper* s, float mmps)
-	{s->delay = 1000000 / mmps / s->spmm;}
+	{s->move.delay = 1000000 / mmps / s->spmm;}
 
 static inline float mm_pos(const struct stepper* s)
 	{return (float)s->pos/s->spmm;}

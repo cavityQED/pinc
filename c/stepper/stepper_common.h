@@ -100,13 +100,14 @@ static inline float slope_xy(p_cartesian cur, p_cartesian end)
 typedef struct
 {
 	MOVE_MODE		mode;
-	p_cartesian		cur;	// current point
-	p_cartesian		end;	// end point
-	uint32_t		v_sps;	// speed [steps/s]
-	uint32_t		radius;	// [steps]
-	bool			cw;		// 0 - counterclockwise; 1 - clockwise
+	p_cartesian		cur;		// current point
+	p_cartesian		end;		// end point
+	uint32_t		v_sps;		// speed [steps/s]
+	uint32_t		radius;		// [steps]
+	bool			cw;			// 0 - counterclockwise; 1 - clockwise
 
 	PINC_AXIS		step_axis;
+	uint32_t		delay;		// delay in us between steps
 	bool			step_dir;
 	bool			stop;
 

@@ -65,18 +65,18 @@ bool line_timer_cb(picoTimer_t* timer)
 void stepper_line_move(struct stepper* s)
 {
 	printf("\tLine Move\n");
-	s->status	&= ~MOVE_READY;
-	s->status	|= MOTION;
-	s->delay	= 1000000 / s->move.v_sps;	// delay in us between steps
+	s->status		&= ~MOVE_READY;
+	s->status		|= MOTION;
+	s->move.delay	= 1000000 / s->move.v_sps;	// delay in us between steps
 
 	printf("\tMoving:\n");
-	printf("\tDelay:\t%d\n", s->delay);
+	printf("\tDelay:\t%d\n", s->move.delay);
 	printf("\tAxis:\t0x%2X\n", s->axis);
 
 	if(s->status & SYNC_MODE)
 		sem_acquire_blocking(&s->sem);
 
-	alarm_pool_add_repeating_timer_us(s->alarmPool, -(s->delay), line_timer_cb, (void*)s, s->timer);
+	alarm_pool_add_repeating_timer_us(s->alarmPool, -(s->move.delay), line_timer_cb, (void*)s, s->timer);
 	gpio_put(s->p_motion, 0);
 }
 
