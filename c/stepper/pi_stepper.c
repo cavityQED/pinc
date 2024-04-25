@@ -45,7 +45,7 @@ void stepper_spi_send(pincPiStepper* s)
 
 	spi_send(&s->pico_spi_client);
 	
-	memcpy((void*)s->pico_spi_client.tr.rx_buf, &update, sizeof(pincStepperUpdate_t));
+	memcpy(&update, (void*)s->pico_spi_client.tr.rx_buf, sizeof(pincStepperUpdate_t));
 
 	s->status	= update.status;
 	s->step_pos	= update.step_pos;
