@@ -15,7 +15,6 @@ static void print_buf(uint8_t* buf, int len)
 
 static void gpio_isr(uint pin, uint32_t event_mask)
 {
-	static stepper_msg_t msg;
 	switch(pin)
 	{
 		case PIN_SPI_MSG_REQUEST:
@@ -25,8 +24,7 @@ static void gpio_isr(uint pin, uint32_t event_mask)
 			{	
 				// spi transfer complete
 				pio_spi_client_disable(&spi);
-				memcpy(&msg, (stepper_msg_t*)spi.rx_buf, sizeof(stepper_msg_t));
-				queue_try_add(&msgQueue, &msg);
+				queue_try_add(&msgQueue, spi.rx_buf);
 			}
 			break;
 
@@ -43,12 +41,12 @@ static void get_spi_msg()
 {
 	queue_peek_blocking(&spiQueue, &spi);
 
-	stepper_info_t info;
-	info.status = motor.status;
-	info.pos = motor.pos;
+	pincStepperUpdate_t update;
+	update.status = motor.status;
+	update.step_pos = motor.pos;
 	memset(spi_in_buf, 0, SPI_TRANSFER_LENGTH);
 	memset(spi_out_buf, 0, SPI_TRANSFER_LENGTH);
-	memcpy(spi_out_buf, (unsigned long*)&info, sizeof(stepper_info_t));
+	memcpy(spi_out_buf, (unsigned long*)&update, sizeof(pincStepperUpdate_t));
 	spi.tx_buf = spi_out_buf;
 
 	pio_spi_client_transfer_blocking(&spi);
@@ -69,15 +67,15 @@ static void core1_main()
 	motor.timer			= &step_timer;
 	stepper_init(&motor);
 
-	static stepper_msg_t msg;
+	uint8_t msg[SPI_TRANSFER_LENGTH];
 
 	while(1)
 	{
-		queue_peek_blocking(&msgQueue, &msg);
+		queue_peek_blocking(&msgQueue, msg);
 
-		stepper_msg_handle(&motor, &msg);
+		stepper_msg_handle(&motor, msg);
 
-		queue_remove_blocking(&msgQueue, &msg);
+		queue_remove_blocking(&msgQueue, msg);
 	}
 }
 
@@ -111,7 +109,7 @@ int main()
 	static uint msg_spinlock;
 	msg_spinlock = spin_lock_claim_unused(true);
 	queue_init_with_spinlock(	&msgQueue,
-								sizeof(stepper_msg_t),
+								SPI_TRANSFER_LENGTH,
 								1,
 								msg_spinlock);
 

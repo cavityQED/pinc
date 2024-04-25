@@ -21,144 +21,32 @@
 #define SYNC_READY	0x08
 #define SYNC_MODE	0x10
 #define LINE_MODE	0x20
-#define POS_CHANGE	0x40
+#define JOG_MODE	0x40
+#define POS_CHANGE	0x80
 
 #define STATUS_MOTION	0x01
 
-typedef struct
-{
-	// step positions
-	int x;
-	int y;
-	int z;
-	
-} p_cartesian;
-
-typedef struct
-{
-	uint16_t	cmd;
-	uint8_t		axis;
-	uint16_t	spmm;
-	uint32_t	accel;
-	uint32_t	jog_steps;
-	uint32_t	jog_speed;
-	uint32_t	min_speed;
-	uint32_t	max_speed;
-
-} stepper_config_t;
-
-typedef struct
-{
-	uint16_t		cmd;
-	uint8_t			mode;
-	p_cartesian		cur;
-	p_cartesian		end;
-	uint32_t		sps;
-	uint32_t		rad;
-	bool			cw;
-	bool			pause;
-
-} stepper_move_t;
-
-typedef struct
-{
-	uint16_t	cmd;
-	uint8_t		status;
-	int			pos;
-
-} stepper_info_t;
-
-typedef struct
-{
-	uint16_t			cmd;	// stepper command
-	stepper_config_t	config;
-	stepper_move_t		move;
-
-} stepper_msg_t;
-
-typedef struct
-{
-	stepper_config_t	config;
-	uint8_t				status;
-	uint8_t				mode;
-	int					step_pos;
-
-	pthread_mutex_t		mutex;
-
-} Stepper;
 
 
-enum PINC_AXIS
+typedef enum
 {
 	X_AXIS = 0x01,
 	Y_AXIS = 0x02,
 	Z_AXIS = 0x04
-}; 
 
+} PINC_AXIS; 
 
-#define XPOS	0x01
-#define YPOS	0x02
-#define ABOVE	0x04
-#define BELOW	0x08
+typedef enum
+{
+	JOG,
+	LINE,
+	CURVE
+
+} MOVE_MODE;
 
 typedef struct
 {
-	bool		dir;
-	bool		stop;
-	uint8_t		axis;
-	p_cartesian	cur;
-	p_cartesian	end;
-	int			slope;
-
-} LineMove;
-
-static inline bool pnt_cmp_cart(p_cartesian p1, p_cartesian p2)
-	{return ((p1.x == p2.x) && (p1.y == p2.y) && (p1.z == p2.z));}
-
-static inline float slope_xy(p_cartesian cur, p_cartesian end)
-	{return (float)(end.y - cur.y) / (float)(end.x - cur.x);}
-
-static void line_step_2d(LineMove* line)
-{
-	if(pnt_cmp_cart(line->cur, line->end))
-	{
-		printf("\tSetting Stop True\n");
-		line->stop = true;
-		return;
-	}
-
-	int fx = (line->cur.x == line->end.x)? line->end.y : line->slope*line->cur.x;
-
-	uint8_t mask = (line->cur.y > fx)? ABOVE : BELOW;
-	mask |= (line->end.x > 0)? XPOS : 0x00;
-	mask |= (line->end.y > 0)? YPOS : 0x00;
-
-	switch(mask)
-	{
-		// quadrant 1
-		case ABOVE | XPOS | YPOS:	line->cur.x++; line->axis = X_AXIS; line->dir = 1; break;
-		case BELOW | XPOS | YPOS:	line->cur.y++; line->axis = Y_AXIS; line->dir = 1; break;
-
-		// quadrant 2
-		case ABOVE | YPOS:			line->cur.x--; line->axis = X_AXIS; line->dir = 0; break;
-		case BELOW | YPOS:			line->cur.y++; line->axis = Y_AXIS; line->dir = 1; break;
-
-		// quadrant 3
-		case ABOVE:					line->cur.y--; line->axis = Y_AXIS; line->dir = 0; break;
-		case BELOW:					line->cur.x--; line->axis = X_AXIS; line->dir = 0; break;
-			
-		// quadrant 4
-		case ABOVE | XPOS:			line->cur.y--; line->axis = Y_AXIS; line->dir = 0; break;
-		case BELOW | XPOS:			line->cur.x++; line->axis = X_AXIS; line->dir = 1; break;
-
-		default:
-			break;
-	}
-}
-
-typedef struct
-{
-	enum PINC_AXIS	axis;
+	PINC_AXIS		axis;
 	uint32_t		spmm;		// steps per mm
 	uint32_t		accel;		// acceleration [steps/s/s]
 	uint32_t		jog_steps;	// number of steps per each jog pulse
@@ -170,21 +58,118 @@ typedef struct
 
 typedef struct
 {
-	uint8_t			mode;
-	p_cartesian		beg;	// beginning point
+	uint8_t				status;
+	int					step_pos;
+
+} pincStepperUpdate_t;
+
+
+
+
+
+
+
+typedef struct
+{
+	// step positions
+	int x;
+	int y;
+	int z;
+	
+} p_cartesian;
+
+static inline bool pnt_cmp_cart(p_cartesian p1, p_cartesian p2)
+	{return ((p1.x == p2.x) && (p1.y == p2.y) && (p1.z == p2.z));}
+
+static inline float slope_xy(p_cartesian cur, p_cartesian end)
+	{return (float)(end.y - cur.y) / (float)(end.x - cur.x);}
+
+
+
+
+
+
+
+
+
+#define XPOS	0x01
+#define YPOS	0x02
+#define ABOVE	0x04
+#define BELOW	0x08
+
+typedef struct
+{
+	MOVE_MODE		mode;
+	p_cartesian		cur;	// current point
 	p_cartesian		end;	// end point
 	uint32_t		v_sps;	// speed [steps/s]
 	uint32_t		radius;	// [steps]
 	bool			cw;		// 0 - counterclockwise; 1 - clockwise
 
+	PINC_AXIS		step_axis;
+	bool			step_dir;
+	bool			stop;
+
 } pincStepperMove_t;
 
-typedef struct
+static void stepper_print_move(pincStepperMove_t* m)
 {
-	uint8_t				status;
-	int					step_pos;
+	printf("Stepper Move:\n");
+	printf("\tMode:\t\t\t0x%2X\n", m->mode);
+	printf("\tCur Pos (steps):\t[%d, %d, %d]\n", m->cur.x, m->cur.y, m->cur.z);
+	printf("\tEnd Pos (steps):\t[%d, %d, %d]\n", m->end.x, m->end.y, m->end.z);
+	printf("\tSpeed (steps/s):\t%d\n", m->v_sps);
+	printf("\tRadius (steps):\t%d\n", m->radius);
+	printf("\tClockwise:\t\t%d\n\n", m->cw);
+}
 
-} pincStepperUpdate_t;
+static void line_step_2d(pincStepperMove_t* move)
+{
+	if(pnt_cmp_cart(move->cur, move->end))
+	{
+		printf("\tSetting Stop True\n");
+		move->stop = true;
+		return;
+	}
+
+	float slope = slope_xy(move->cur, move->end);
+	int fx = (move->cur.x == move->end.x)? move->end.y : slope*move->cur.x;
+
+	uint8_t mask = (move->cur.y > fx)? ABOVE : BELOW;
+	mask |= (move->end.x > 0)? XPOS : 0x00;
+	mask |= (move->end.y > 0)? YPOS : 0x00;
+
+	switch(mask)
+	{
+		// quadrant 1
+		case ABOVE | XPOS | YPOS:	move->cur.x++; move->step_axis = X_AXIS; move->step_dir = 1; break;
+		case BELOW | XPOS | YPOS:	move->cur.y++; move->step_axis = Y_AXIS; move->step_dir = 1; break;
+
+		// quadrant 2
+		case ABOVE | YPOS:			move->cur.x--; move->step_axis = X_AXIS; move->step_dir = 0; break;
+		case BELOW | YPOS:			move->cur.y++; move->step_axis = Y_AXIS; move->step_dir = 1; break;
+
+		// quadrant 3
+		case ABOVE:					move->cur.y--; move->step_axis = Y_AXIS; move->step_dir = 0; break;
+		case BELOW:					move->cur.x--; move->step_axis = X_AXIS; move->step_dir = 0; break;
+			
+		// quadrant 4
+		case ABOVE | XPOS:			move->cur.y--; move->step_axis = Y_AXIS; move->step_dir = 0; break;
+		case BELOW | XPOS:			move->cur.x++; move->step_axis = X_AXIS; move->step_dir = 1; break;
+
+		default:
+			break;
+	}
+}
+
+
+
+
+
+
+
+
+
 
 
 

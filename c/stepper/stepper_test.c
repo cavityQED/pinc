@@ -4,12 +4,19 @@ const static spi_mode = SPI_MODE_0;
 
 static pincPiStepper		x_axis;	
 static pincStepperConfig_t	x_config;
+static pincStepperMove_t	x_move;
 static pthread_mutex_t		spi_mutex;
 static pthread_mutexattr_t	spi_attr;
+
 
 void* config(void* data)
 {
 	stepper_config(&x_axis, &x_config);
+}
+
+void* move(void* data)
+{
+	stepper_move(&x_axis, &x_move);
 }
 
 int main(int argc, char const *argv[])
@@ -59,6 +66,16 @@ int main(int argc, char const *argv[])
 
 	pthread_t thread;
 	pthread_create(&thread, NULL, config, NULL);
+	pthread_join(thread, NULL);
+
+	memset(&x_move, 0, sizeof(pincStepperMove_t));
+	x_move.mode = JOG_MODE;
+	x_move.end.x = X_SPMM;
+	x_move.end.y = X_SPMM;
+	x_move.end.z = X_SPMM;
+	x_move.v_sps = x_config.jog_speed;
+
+	pthread_create(&thread, NULL, move, NULL);
 	pthread_join(thread, NULL);
 
 	gpioTerminate();

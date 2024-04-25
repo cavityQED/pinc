@@ -46,17 +46,17 @@ bool line_timer_cb(picoTimer_t* timer)
 	static struct stepper* s;
 	s = (struct stepper*)timer->user_data;
 	
-	line_step_2d(&s->line);
-	s->dir = s->line.dir;
+	line_step_2d(&s->move);
+	s->dir = s->move.step_dir;
 	set_dir(s);
 
-	if(s->line.stop)
+	if(s->move.stop)
 	{
 		stop(s);
 		return false;
 	}
 
-	if(s->axis == s->line.axis)
+	if(s->axis == s->move.step_axis)
 		step(s);
 
 	return true;
@@ -67,49 +67,50 @@ void stepper_line_move(struct stepper* s)
 	printf("\tLine Move\n");
 	s->status	&= ~MOVE_READY;
 	s->status	|= MOTION;
-
-	if(s->status & SYNC_MODE)
-		sem_acquire_blocking(&s->sem);
+	s->delay	= 1000000 / s->move.v_sps;	// delay in us between steps
 
 	printf("\tMoving:\n");
 	printf("\tDelay:\t%d\n", s->delay);
-	printf("\tCur:\t(%d, %d, %d)\n", s->line.cur.x, s->line.cur.y, s->line.cur.z);
-	printf("\tEnd:\t(%d, %d, %d)\n", s->line.end.x, s->line.end.y, s->line.end.z);
 	printf("\tAxis:\t0x%2X\n", s->axis);
+
+	if(s->status & SYNC_MODE)
+		sem_acquire_blocking(&s->sem);
 
 	alarm_pool_add_repeating_timer_us(s->alarmPool, -(s->delay), line_timer_cb, (void*)s, s->timer);
 	gpio_put(s->p_motion, 0);
 }
 
-void stepper_move(struct stepper* s, stepper_move_t* m)
+void stepper_move(struct stepper* s)
 {
-	if(m->mode == LINE_MODE)
+	stepper_print_move(&s->move);
+	switch(s->move.mode)
 	{
-		s->line.stop = false;
-		s->line.cur = m->cur;
-		s->line.end = m->end;
-		s->line.slope = slope_xy(m->cur, m->end);
-		s->delay = 1000000 / m->sps;
-		stepper_line_move(s);
+		case LINE:
+			stepper_line_move(s);
+			break;
+
+		default:
+			break;
 	}
 }
 
-void stepper_msg_handle(struct stepper* s, stepper_msg_t* msg)
+void stepper_msg_handle(struct stepper* s, uint8_t* msg)
 {
-	static stepper_move_t move;
-	static stepper_config_t config;
-	printf("MSG CMD:\t0x%4X\n", msg->cmd);
-	switch(msg->cmd)
+	static pincStepperConfig_t config;
+
+	printf("MSG CMD:\t0x%2X\n", msg[0]);
+
+	switch(msg[0])
 	{
 		case STEPPER_MOVE:
 			if(s->status & MOTION)
 				return;
-			memcpy(&move, msg, sizeof(move));
-			stepper_move(s, &move);
+			memcpy(&s->move, &msg[1], sizeof(pincStepperMove_t));
+			stepper_move(s);
 			break;
 
 		case STEPPER_CMD_CONFIG:
-			memcpy(&config, msg, sizeof(config));
+			memcpy(&config, &msg[1], sizeof(pincStepperConfig_t));
 			s->axis			= config.axis;
 			s->spmm			= config.spmm;
 			s->accel		= config.accel;

@@ -36,10 +36,10 @@ struct stepper
 	uint32_t	min_speed;
 	uint32_t	max_speed;
 
-	LineMove		line;
-	picoTimer_t*	timer;
-	alarm_pool_t*	alarmPool;
-	semaphore_t		sem;
+	pincStepperMove_t	move;
+	picoTimer_t*		timer;
+	alarm_pool_t*		alarmPool;
+	semaphore_t			sem;
 };
 
 static struct stepper	motor;
@@ -56,8 +56,8 @@ static inline bool check_status(struct stepper* s, uint8_t mask)
 void stepper_init		(struct stepper* s);
 void set_dir			(struct stepper* s);
 void step				(struct stepper* s);
-void stepper_move		(struct stepper* s, stepper_move_t* m);
-void stepper_msg_handle	(struct stepper* s, stepper_msg_t* msg);
+void stepper_move		(struct stepper* s);
+void stepper_msg_handle	(struct stepper* s, uint8_t* msg);
 void stepper_line_move	(struct stepper* s);
 
 bool motor_timer_cb	(struct repeating_timer* timer);
