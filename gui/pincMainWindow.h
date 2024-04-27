@@ -17,12 +17,12 @@ public:
 public:
 
 	void setControlMode(CONTROL_MODE mode);
-	void jog(AXIS axis, bool dir);
+	void jog(PINC_AXIS axis, bool dir);
 
 protected:
 
 	CONTROL_MODE	m_ctrl_mode;
-	
+
 };
 
 #endif

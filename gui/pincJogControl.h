@@ -19,7 +19,7 @@ public:
 
 signals:
 
-	void jog(AXIS axis, bool dir);
+	void jog(PINC_AXIS axis, bool dir);
 	void setJogSteps(uint32_t steps);
 
 protected:
