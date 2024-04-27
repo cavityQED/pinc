@@ -26,7 +26,7 @@ struct stepper
 	int			p_motion;	// active low if (status & MOTION)
 	int			pos;		// position (steps)
 
-	uint8_t		axis;
+	PINC_AXIS	axis;
 	uint8_t		status;
 	uint16_t	spmm;	//steps per mm
 
