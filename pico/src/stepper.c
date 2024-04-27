@@ -86,6 +86,7 @@ void stepper_move(struct stepper* s)
 	switch(s->move.mode)
 	{
 		case LINE:
+		case JOG:
 			stepper_line_move(s);
 			break;
 

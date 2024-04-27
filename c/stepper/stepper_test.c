@@ -69,10 +69,8 @@ int main(int argc, char const *argv[])
 	pthread_join(thread, NULL);
 
 	memset(&x_move, 0, sizeof(pincStepperMove_t));
-	x_move.mode = JOG_MODE;
+	x_move.mode = JOG;
 	x_move.end.x = X_SPMM;
-	x_move.end.y = X_SPMM;
-	x_move.end.z = X_SPMM;
 	x_move.v_sps = x_config.jog_speed;
 
 	pthread_create(&thread, NULL, move, NULL);
