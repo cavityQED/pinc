@@ -57,6 +57,8 @@ void stepper_config(pincPiStepper* s, pincStepperConfig_t* config)
 {
 	stepper_lock(s);
 
+	memcpy(&s->config, config, sizeof(pincStepperConfig_t));
+
 	spi_write_msg(&s->pico_spi_client, config, sizeof(pincStepperConfig_t));
 
 	stepper_spi_send(s);
