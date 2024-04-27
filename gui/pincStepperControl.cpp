@@ -2,5 +2,43 @@
 
 pincStepperControl::pincStepperControl(QWidget* parent) : QGroupBox(parent)
 {
+	spi_mode	= SPI_MODE_0;
+	fd_CS0		= open("/dev/spidev0.0", O_RDWR);
+	fd_CS1		= open("/dev/spidev0.1", O_RDWR);
 	
+	ioctl(fd_CS0, SPI_IOC_WR_MODE, &spi_mode);
+	ioctl(fd_CS1, SPI_IOC_WR_MODE, &spi_mode);
+}
+
+void addStepper(pincStepperConfig_t* config)
+{
+	std::shared_ptr<pincPiStepper> new_stepper = std::make_shared<pincPiStepper>();
+
+	std::memcpy(&new_stepper->config, config, sizeof(pincStepperConfig_t));
+	pin_request_init(&new_stepper->spi_request, config->pin_spi_hs, 1);
+
+	std::memset(&new_stepper->fpga_spi_client.tr, 0, sizeof(spiTr));
+	new_stepper->fpga_spi_client.cs					= -1;
+	new_stepper->fpga_spi_client.fd					= fd_CS0;
+	new_stepper->fpga_spi_client.mutex				= config->spi_mutex;
+	new_stepper->fpga_spi_client.tr.speed_hz		= config->spi_fpga_speed;
+	new_stepper->fpga_spi_client.tr.delay_usecs		= config->spi_delay;
+	new_stepper->fpga_spi_client.tr.bits_per_word	= config->spi_bpw;
+	new_stepper->fpga_spi_client.tr.cs_change		= config->spi_cs_change;
+
+	std::memset(&new_stepper->pico_spi_client.tr, 0, sizeof(spiTr));
+	new_stepper->pico_spi_client.cs					= config->spi_client_cs;
+	new_stepper->pico_spi_client.fd					= fd_CS1;
+	new_stepper->pico_spi_client.mutex				= config->spi_mutex;
+	new_stepper->pico_spi_client.tr.speed_hz		= config->spi_pico_speed;
+	new_stepper->pico_spi_client.tr.delay_usecs		= config->spi_delay;
+	new_stepper->pico_spi_client.tr.bits_per_word	= config->spi_bpw;
+	new_stepper->pico_spi_client.tr.cs_change		= config->spi_cs_change;
+
+	new_stepper->pin_status = config->pin_status;
+	gpioSetMode(new_stepper->pin_status, PI_INPUT);
+	gpioSetPullUpDown(new_stepper->pin_status, PI_PUD_UP);
+	gpioSetISRFuncEx(new_stepper->pin_status, FALLING_EDGE, 0, stepper_pin_isr, new_stepper.get());
+
+	stepper_config(new_stepper.get(), config);
 }
