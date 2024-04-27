@@ -76,7 +76,7 @@ void stepper_line_move(struct stepper* s)
 	if(s->status & SYNC_MODE)
 		sem_acquire_blocking(&s->sem);
 
-	alarm_pool_add_repeating_timer_us(s->alarmPool, -(s->move.delay), line_timer_cb, (void*)s, s->timer);
+	alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), line_timer_cb, (void*)s, s->timer);
 	gpio_put(s->p_motion, 0);
 }
 
