@@ -8,6 +8,8 @@
 #include <iostream>
 #include <numeric>
 
+#include "c/stepper/stepper_common.h"
+
 #define IN_MOTION	0x01
 #define DIRECTION	0x02
 #define SYNC_READY	0x04
@@ -37,15 +39,6 @@ enum STEPPER_MOTOR_CMD : uint16_t
 	STOP,					
 	PAUSE,					
 	RECEIVE,				
-};
-
-enum AXIS : uint8_t
-{
-	X_AXIS = 1,
-	Y_AXIS = 2,
-	Z_AXIS = 3,
-	A_AXIS = 4,
-	C_AXIS = 5
 };
 
 enum CONTROL_MODE : uint8_t

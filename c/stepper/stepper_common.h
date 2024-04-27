@@ -46,13 +46,25 @@ typedef enum
 
 typedef struct
 {
-	PINC_AXIS		axis;
-	uint32_t		spmm;		// steps per mm
-	uint32_t		accel;		// acceleration [steps/s/s]
-	uint32_t		jog_steps;	// number of steps per each jog pulse
-	uint32_t		jog_speed;	// [steps/s]
-	uint32_t		min_speed;	// [steps/s]
-	uint32_t		max_speed;	// [steps/s]
+	PINC_AXIS			axis;
+	uint32_t			spmm;		// steps per mm
+	uint32_t			accel;		// acceleration [steps/s/s]
+	uint32_t			jog_steps;	// number of steps per each jog pulse
+	uint32_t			jog_speed;	// [steps/s]
+	uint32_t			min_speed;	// [steps/s]
+	uint32_t			max_speed;	// [steps/s]
+
+	int					spi_client_cs;	// additional cs; -1 if unused
+	uint8_t				spi_cs_change;	// true - deselect
+	uint32_t			spi_bpw;		// spi bits per word
+	uint32_t			spi_delay;		// spi post transfer delay in us
+	uint32_t			spi_fpga_speed;	// pico spi clock speed (hz)
+	uint32_t			spi_pico_speed; // fpga spi clock speed (hz)
+
+	int					pin_status;		// status interrupt pin
+	int					pin_spi_hs;		// spi handshake pin
+
+	pthread_mutex_t*	spi_mutex;
 
 } pincStepperConfig_t;
 
