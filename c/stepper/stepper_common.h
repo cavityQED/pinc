@@ -27,7 +27,6 @@
 #define STATUS_MOTION	0x01
 
 
-
 typedef enum
 {
 	X_AXIS = 0x01,
@@ -38,11 +37,22 @@ typedef enum
 
 typedef enum
 {
-	JOG,
+	JOG_MOVE,
 	LINE,
 	CURVE
 
 } MOVE_MODE;
+
+typedef enum
+{
+	AUTO,
+	JOG,
+	HOME,
+	EDIT,
+	MDI,
+	MANUAL
+
+} CONTROL_MODE;
 
 typedef struct
 {
