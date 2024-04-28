@@ -68,6 +68,23 @@ typedef struct
 
 } pincStepperConfig_t;
 
+static void stepper_get_default_config(pincStepperConfig_t* config)
+{
+	memset(config, 0, sizeof(pincStepperConfig_t));
+
+	uint32_t spmm = 800;
+	config->spmm			= spmm;
+	config->jog_steps		= spmm;
+	config->jog_speed		= 40*spmm;
+	config->min_speed		= 10*spmm;
+	config->max_speed		= 50*spmm;
+
+	config->spi_client_cs	= -1;
+	config->spi_bpw			= 8;
+	config->spi_fpga_speed	= 500000;
+	config->spi_pico_speed	= 4000000;
+}
+
 typedef struct
 {
 	uint8_t				status;
