@@ -6,7 +6,7 @@
 #include <QButtonGroup>
 #include <QGridLayout>
 
-#include "common/motor_common.h"
+#include "c/stepper/stepper_common.h"
 
 class pincJogControl : public QGroupBox
 {

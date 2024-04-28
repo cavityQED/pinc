@@ -6,7 +6,8 @@ set(LIBRARY_SOURCE_FILES	pinc_gui.cpp
 							pincJogControl.cpp)
 
 set(LINKED_LIBRARIES		Qt5::Core
-							Qt5::Widgets)
+							Qt5::Widgets
+							c_pinc)
 
 include_directories(${Qt5Widgets_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR})							

@@ -1,8 +1,8 @@
 #ifndef HOST_STEPPER_H
 #define HOST_STEPPER_H
 
-#include "spi/spi_client.h"
-#include "io/pin_request.h"
+#include "c/spi/spi_client.h"
+#include "c/io/pin_request.h"
 #include "stepper_common.h"
 
 #define X_SPMM					800
