@@ -102,3 +102,12 @@ void stepper_move(pincPiStepper* s, pincStepperMove_t* move)
 
 	stepper_unlock(s);
 }
+
+void stepper_jog(pincPiStepper* s)
+{
+	stepper_lock(s);
+
+	stepper_cmd(s, STEPPER_MOVE, &s->jog_move, sizeof(pincStepperMove_t));
+
+	stepper_unlock(s);
+}

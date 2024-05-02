@@ -23,6 +23,7 @@ typedef struct
 	pincSPIclient_t		pico_spi_client;
 	pincSPIclient_t		fpga_spi_client;
 	pincStepperConfig_t	config;
+	pincStepperMove_t	jog_move;
 
 	uint8_t*			tx;
 	uint8_t*			rx;
@@ -34,6 +35,7 @@ typedef struct
 void stepper_spi_send	(pincPiStepper* s);
 void stepper_config		(pincPiStepper* s, pincStepperConfig_t* config);
 void stepper_move		(pincPiStepper* s, pincStepperMove_t* move);
+void stepper_jog		(pincPiStepper* s);
 void stepper_cmd		(pincPiStepper* s, uint8_t cmd, void* data, uint32_t bytes);
 
 void* stepper_thread_routine(void* arg);
