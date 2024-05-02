@@ -13,9 +13,7 @@ if(Qt5Core_FOUND)
 	message("FOUND Qt5")
 	message(STATUS "${Qt5Widgets_INCLUDE_DIRS}")
 
-	add_subdirectory(device)
 	add_subdirectory(spi)
-	add_subdirectory(gcode)
 	add_subdirectory(gui)
 
 	include_directories(${CMAKE_SOURCE_DIR})
@@ -23,11 +21,10 @@ if(Qt5Core_FOUND)
 	set(LINKED_LIBRARIES	Qt5::Core
 							Qt5::Widgets
 							rt
-							deviceLib
 							pthread
 							pigpio
+							c_pinc
 							spiLib
-							gcodeLib
 							guiLib)
 
 	add_library				(pincLib)

@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 
-#include "common/motor_common.h"
+#include "c/stepper/stepper_common.h"
 
 class pincMainWindow : public QMainWindow
 {

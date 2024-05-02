@@ -10,7 +10,7 @@ pincStepperControl::pincStepperControl(QWidget* parent) : QGroupBox(parent)
 	ioctl(fd_CS1, SPI_IOC_WR_MODE, &spi_mode);
 }
 
-void addStepper(pincStepperConfig_t* config)
+void pincStepperControl::addStepper(pincStepperConfig_t* config)
 {
 	std::shared_ptr<pincPiStepper> new_stepper = std::make_shared<pincPiStepper>();
 
@@ -41,4 +41,6 @@ void addStepper(pincStepperConfig_t* config)
 	gpioSetISRFuncEx(new_stepper->pin_status, FALLING_EDGE, 0, stepper_pin_isr, new_stepper.get());
 
 	stepper_config(new_stepper.get(), config);
+
+	m_steppers.insert(std::make_pair(config->axis, new_stepper));
 }

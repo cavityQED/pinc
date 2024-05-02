@@ -2,13 +2,16 @@
 #define PINC_STEPPER_CONTROL_H
 
 #include <memory>
+#include <cstring>
 
 #include <QGroupBox>
 #include <QGridLayout>
 #include <QPushButton>
 #include <QButtonGroup>
 
-#include "c/stepper/pi_stepper.h" 
+extern "C" {
+	#include "c/stepper/pi_stepper.h" 
+}
 
 class pincStepperControl : public QGroupBox
 {
