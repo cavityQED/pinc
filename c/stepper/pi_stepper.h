@@ -24,6 +24,9 @@ typedef struct
 	pincSPIclient_t		fpga_spi_client;
 	pincStepperConfig_t	config;
 
+	uint8_t*			tx;
+	uint8_t*			rx;
+	
 	pthread_mutex_t		mutex;
 
 } pincPiStepper;
@@ -33,6 +36,7 @@ void stepper_config		(pincPiStepper* s, pincStepperConfig_t* config);
 void stepper_move		(pincPiStepper* s, pincStepperMove_t* move);
 void stepper_cmd		(pincPiStepper* s, uint8_t cmd, void* data, uint32_t bytes);
 
+void* stepper_thread_routine(void* arg);
 void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev);
 
 static inline void stepper_lock(pincPiStepper* s)

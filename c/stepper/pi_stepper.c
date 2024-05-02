@@ -39,37 +39,50 @@ void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 
 void stepper_spi_send(pincPiStepper* s)
 {
-	static pincStepperUpdate_t	update;
+	pincStepperUpdate_t	update;
 
 	pin_request_blocking(&s->spi_request);
 
 	spi_send(&s->pico_spi_client);
 	
-	memcpy(&update, (void*)s->pico_spi_client.tr.rx_buf, sizeof(pincStepperUpdate_t));
+	memcpy(&update, s->rx, sizeof(pincStepperUpdate_t));
 
 	s->status	= update.status;
 	s->step_pos	= update.step_pos;
+
+	free(s->tx);
+	free(s->rx);
 	
 	pin_request_reset(&s->spi_request);
+}
+
+void* stepper_thread_routine(void* arg)
+{
+	pincPiStepper* stepper = (pincPiStepper*)arg;
+
+	stepper_lock(stepper);
+
+	stepper_spi_send(stepper);
+
+	stepper_unlock(stepper);
 }
 
 void stepper_cmd(pincPiStepper* s, uint8_t cmd, void* data, uint32_t bytes)
 {
 	uint32_t msg_size = bytes + 1;
-	uint8_t* tx = malloc(msg_size);
-	uint8_t* rx = malloc(msg_size);
+	s->tx = malloc(msg_size);
+	s->rx = malloc(msg_size);
 
-	tx[0] = cmd;
-	memcpy(&tx[1], data, bytes);
+	s->tx[0] = cmd;
+	memcpy(&s->tx[1], data, bytes);
 
 	s->pico_spi_client.tr.len		= msg_size;
-	s->pico_spi_client.tr.tx_buf	= (unsigned long)tx;
-	s->pico_spi_client.tr.rx_buf	= (unsigned long)rx;
+	s->pico_spi_client.tr.tx_buf	= (unsigned long)s->tx;
+	s->pico_spi_client.tr.rx_buf	= (unsigned long)s->rx;
 
-	stepper_spi_send(s);
-
-	free(tx);
-	free(rx);
+	pthread_t thread;
+	pthread_create(&thread, NULL, stepper_thread_routine, s);
+	pthread_detach(thread);
 }
 
 void stepper_config(pincPiStepper* s, pincStepperConfig_t* config)
