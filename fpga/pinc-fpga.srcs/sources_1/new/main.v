@@ -11,7 +11,8 @@ module top
     output          spi_miso,
     
     input [7:0]     button_status,
-    input [3:0]     pico_status,
+    input [3:0]     x_status,
+    input [3:0]     y_status,
     
     output [2:0]    intr
 );
@@ -44,8 +45,6 @@ module top
         spi_rx_valid,
     );
 
-    assign intr[2] = 1'b1;
-
     wire spi_cs_rise;
     wire spi_cs_fall;
     wire spi_cs_flip;
@@ -59,43 +58,57 @@ module top
     debounce button_db[7:0]
     (clk, rst, 1'b1, button_status, 1'b1, b_rise, b_fall, b_out);
 
-    wire [7:0] p_rise;
-    wire [7:0] p_fall;
-    wire [7:0] p_out;
-    debounce #(.TICK(10)) pico_db[7:0]
-    (clk, rst, 1'b1, {4'hF, pico_status}, 1'b1, p_rise, p_fall, p_out);
+    wire [7:0] x_rise;
+    wire [7:0] x_fall;
+    wire [7:0] x_out;
+    debounce #(.TICK(10)) x_db[7:0]
+    (clk, rst, 1'b1, {4'hF, x_status}, 1'b1, x_rise, x_fall, x_out);
+
+    wire [7:0] y_rise;
+    wire [7:0] y_fall;
+    wire [7:0] y_out;
+    debounce #(.TICK(10)) y_db[7:0]
+    (clk, rst, 1'b1, {4'hF, y_status}, 1'b1, y_rise, y_fall, y_out);
 
     reg  b_clr;
     reg  b_en;
     signal_interrupt    b_sig   (clk, rst, b_clr, b_en, b_out, intr[0]);
     
-    reg p_clr;
-    reg p_en;
-    signal_interrupt    p_sig   (clk, rst, p_clr, p_en, p_out, intr[1]);
+    reg x_clr;
+    reg x_en;
+    signal_interrupt    x_sig   (clk, rst, x_clr, x_en, x_out, intr[1]);
+
+    reg y_clr;
+    reg y_en;
+    signal_interrupt    y_sig   (clk, rst, y_clr, y_en, y_out, intr[2]);
 
     initial begin
         spi_tx_byte <= 8'h00;
         b_en        <= 1'b1;
-        p_en        <= 1'b1;
+        x_en        <= 1'b1;
+        y_en        <= 1'b1;
     end
 
     always @(posedge clk) begin
         spi_tx_valid    <= 1'b0;
         b_clr           <= 1'b1;
-        p_clr           <= 1'b1;
+        x_clr           <= 1'b1;
+        y_clr           <= 1'b1;
         spi_miso_reg    <= 1'bz;
 
         if(spi_tx_ready) begin
             case (intr)
                 3'b110  : spi_tx_byte <= b_out;
-                3'b101  : spi_tx_byte <= p_out;
+                3'b101  : spi_tx_byte <= x_out;
+                3'b011  : spi_tx_byte <= y_out;
             endcase
             spi_tx_valid <= 1'b1;
         end
 
         if(spi_cs_rise) begin
             b_clr   <= intr[0];
-            p_clr   <= intr[1];
+            x_clr   <= intr[1];
+            y_clr   <= intr[2];
         end
         else if(~spi_cs) begin
             spi_miso_reg    <= spi_miso_wire;

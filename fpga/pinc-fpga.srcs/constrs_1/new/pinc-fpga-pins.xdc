@@ -26,10 +26,15 @@ set_property PACKAGE_PIN N9 [get_ports {button_status[5]}];		set_property IOSTAN
 set_property PACKAGE_PIN R7 [get_ports {button_status[6]}];		set_property IOSTANDARD LVCMOS33 [get_ports {button_status[6]}];	set_property PULLUP true [get_ports {button_status[6]}]
 set_property PACKAGE_PIN T9 [get_ports {button_status[7]}];		set_property IOSTANDARD LVCMOS33 [get_ports {button_status[7]}];	set_property PULLUP true [get_ports {button_status[7]}]
 
-set_property PACKAGE_PIN T8 [get_ports {pico_status[0]}];		set_property IOSTANDARD LVCMOS33 [get_ports {pico_status[0]}];		set_property PULLUP true [get_ports {pico_status[0]}]
-set_property PACKAGE_PIN T5 [get_ports {pico_status[1]}];		set_property IOSTANDARD LVCMOS33 [get_ports {pico_status[1]}];		set_property PULLUP true [get_ports {pico_status[1]}]
-set_property PACKAGE_PIN R8 [get_ports {pico_status[2]}];		set_property IOSTANDARD LVCMOS33 [get_ports {pico_status[2]}];		set_property PULLUP true [get_ports {pico_status[2]}]
-set_property PACKAGE_PIN L2 [get_ports {pico_status[3]}];		set_property IOSTANDARD LVCMOS33 [get_ports {pico_status[3]}];		set_property PULLUP true [get_ports {pico_status[3]}]
+set_property PACKAGE_PIN T8 [get_ports {x_status[0]}];		set_property IOSTANDARD LVCMOS33 [get_ports {x_status[0]}];		set_property PULLUP true [get_ports {x_status[0]}]
+set_property PACKAGE_PIN T5 [get_ports {x_status[1]}];		set_property IOSTANDARD LVCMOS33 [get_ports {x_status[1]}];		set_property PULLUP true [get_ports {x_status[1]}]
+set_property PACKAGE_PIN R8 [get_ports {x_status[2]}];		set_property IOSTANDARD LVCMOS33 [get_ports {x_status[2]}];		set_property PULLUP true [get_ports {x_status[2]}]
+set_property PACKAGE_PIN L2 [get_ports {x_status[3]}];		set_property IOSTANDARD LVCMOS33 [get_ports {x_status[3]}];		set_property PULLUP true [get_ports {x_status[3]}]
+
+set_property PACKAGE_PIN J1 [get_ports {y_status[0]}];		set_property IOSTANDARD LVCMOS33 [get_ports {y_status[0]}];		set_property PULLUP true [get_ports {y_status[0]}]
+set_property PACKAGE_PIN H1 [get_ports {y_status[1]}];		set_property IOSTANDARD LVCMOS33 [get_ports {y_status[1]}];		set_property PULLUP true [get_ports {y_status[1]}]
+set_property PACKAGE_PIN G1 [get_ports {y_status[2]}];		set_property IOSTANDARD LVCMOS33 [get_ports {y_status[2]}];		set_property PULLUP true [get_ports {y_status[2]}]
+set_property PACKAGE_PIN K5 [get_ports {y_status[3]}];		set_property IOSTANDARD LVCMOS33 [get_ports {y_status[3]}];		set_property PULLUP true [get_ports {y_status[3]}]
 
 set_property PACKAGE_PIN G5 [get_ports {spi_clk}];				set_property IOSTANDARD LVCMOS33 [get_ports {spi_clk}]
 set_property PACKAGE_PIN F5 [get_ports {spi_miso}];				set_property IOSTANDARD LVCMOS33 [get_ports {spi_miso}]
