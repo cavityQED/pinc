@@ -22,6 +22,10 @@ module top
     wire        spi_tx_ready;
     wire        spi_rx_valid;
 
+    reg         spi_miso_reg;
+    wire        spi_miso_wire;
+    assign      spi_miso = spi_miso_reg;
+
     spi spi0 
     (
         clk,
@@ -30,7 +34,7 @@ module top
         spi_clk,
         spi_cs,
         spi_mosi,
-        spi_miso,
+        spi_miso_wire,
 
         spi_tx_byte,
         spi_rx_byte,
@@ -79,6 +83,7 @@ module top
         spi_tx_valid    <= 1'b0;
         b_clr           <= 1'b1;
         p_clr           <= 1'b1;
+        spi_miso_reg    <= 1'bz;
 
         if(spi_tx_ready) begin
             case (intr)
@@ -91,6 +96,9 @@ module top
         if(spi_cs_rise) begin
             b_clr   <= intr[0];
             p_clr   <= intr[1];
+        end
+        else if(~spi_cs) begin
+            spi_miso_reg    <= spi_miso_wire;
         end
     end
 
