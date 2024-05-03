@@ -111,3 +111,20 @@ void stepper_jog(pincPiStepper* s)
 
 	stepper_unlock(s);
 }
+
+void stepper_update(pincPiStepper* s)
+{
+	stepper_lock(s);
+
+	stepper_cmd(s, STEPPER_CMD_UPDATE, NULL, sizeof(pincStepperUpdate_t));
+
+	stepper_unlock(s);
+}
+
+void stepper_print(pincPiStepper* s)
+{
+	printf("Axis %X Update:\n", s->config.axis);
+	printf("\tStatus:\t\t%X\n", s->status);
+	printf("\tPosition (steps):\t%d\n\n", s->step_pos);
+}
+
