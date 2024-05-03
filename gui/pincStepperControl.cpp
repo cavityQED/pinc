@@ -35,6 +35,12 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	new_stepper->pico_spi_client.tr.bits_per_word	= config->spi_bpw;
 	new_stepper->pico_spi_client.tr.cs_change		= config->spi_cs_change;
 
+	memset(&new_stepper->jog_move, 0, sizeof(pincStepperMove_t));
+	new_stepper->jog_move.steps = config->spmm;
+	new_stepper->jog_move.v_sps = config->jog_speed;
+
+	stepper_print_move(&new_stepper->jog_move);
+
 	new_stepper->pin_status = config->pin_status;
 	gpioSetMode(new_stepper->pin_status, PI_INPUT);
 	gpioSetPullUpDown(new_stepper->pin_status, PI_PUD_UP);
@@ -43,4 +49,17 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	stepper_config(new_stepper.get(), config);
 
 	m_steppers.insert(std::make_pair(config->axis, new_stepper));
+}
+
+void pincStepperControl::jog(PINC_AXIS axis, bool dir)
+{
+	if(m_steppers.contains(axis))
+	{
+		auto stepper = m_steppers.at(axis);
+
+		stepper->jog_move.mode		= JOG_MOVE;
+		stepper->jog_move.step_dir	= dir;
+
+		stepper_jog(stepper.get());
+	}
 }
