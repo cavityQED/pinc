@@ -82,10 +82,10 @@ static void stepper_get_default_config(pincStepperConfig_t* config)
 {
 	memset(config, 0, sizeof(pincStepperConfig_t));
 
-	uint32_t spmm = 800;
+	uint32_t spmm = 400;
 	config->spmm			= spmm;
 	config->jog_steps		= spmm;
-	config->jog_speed		= 40*spmm;
+	config->jog_speed		= 5*spmm;
 	config->min_speed		= 10*spmm;
 	config->max_speed		= 50*spmm;
 
