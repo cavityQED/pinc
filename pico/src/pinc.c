@@ -41,12 +41,16 @@ static void get_spi_msg()
 {
 	queue_peek_blocking(&spiQueue, &spi);
 
-	pincStepperUpdate_t update;
+	static pincStepperUpdate_t update;
 	update.status = motor.status;
 	update.step_pos = motor.pos;
+
+	printf("Status:\t%X\n", motor.status);
+	printf("Position:\t%d\n", motor.pos);
+
 	memset(spi_in_buf, 0, SPI_TRANSFER_LENGTH);
 	memset(spi_out_buf, 0, SPI_TRANSFER_LENGTH);
-	memcpy(spi_out_buf, (unsigned long*)&update, sizeof(pincStepperUpdate_t));
+	memcpy(spi_out_buf, &update, sizeof(pincStepperUpdate_t));
 	spi.tx_buf = spi_out_buf;
 
 	pio_spi_client_transfer_blocking(&spi);

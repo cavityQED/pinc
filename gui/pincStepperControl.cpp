@@ -17,6 +17,8 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	std::memcpy(&new_stepper->config, config, sizeof(pincStepperConfig_t));
 	pin_request_init(&new_stepper->spi_request, config->pin_spi_hs, 1);
 
+	new_stepper->status = 0xFF;
+
 	std::memset(&new_stepper->fpga_spi_client.tr, 0, sizeof(spiTr));
 	new_stepper->fpga_spi_client.cs					= -1;
 	new_stepper->fpga_spi_client.fd					= fd_CS0;

@@ -23,9 +23,21 @@ void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 
 				spi_read_msg(client, rx, 2);
 
+				uint8_t pre_status	= s->status;
+				uint8_t del_status	= pre_status ^ rx[1];
+				uint8_t high_flip	= del_status & rx[1];
+				uint8_t low_flip	= del_status & ~rx[1];
+
+				printf("Status:\n");
+				printf("\tPre:\t%2X\n", pre_status);
+				printf("\tCur:\t%2X\n", rx[1]);
+				printf("\tDel:\t%2X\n", del_status);
+				printf("\tLow:\t%2X\n", low_flip);
+				printf("\tHigh:\t%2X\n", high_flip);
+
 				s->status = rx[1];
 
-				if(~(s->status) & PICO_STATUS_SPI_READY)
+				if(low_flip & PICO_STATUS_SPI_READY)
 					pin_request_unlock(&s->spi_request);
 			}
 
@@ -52,6 +64,8 @@ void stepper_spi_send(pincPiStepper* s)
 
 	free(s->tx);
 	free(s->rx);
+
+	stepper_print(s);
 	
 	pin_request_reset(&s->spi_request);
 }
@@ -74,7 +88,10 @@ void stepper_cmd(pincPiStepper* s, uint8_t cmd, void* data, uint32_t bytes)
 	s->rx = malloc(msg_size);
 
 	s->tx[0] = cmd;
-	memcpy(&s->tx[1], data, bytes);
+	if(data)
+		memcpy(&s->tx[1], data, bytes);
+	else
+		memset(&s->tx[1], 0, bytes);
 
 	s->pico_spi_client.tr.len		= msg_size;
 	s->pico_spi_client.tr.tx_buf	= (unsigned long)s->tx;
