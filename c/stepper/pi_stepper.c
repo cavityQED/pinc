@@ -38,7 +38,7 @@ void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 				s->status = rx[1];
 
 				if(low_flip & PICO_STATUS_SPI_READY)
-					pin_request_unlock(&s->spi_request);
+					pin_request_post(&s->spi_request);
 			}
 
 			break;

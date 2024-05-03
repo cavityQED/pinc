@@ -75,6 +75,7 @@ typedef struct
 	int					pin_spi_hs;		// spi handshake pin
 
 	pthread_mutex_t*	spi_mutex;
+	pthread_mutex_t*	pin_req_mutex;
 
 } pincStepperConfig_t;
 

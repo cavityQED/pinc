@@ -15,7 +15,7 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	std::shared_ptr<pincPiStepper> new_stepper = std::make_shared<pincPiStepper>();
 
 	std::memcpy(&new_stepper->config, config, sizeof(pincStepperConfig_t));
-	pin_request_init(&new_stepper->spi_request, config->pin_spi_hs, 1);
+	pin_request_init(&new_stepper->spi_request, config->pin_spi_hs, 1, config->pin_req_mutex);
 
 	new_stepper->status = 0xFF;
 
