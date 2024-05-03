@@ -24,6 +24,10 @@ public:
 
 	void addStepper(pincStepperConfig_t* config);
 
+public:
+
+	void jog(PINC_AXIS axis, bool dir);
+
 protected:
 
 	std::map<PINC_AXIS, std::shared_ptr<pincPiStepper>>	m_steppers;

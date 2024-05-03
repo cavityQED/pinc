@@ -64,8 +64,8 @@ int main(int argc, char *argv[])
 
 	QObject::connect(	jog_panel,
 						&pincJogControl::jog,
-						mainWindow,
-						&pincMainWindow::jog);
+						steppers,
+						&pincStepperControl::jog);
 
 	mainWindow->setStyleSheet(	
 		"QMainWindow {"
