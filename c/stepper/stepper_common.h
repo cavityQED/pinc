@@ -29,9 +29,9 @@
 
 typedef enum
 {
-	X_AXIS = 0x01,
-	Y_AXIS = 0x02,
-	Z_AXIS = 0x04
+	X_AXIS,
+	Y_AXIS,
+	Z_AXIS
 
 } PINC_AXIS; 
 
@@ -56,7 +56,7 @@ typedef enum
 
 typedef struct
 {
-	PINC_AXIS			axis;
+	uint8_t				axis;
 	uint32_t			spmm;		// steps per mm
 	uint32_t			accel;		// acceleration [steps/s/s]
 	uint32_t			jog_steps;	// number of steps per each jog pulse
@@ -138,14 +138,15 @@ static inline float slope_xy(p_cartesian cur, p_cartesian end)
 
 typedef struct
 {
-	MOVE_MODE		mode;
+	uint8_t			mode;
 	p_cartesian		cur;		// current point
 	p_cartesian		end;		// end point
 	uint32_t		v_sps;		// speed [steps/s]
 	uint32_t		radius;		// [steps]
+	uint32_t		steps;		// used instead of cur/end for jog mode
 	bool			cw;			// 0 - counterclockwise; 1 - clockwise
 
-	PINC_AXIS		step_axis;
+	uint8_t			step_axis;
 	uint32_t		delay;		// delay in us between steps
 	bool			step_dir;
 	bool			stop;
@@ -154,13 +155,15 @@ typedef struct
 
 static void stepper_print_move(pincStepperMove_t* m)
 {
-	printf("Stepper Move:\n");
+	printf("Stepper Move (%d bytes):\n", sizeof(pincStepperMove_t));
 	printf("\tMode:\t\t\t0x%2X\n", m->mode);
 	printf("\tCur Pos (steps):\t[%d, %d, %d]\n", m->cur.x, m->cur.y, m->cur.z);
 	printf("\tEnd Pos (steps):\t[%d, %d, %d]\n", m->end.x, m->end.y, m->end.z);
 	printf("\tSpeed (steps/s):\t%d\n", m->v_sps);
-	printf("\tRadius (steps):\t%d\n", m->radius);
-	printf("\tClockwise:\t\t%d\n\n", m->cw);
+	printf("\tRadius (steps):\t\t%d\n", m->radius);
+	printf("\tClockwise:\t\t%d\n", m->cw);
+	printf("\tSteps:\t\t\t%d\n\n", m->steps);
+
 }
 
 static void line_step_2d(pincStepperMove_t* move)

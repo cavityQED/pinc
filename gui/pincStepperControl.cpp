@@ -48,7 +48,7 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 
 	stepper_config(new_stepper.get(), config);
 
-	m_steppers.insert(std::make_pair(config->axis, new_stepper));
+	m_steppers.insert(std::make_pair((PINC_AXIS)config->axis, new_stepper));
 }
 
 void pincStepperControl::jog(PINC_AXIS axis, bool dir)
