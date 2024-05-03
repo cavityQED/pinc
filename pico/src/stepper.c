@@ -62,6 +62,26 @@ bool line_timer_cb(picoTimer_t* timer)
 	return true;
 }
 
+bool jog_timer_cb(picoTimer_t* timer)
+{
+	static struct stepper* s;
+	s = (struct stepper*)timer->user_data;
+
+	if(s->move.steps != 0)
+	{
+		s->dir = s->move.step_dir;
+		set_dir(s);
+		step(s);
+		s->move.steps = s->move.steps - 1;
+		return true;
+	}
+	else
+	{
+		stop(s);
+		return false;
+	}
+}
+
 void stepper_line_move(struct stepper* s)
 {
 	printf("\tLine Move\n");
@@ -76,7 +96,11 @@ void stepper_line_move(struct stepper* s)
 	if(s->status & SYNC_MODE)
 		sem_acquire_blocking(&s->sem);
 
-	alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), line_timer_cb, (void*)s, s->timer);
+	if(s->move.mode == LINE)
+		alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), line_timer_cb, (void*)s, s->timer);
+	else if(s->move.mode == JOG_MOVE)
+		alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), jog_timer_cb, (void*)s, s->timer);
+
 	gpio_put(s->p_motion, 0);
 }
 
@@ -86,7 +110,7 @@ void stepper_move(struct stepper* s)
 	switch(s->move.mode)
 	{
 		case LINE:
-		case JOG:
+		case JOG_MOVE:
 			stepper_line_move(s);
 			break;
 
@@ -106,6 +130,7 @@ void stepper_msg_handle(struct stepper* s, uint8_t* msg)
 		case STEPPER_MOVE:
 			if(s->status & MOTION)
 				return;
+			memset(&s->move, 0, sizeof(pincStepperMove_t));
 			memcpy(&s->move, &msg[1], sizeof(pincStepperMove_t));
 			stepper_move(s);
 			break;
