@@ -6,47 +6,50 @@ void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 
 	pincPiStepper* s = (pincPiStepper*)dev;
 
+	uint8_t tx[2] = {0,0};
+	uint8_t rx[2] = {0,0};
+
 	switch(gpio)
 	{
-		case X_STATUS_INT:
-		{
-			static uint8_t tx[2] = {0,0};
-			static uint8_t rx[2] = {0,0};
-
-			client = &s->fpga_spi_client;
-
-			if(!level) // start spi
-			{
-				spi_write_msg(client, tx, 2);
-
-				spi_send(client);
-
-				spi_read_msg(client, rx, 2);
-
-				uint8_t pre_status	= s->status;
-				uint8_t del_status	= pre_status ^ rx[1];
-				uint8_t high_flip	= del_status & rx[1];
-				uint8_t low_flip	= del_status & ~rx[1];
-
-				printf("Status:\n");
-				printf("\tPre:\t%2X\n", pre_status);
-				printf("\tCur:\t%2X\n", rx[1]);
-				printf("\tDel:\t%2X\n", del_status);
-				printf("\tLow:\t%2X\n", low_flip);
-				printf("\tHigh:\t%2X\n", high_flip);
-
-				s->status = rx[1];
-
-				if(low_flip & PICO_STATUS_SPI_READY)
-					pin_request_post(&s->spi_request);
-			}
-
+		case X_STATUS_INTERRUPT:
+			tx[0] = X_FPGA_STATUS_ADDR;
 			break;
-		}
+		case Y_STATUS_INTERRUPT:
+			tx[0] = Y_FPGA_STATUS_ADDR;
+			break;
 
 		default:
 			break;
 	}
+
+	client = &s->fpga_spi_client;
+
+	if(!level) // start spi
+	{
+		spi_write_msg(client, tx, 2);
+
+		spi_send(client);
+
+		spi_read_msg(client, rx, 2);
+
+		uint8_t pre_status	= s->status;
+		uint8_t del_status	= pre_status ^ rx[1];
+		uint8_t high_flip	= del_status & rx[1];
+		uint8_t low_flip	= del_status & ~rx[1];
+
+		printf("Status:\n");
+		printf("\tPre:\t%2X\n", pre_status);
+		printf("\tCur:\t%2X\n", rx[1]);
+		printf("\tDel:\t%2X\n", del_status);
+		printf("\tLow:\t%2X\n", low_flip);
+		printf("\tHigh:\t%2X\n", high_flip);
+
+		s->status = rx[1];
+
+		if(low_flip & PICO_STATUS_SPI_READY)
+			pin_request_post(&s->spi_request);
+	}
+
 }
 
 void stepper_spi_send(pincPiStepper* s)
@@ -59,7 +62,6 @@ void stepper_spi_send(pincPiStepper* s)
 	
 	memcpy(&update, s->rx, sizeof(pincStepperUpdate_t));
 
-	s->status	= update.status;
 	s->step_pos	= update.step_pos;
 
 	free(s->tx);

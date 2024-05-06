@@ -8,12 +8,6 @@
 
 #define SYNC_PIN	18
 
-#define X_SPI_HANDSHAKE		6
-#define X_STATUS_INTERRUPT	21
-
-#define Y_SPI_HANDSHAKE		5
-#define Y_STATUS_INTERRUPT	13
-
 // static QTimer*				timer;
 // static uint8_t				mode;
 // static std::vector<gBlock*>	program;

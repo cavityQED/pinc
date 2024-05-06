@@ -6,8 +6,14 @@
 #include "stepper_common.h"
 
 #define X_SPMM					800
-#define X_STATUS_INT			21		// falling edge transition when x status changes
-#define X_SPI_HS_PIN			6		// spi handshake
+
+#define X_SPI_HANDSHAKE		6
+#define X_STATUS_INTERRUPT	21
+#define X_FPGA_STATUS_ADDR	0xA0
+
+#define Y_SPI_HANDSHAKE		5
+#define Y_STATUS_INTERRUPT	13
+#define Y_FPGA_STATUS_ADDR	0xB0
 
 #define PICO_STATUS_SPI_READY	0x01
 #define PICO_STATUS_SYNC_READY	0x10

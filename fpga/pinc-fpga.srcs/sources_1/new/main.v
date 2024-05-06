@@ -16,6 +16,8 @@ module top
     
     output [2:0]    intr
 );
+    parameter X_STATUS_REG = 8'hA0;
+    parameter Y_STATUS_REG = 8'hB0;
 
     reg         spi_tx_valid;
     reg  [7:0]  spi_tx_byte;
@@ -47,7 +49,6 @@ module top
 
     wire spi_cs_rise;
     wire spi_cs_fall;
-    wire spi_cs_flip;
     wire spi_cs_out;
     debounce #(.TICK(10), .MSB(4)) cs_db
     (clk, rst, 1'b1, spi_cs, 1'b0, spi_cs_rise, spi_cs_fall, spi_cs_out);
@@ -82,36 +83,92 @@ module top
     reg y_en;
     signal_interrupt    y_sig   (clk, rst, y_clr, y_en, y_out, intr[2]);
 
+    reg         data_rw;
+    reg [7:0]   data_addr;
+    reg [7:0]   wr_byte;
+    reg         wr_valid;
+    wire [7:0]  rd_byte;
+    wire        rd_valid;
+    data_register   spi_data_bank   (clk, rst, data_rw, data_addr, wr_byte, wr_valid, rd_byte, rd_valid);
+
+    reg x_int_reg;
+    reg x_int_fall;
+    reg y_int_reg;
+    reg y_int_fall;
+
     initial begin
-        spi_tx_byte <= 8'h00;
-        b_en        <= 1'b1;
-        x_en        <= 1'b1;
-        y_en        <= 1'b1;
+        x_int_reg <= 1'b1;
+        y_int_reg <= 1'b1;
     end
 
     always @(posedge clk) begin
+        x_int_reg   <= intr[1];
+        x_int_fall  <= ~intr[1] & (intr[1] ^ x_int_reg);
+        y_int_reg   <= intr[2];
+        y_int_fall  <= ~intr[2] & (intr[2] ^ y_int_reg);
+    end
+
+    reg [7:0] spi_byte_num;
+
+    initial begin
+        spi_tx_byte     <= 8'h00;
+        spi_byte_num    <= 8'h00;
+        b_en            <= 1'b1;
+        x_en            <= 1'b1;
+        y_en            <= 1'b1;
+    end
+
+
+    // SPI MISO
+    // High impedance (disconnected) when spi inactive (cs high)
+    always @(posedge clk) begin
+        if(spi_cs)
+            spi_miso_reg    <= 1'bz;
+        else
+            spi_miso_reg    <= spi_miso_wire;
+    end
+
+    always @(posedge clk) begin
+        data_rw         <= 1'b0;
         spi_tx_valid    <= 1'b0;
+        wr_valid        <= 1'b0;
         b_clr           <= 1'b1;
         x_clr           <= 1'b1;
         y_clr           <= 1'b1;
-        spi_miso_reg    <= 1'bz;
-
-        if(spi_tx_ready) begin
-            case (intr)
-                3'b110  : spi_tx_byte <= b_out;
-                3'b101  : spi_tx_byte <= x_out;
-                3'b011  : spi_tx_byte <= y_out;
-            endcase
-            spi_tx_valid <= 1'b1;
-        end
 
         if(spi_cs_rise) begin
-            b_clr   <= intr[0];
-            x_clr   <= intr[1];
-            y_clr   <= intr[2];
+            spi_byte_num    <= 8'h00;
+            case (data_addr)
+                X_STATUS_REG    : x_clr <= 1'b0;
+                Y_STATUS_REG    : y_clr <= 1'b0;
+            endcase
         end
-        else if(~spi_cs) begin
-            spi_miso_reg    <= spi_miso_wire;
+
+        if(spi_rx_valid) begin
+            if(spi_byte_num == 8'h00) begin
+                data_addr   <= spi_rx_byte;
+                data_rw     <= 1'b1;
+            end
+            spi_byte_num    <= spi_byte_num + 1'b1;
+        end
+
+        if(rd_valid) begin
+            spi_tx_byte     <= rd_byte;
+        end
+
+        if(spi_tx_ready) begin
+            spi_tx_valid    <= 1'b1;
+        end
+
+        if(x_int_fall) begin
+            data_addr       <= X_STATUS_REG;
+            wr_byte         <= x_out;
+            wr_valid        <= 1'b1;
+        end
+        else if(y_int_fall) begin
+            data_addr       <= Y_STATUS_REG;
+            wr_byte         <= y_out;
+            wr_valid        <= 1'b1;
         end
     end
 
