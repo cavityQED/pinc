@@ -1,6 +1,8 @@
 #ifndef HOST_STEPPER_H
 #define HOST_STEPPER_H
 
+#include <semaphore.h>
+
 #include "c/spi/spi_client.h"
 #include "c/io/pin_request.h"
 #include "stepper_common.h"
@@ -36,6 +38,8 @@ typedef struct
 	uint8_t*			rx;
 	
 	pthread_mutex_t		mutex;
+
+	sem_t				sync_sem;
 
 } pincPiStepper;
 
