@@ -36,18 +36,12 @@ void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 		uint8_t del_status	= pre_status ^ rx[1];
 		uint8_t high_flip	= del_status & rx[1];
 		uint8_t low_flip	= del_status & ~rx[1];
-
-		printf("Status:\n");
-		printf("\tPre:\t%2X\n", pre_status);
-		printf("\tCur:\t%2X\n", rx[1]);
-		printf("\tDel:\t%2X\n", del_status);
-		printf("\tLow:\t%2X\n", low_flip);
-		printf("\tHigh:\t%2X\n", high_flip);
-
 		s->status = rx[1];
 
 		if(low_flip & PICO_STATUS_SPI_READY)
 			pin_request_post(&s->spi_request);
+		else if(high_flip & PICO_STATUS_MOTION)
+			stepper_update(s);
 	}
 
 }
@@ -142,8 +136,6 @@ void stepper_update(pincPiStepper* s)
 
 void stepper_print(pincPiStepper* s)
 {
-	printf("Axis %X Update:\n", s->config.axis);
-	printf("\tStatus:\t\t%X\n", s->status);
-	printf("\tPosition (steps):\t%d\n\n", s->step_pos);
+	printf("Axis %X Update:\n\tPosition (steps):\t%d\n\n", s->config.axis, s->step_pos);
 }
 

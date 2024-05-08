@@ -16,6 +16,7 @@
 #define Y_FPGA_STATUS_ADDR	0xB0
 
 #define PICO_STATUS_SPI_READY	0x01
+#define PICO_STATUS_MOTION		0x08
 #define PICO_STATUS_SYNC_READY	0x10
 
 typedef struct
