@@ -19,12 +19,13 @@
 typedef struct repeating_timer picoTimer_t;
 struct stepper
 {
-	bool		dir;		// direction
-	int			p_step;		// step pin
-	int			p_ena;		// enable pin
-	int			p_dir;		// direction pin
-	int			p_motion;	// active low if (status & MOTION)
-	int			pos;		// position (steps)
+	bool		dir;			// direction
+	int			p_step;			// step pin
+	int			p_ena;			// enable pin
+	int			p_dir;			// direction pin
+	int			p_motion;		// active low if (status & MOTION)
+	int			p_sync_ready;	
+	int			pos;			// position (steps)
 
 	PINC_AXIS	axis;
 	uint8_t		status;

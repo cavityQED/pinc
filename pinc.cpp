@@ -1,12 +1,11 @@
 #include "gui/pinc_gui.h"
 
 #include <QApplication>
+#include <QAction>
 
 #include <signal.h>
 
 #include <pigpio.h>
-
-#define SYNC_PIN	18
 
 // static QTimer*				timer;
 // static uint8_t				mode;
@@ -17,10 +16,19 @@ static pthread_mutex_t		spi_mutex;
 static pthread_mutex_t		pin_req_mutex;
 static pthread_mutexattr_t	spi_mutex_attr;
 
+static pincStepperControl*	steppers;
+static pincStepperMove_t	sync_move;
+
 static void shutdown(int signum)
 {
 	gpioTerminate();
 	exit(signum);
+}
+
+static void sync_test(bool checked)
+{
+	printf("SYNC TEST\n");
+	steppers->sync_move(&sync_move);
 }
 
 int main(int argc, char *argv[])
@@ -33,9 +41,10 @@ int main(int argc, char *argv[])
 	pincMainWindow*			mainWindow	= new pincMainWindow();
 	pincControlModeButtons*	ctrl_panel	= new pincControlModeButtons();
 	pincJogControl*			jog_panel	= new pincJogControl();
-	pincStepperControl*		steppers	= new pincStepperControl();
 	QWidget*				central		= new QWidget();
 	QVBoxLayout*			vlayout		= new QVBoxLayout();
+	
+	steppers	= new pincStepperControl();
 
 	pthread_mutexattr_init(&spi_mutex_attr);
 	pthread_mutexattr_settype(&spi_mutex_attr, PTHREAD_MUTEX_ERRORCHECK | PTHREAD_MUTEX_DEFAULT);
@@ -119,6 +128,20 @@ int main(int argc, char *argv[])
 	);
 
 	mainWindow->show();
+
+	memset(&sync_move, 0, sizeof(pincStepperMove_t));
+
+	sync_move.mode	= LINE_MODE | SYNC_MODE;
+	sync_move.v_sps	= config.jog_speed;
+	sync_move.end.x	= config.spmm;
+	sync_move.end.y = config.spmm;
+
+	QAction* test_move = new QAction(ctrl_panel);
+	ctrl_panel->addAction(test_move);
+	test_move->setShortcut(Qt::Key_F1);
+	QObject::connect(	test_move,
+						&QAction::triggered,
+						sync_test);
 
 	return app.exec();
 }

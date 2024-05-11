@@ -65,6 +65,7 @@ static void core1_main()
 	motor.p_dir			= PICO_DIR_PIN;
 	motor.p_ena			= PICO_ENA_PIN;
 	motor.p_motion		= PIN_MOTION;
+	motor.p_sync_ready	= PIN_SYNC_READY;
 	motor.spmm			= 800;
 	motor.move.delay	= 125;
 	motor.alarmPool		= alarm_pool_create(1, 2);

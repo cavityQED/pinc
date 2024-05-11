@@ -42,8 +42,9 @@ void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 			pin_request_post(&s->spi_request);
 		else if(high_flip & PICO_STATUS_MOTION)
 			stepper_update(s);
+		else if(low_flip & PICO_STATUS_SYNC_READY)
+			sem_post(&s->sync_sem);
 	}
-
 }
 
 void stepper_spi_send(pincPiStepper* s)

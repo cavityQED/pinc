@@ -2,11 +2,12 @@
 
 void stepper_init(struct stepper* s)
 {
-	uint mask = (1 << s->p_step) | (1 << s->p_dir) | (1 << s->p_ena) | (1 << s->p_motion);
+	uint mask = (1 << s->p_step) | (1 << s->p_dir) | (1 << s->p_ena) | (1 << s->p_motion) | (1 << s->p_sync_ready);
 	gpio_init_mask(mask);
 	gpio_set_dir_out_masked(mask);
 	gpio_put(s->p_ena, 0);
 	gpio_put(s->p_motion, 1);
+	gpio_put(s->p_sync_ready, 1);
 
 	sem_init(&s->sem, 0, 1);
 }
@@ -93,15 +94,19 @@ void stepper_line_move(struct stepper* s)
 	printf("\tDelay:\t%d\n", s->move.delay);
 	printf("\tAxis:\t0x%2X\n", s->axis);
 
-	if(s->status & SYNC_MODE)
+	if(s->move.mode & SYNC_MODE)
+	{
+		gpio_put(s->p_sync_ready, 0);
 		sem_acquire_blocking(&s->sem);
+	}
 
-	if(s->move.mode == LINE)
+	if(s->move.mode & LINE_MODE)
 		alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), line_timer_cb, (void*)s, s->timer);
 	else if(s->move.mode == JOG_MOVE)
 		alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), jog_timer_cb, (void*)s, s->timer);
 
 	gpio_put(s->p_motion, 0);
+	gpio_put(s->p_sync_ready, 1);
 }
 
 void stepper_move(struct stepper* s)
@@ -111,6 +116,7 @@ void stepper_move(struct stepper* s)
 	{
 		case LINE:
 		case JOG_MOVE:
+		case LINE_MODE | SYNC_MODE:
 			stepper_line_move(s);
 			break;
 

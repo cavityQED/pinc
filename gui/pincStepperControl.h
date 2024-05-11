@@ -13,6 +13,8 @@ extern "C" {
 	#include "c/stepper/pi_stepper.h" 
 }
 
+#define SYNC_PIN	16
+
 class pincStepperControl : public QGroupBox
 {
 	Q_OBJECT
@@ -27,6 +29,7 @@ public:
 public:
 
 	void jog(PINC_AXIS axis, bool dir);
+	void sync_move(pincStepperMove_t* move);
 
 protected:
 

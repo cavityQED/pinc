@@ -67,3 +67,23 @@ void pincStepperControl::jog(PINC_AXIS axis, bool dir)
 		stepper_jog(stepper.get());
 	}
 }
+
+void pincStepperControl::sync_move(pincStepperMove_t* move)
+{
+	gpioWrite(SYNC_PIN, 0);
+	
+	move->mode |= SYNC_MODE;
+
+	std::vector<sem_t*> sems;
+
+	for(auto it = m_steppers.begin(); it != m_steppers.end(); it++)
+	{
+		stepper_move(it->second.get(), move);
+		sems.push_back(&it->second->sync_sem);
+	}
+
+	for(auto& sem : sems)
+		sem_wait(sem);
+
+	gpioWrite(SYNC_PIN, 1);
+}
