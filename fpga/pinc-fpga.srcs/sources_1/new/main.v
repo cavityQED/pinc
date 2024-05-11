@@ -85,6 +85,7 @@ module top
 
     reg         data_rw;
     reg [7:0]   data_addr;
+    reg [7:0]   rd_addr;
     reg [7:0]   wr_byte;
     reg         wr_valid;
     wire [7:0]  rd_byte;
@@ -138,7 +139,7 @@ module top
 
         if(spi_cs_rise) begin
             spi_byte_num    <= 8'h00;
-            case (data_addr)
+            case (rd_addr)
                 X_STATUS_REG    : x_clr <= 1'b0;
                 Y_STATUS_REG    : y_clr <= 1'b0;
             endcase
@@ -146,6 +147,7 @@ module top
 
         if(spi_rx_valid) begin
             if(spi_byte_num == 8'h00) begin
+                rd_addr     <= spi_rx_byte;
                 data_addr   <= spi_rx_byte;
                 data_rw     <= 1'b1;
             end
