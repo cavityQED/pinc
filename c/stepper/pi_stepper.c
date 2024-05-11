@@ -2,7 +2,7 @@
 
 void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 {
-	static pincSPIclient_t* client;
+	pincSPIclient_t* client;
 
 	pincPiStepper* s = (pincPiStepper*)dev;
 
