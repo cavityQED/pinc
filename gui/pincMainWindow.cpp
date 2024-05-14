@@ -11,37 +11,37 @@ void pincMainWindow::setControlMode(CONTROL_MODE mode)
 
 	switch(m_ctrl_mode)
 	{
-		case AUTO:
+		case AUTO_CTRL:
 		{
 			printf("AUTO Mode\n");
 			break;
 		}
 
-		case HOME:
+		case HOME_CTRL:
 		{
 			printf("HOME Mode\n");
 			break;
 		}
 
-		case EDIT:
+		case EDIT_CTRL:
 		{
 			printf("EDIT Mode\n");
 			break;
 		}
 
-		case MDI:
+		case MDI_CTRL:
 		{
 			printf("MDI Mode\n");
 			break;
 		}
 
-		case MANUAL:
+		case MANUAL_CTRL:
 		{
 			printf("MANUAL Mode\n");
 			break;
 		}
 
-		case JOG:
+		case JOG_CTRL:
 		{
 			printf("JOG Mode\n");
 			break;
@@ -54,7 +54,7 @@ void pincMainWindow::setControlMode(CONTROL_MODE mode)
 
 void pincMainWindow::jog(PINC_AXIS axis, bool dir)
 {
-	if(m_ctrl_mode != JOG)
+	if(m_ctrl_mode != JOG_CTRL)
 		return;
 
 	const char* dir_string = (dir)? "Positive" : "Negative";

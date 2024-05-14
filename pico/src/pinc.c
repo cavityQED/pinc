@@ -17,7 +17,7 @@ static void gpio_isr(uint pin, uint32_t event_mask)
 {
 	switch(pin)
 	{
-		case PIN_SPI_MSG_REQUEST:
+		case PICO_PIN_SPI_MSG_REQ:
 			if(event_mask & GPIO_IRQ_EDGE_RISE)
 				queue_try_add(&spiQueue, &spi);
 			else if(event_mask & GPIO_IRQ_EDGE_FALL)
@@ -28,7 +28,7 @@ static void gpio_isr(uint pin, uint32_t event_mask)
 			}
 			break;
 
-		case PIN_SYNC_SIGNAL:
+		case PICO_PIN_SYNC_SIGNAL:
 			if(event_mask & GPIO_IRQ_EDGE_RISE)
 				sem_release(&motor.sem);
 			break;
@@ -48,8 +48,8 @@ static void get_spi_msg()
 	printf("Status:\t%X\n", motor.status);
 	printf("Position:\t%d\n", motor.pos);
 
-	memset(spi_in_buf, 0, SPI_TRANSFER_LENGTH);
-	memset(spi_out_buf, 0, SPI_TRANSFER_LENGTH);
+	memset(spi_in_buf, 0, MAX_SPI_TRANSFER_LENGTH);
+	memset(spi_out_buf, 0, MAX_SPI_TRANSFER_LENGTH);
 	memcpy(spi_out_buf, &update, sizeof(pincStepperUpdate_t));
 	spi.tx_buf = spi_out_buf;
 
@@ -60,19 +60,20 @@ static void get_spi_msg()
 
 static void core1_main()
 {
-	motor.status		= MOVE_READY;
-	motor.p_step		= PICO_STEP_PIN;
-	motor.p_dir			= PICO_DIR_PIN;
-	motor.p_ena			= PICO_ENA_PIN;
-	motor.p_motion		= PIN_MOTION;
-	motor.p_sync_ready	= PIN_SYNC_READY;
+	motor.status		= PICO_STATUS_MOVE_READY;
+	motor.p_step		= PICO_PIN_STEP;
+	motor.p_dir			= PICO_PIN_DIR;
+	motor.p_ena			= PICO_PIN_ENABLE;
+	motor.p_motion		= PICO_PIN_MOTION;
+	motor.p_sync_ready	= PICO_PIN_SYNC_READY;
+	motor.p_move_ready	= PICO_PIN_MOVE_READY;
 	motor.spmm			= 800;
 	motor.move.delay	= 125;
 	motor.alarmPool		= alarm_pool_create(1, 2);
 	motor.timer			= &step_timer;
 	stepper_init(&motor);
 
-	uint8_t msg[SPI_TRANSFER_LENGTH];
+	uint8_t msg[MAX_SPI_TRANSFER_LENGTH];
 
 	while(1)
 	{
@@ -88,18 +89,18 @@ int main()
 {
 	stdio_init_all();
 
-	gpio_init(PIN_SPI_MSG_REQUEST);
-	gpio_set_dir(PIN_SPI_MSG_REQUEST, GPIO_IN);
-	gpio_pull_down(PIN_SPI_MSG_REQUEST);
-	gpio_set_irq_enabled_with_callback(	PIN_SPI_MSG_REQUEST,
+	gpio_init(PICO_PIN_SPI_MSG_REQ);
+	gpio_set_dir(PICO_PIN_SPI_MSG_REQ, GPIO_IN);
+	gpio_pull_down(PICO_PIN_SPI_MSG_REQ);
+	gpio_set_irq_enabled_with_callback(	PICO_PIN_SPI_MSG_REQ,
 										GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL,
 										true,
 										gpio_isr);
 
-	gpio_init(PIN_SYNC_SIGNAL);
-	gpio_set_dir(PIN_SYNC_SIGNAL, GPIO_IN);
-	gpio_pull_down(PIN_SYNC_SIGNAL);
-	gpio_set_irq_enabled_with_callback(	PIN_SYNC_SIGNAL,
+	gpio_init(PICO_PIN_SYNC_SIGNAL);
+	gpio_set_dir(PICO_PIN_SYNC_SIGNAL, GPIO_IN);
+	gpio_pull_down(PICO_PIN_SYNC_SIGNAL);
+	gpio_set_irq_enabled_with_callback(	PICO_PIN_SYNC_SIGNAL,
 										GPIO_IRQ_EDGE_RISE,
 										true,
 										gpio_isr);
@@ -114,22 +115,22 @@ int main()
 	static uint msg_spinlock;
 	msg_spinlock = spin_lock_claim_unused(true);
 	queue_init_with_spinlock(	&msgQueue,
-								SPI_TRANSFER_LENGTH,
+								MAX_SPI_TRANSFER_LENGTH,
 								1,
 								msg_spinlock);
 
-	for(uint8_t i = SPI_TRANSFER_LENGTH; i > 0; i--)
+	for(uint8_t i = MAX_SPI_TRANSFER_LENGTH; i > 0; i--)
 		spi_out_buf[i-1] = i;
 	spi_out_buf[0] = 0x80;
 
 	spi.pio		= pio0;
 	spi.sm		= 0;
 	spi.clk_div	= 1.f;
+	spi.tr_pin	= PICO_PIN_SPI_MSG_READY;
 	spi.in_pin	= PIO_SPI_DEFAULT_IN_PIN;
 	spi.out_pin = PIO_SPI_DEFAULT_OUT_PIN;
-	spi.tr_pin	= PIN_SPI_MSG_READY;
 	spi.bits	= PIO_SPI_BITS_PER_WORD;
-	spi.words	= SPI_TRANSFER_LENGTH;
+	spi.words	= MAX_SPI_TRANSFER_LENGTH;
 	spi.tx_buf	= spi_out_buf;
 	spi.rx_buf	= spi_in_buf;
 

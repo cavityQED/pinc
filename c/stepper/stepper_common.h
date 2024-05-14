@@ -1,56 +1,53 @@
 #ifndef STEPPER_COMMON_H
 #define STEPPER_COMMON_H
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+
 #define STEPPER_CMD_CONFIG		0xA0
-#define STEPPER_CMD_PRINT		0x01
-#define STEPPER_CMD_AXIS		0x02
-#define STEPPER_CMD_MODE		0x03
-#define STEPPER_CMD_SPMM		0x04
-#define STEPPER_CMD_JOG_SPEED	0x05
-#define STEPPER_CMD_MIN_SPEED	0x06
-#define STEPPER_CMD_MAX_SPEED	0x07
-#define STEPPER_CMD_ACCEL		0x08
-#define STEPPER_CMD_STOP		0x09
-#define STEPPER_CMD_PAUSE		0x0A
-#define STEPPER_CMD_UPDATE		0x0B
-#define STEPPER_MOVE			0xF1
+#define STEPPER_CMD_PRINT		0xB1
+#define STEPPER_CMD_AXIS		0xB2
+#define STEPPER_CMD_MODE		0xB3
+#define STEPPER_CMD_SPMM		0xB4
+#define STEPPER_CMD_JOG_SPEED	0xB5
+#define STEPPER_CMD_MIN_SPEED	0xB6
+#define STEPPER_CMD_MAX_SPEED	0xB7
+#define STEPPER_CMD_ACCEL		0xB8
+#define STEPPER_CMD_STOP		0xB9
+#define STEPPER_CMD_PAUSE		0xBA
+#define STEPPER_CMD_UPDATE		0xBB
+#define STEPPER_CMD_MOVE		0xF1
 
-#define MOTION		0x01
-#define DIRECTION	0x02
-#define MOVE_READY	0x04
-#define SYNC_READY	0x08
-#define SYNC_MODE	0x10
-#define LINE_MODE	0x20
-#define JOG_MODE	0x40
-#define POS_CHANGE	0x80
+static const uint8_t PICO_STATUS_SPI_READY	= 0x01;
+static const uint8_t PICO_STATUS_MOVE_READY	= 0x02;
+static const uint8_t PICO_STATUS_SYNC_READY	= 0x04;
+static const uint8_t PICO_STATUS_IN_MOTION	= 0x08;
+static const uint8_t PICO_STATUS_DIRECTION	= 0x10;
 
-#define STATUS_MOTION	0x01
-
+static const uint8_t JOG_MOVE	= 0x01;
+static const uint8_t LINE_MOVE	= 0x02;
+static const uint8_t CURVE_MOVE	= 0x04;
+static const uint8_t SYNC_MOVE	= 0x08;
 
 typedef enum
 {
 	X_AXIS,
 	Y_AXIS,
-	Z_AXIS
+	Z_AXIS,
 
 } PINC_AXIS; 
 
 typedef enum
 {
-	JOG_MOVE,
-	LINE,
-	CURVE
-
-} MOVE_MODE;
-
-typedef enum
-{
-	AUTO,
-	JOG,
-	HOME,
-	EDIT,
-	MDI,
-	MANUAL
+	AUTO_CTRL,
+	JOG_CTRL,
+	HOME_CTRL,
+	EDIT_CTRL,
+	MDI_CTRL,
+	MANUAL_CTRL,
 
 } CONTROL_MODE;
 

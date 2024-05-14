@@ -12,9 +12,17 @@
 
 #include "c/stepper/stepper_common.h"
 
-#define PICO_STEP_PIN		16
-#define PICO_DIR_PIN		17
-#define PICO_ENA_PIN		28
+#define PICO_PIN_MOTION			10
+#define PICO_PIN_SYNC_READY		11
+#define PICO_PIN_MOVE_READY		12
+#define PICO_PIN_SPI_MSG_READY	13
+
+#define PICO_PIN_SYNC_SIGNAL	14
+#define PICO_PIN_SPI_MSG_REQ	15
+
+#define PICO_PIN_STEP			16
+#define PICO_PIN_DIR			17
+#define PICO_PIN_ENABLE			28
 
 typedef struct repeating_timer picoTimer_t;
 struct stepper
@@ -25,6 +33,7 @@ struct stepper
 	int			p_dir;			// direction pin
 	int			p_motion;		// active low if (status & MOTION)
 	int			p_sync_ready;	
+	int			p_move_ready;
 	int			pos;			// position (steps)
 
 	PINC_AXIS	axis;
@@ -58,7 +67,6 @@ void set_dir			(struct stepper* s);
 void step				(struct stepper* s);
 void stepper_move		(struct stepper* s);
 void stepper_msg_handle	(struct stepper* s, uint8_t* msg);
-void stepper_line_move	(struct stepper* s);
 
 bool motor_timer_cb	(struct repeating_timer* timer);
 void callback		(uint gpio, uint32_t event_mask);

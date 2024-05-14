@@ -3,11 +3,9 @@
 
 #include <semaphore.h>
 
+#include "stepper_common.h"
 #include "c/spi/spi_client.h"
 #include "c/io/pin_request.h"
-#include "stepper_common.h"
-
-#define X_SPMM					800
 
 #define X_SPI_HANDSHAKE		6
 #define X_STATUS_INTERRUPT	21
@@ -16,10 +14,6 @@
 #define Y_SPI_HANDSHAKE		5
 #define Y_STATUS_INTERRUPT	13
 #define Y_FPGA_STATUS_ADDR	0xB0
-
-#define PICO_STATUS_SPI_READY	0x01
-#define PICO_STATUS_MOTION		0x08
-#define PICO_STATUS_SYNC_READY	0x10
 
 typedef struct
 {

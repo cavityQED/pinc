@@ -13,6 +13,8 @@
 
 #include "spi.pio.h"
 
+#include "c/spi/spi_common.h"
+
 #define PIO_SPI_DEFAULT_IN_PIN			0
 #define PIO_SPI_DEFAULT_OUT_PIN			3
 #define PIO_SPI_BITS_PER_WORD			8

@@ -2,9 +2,9 @@
 
 void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 {
-	pincSPIclient_t* client;
 
-	pincPiStepper* s = (pincPiStepper*)dev;
+	pincPiStepper*		s 		= (pincPiStepper*)dev;
+	pincSPIclient_t*	client	= &s->fpga_spi_client;
 
 	uint8_t tx[2] = {0,0};
 	uint8_t rx[2] = {0,0};
@@ -22,7 +22,6 @@ void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 			break;
 	}
 
-	client = &s->fpga_spi_client;
 
 	if(!level) // start spi
 	{
@@ -40,10 +39,10 @@ void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 
 		if(low_flip & PICO_STATUS_SPI_READY)
 			pin_request_post(&s->spi_request);
-		else if(high_flip & PICO_STATUS_MOTION)
-			stepper_update(s);
 		else if(low_flip & PICO_STATUS_SYNC_READY)
 			sem_post(&s->sync_sem);
+		else if(high_flip & PICO_STATUS_IN_MOTION)
+			stepper_update(s);
 	}
 }
 
@@ -112,7 +111,7 @@ void stepper_move(pincPiStepper* s, pincStepperMove_t* move)
 {
 	stepper_lock(s);
 
-	stepper_cmd(s, STEPPER_MOVE, move, sizeof(pincStepperMove_t));
+	stepper_cmd(s, STEPPER_CMD_MOVE, move, sizeof(pincStepperMove_t));
 
 	stepper_unlock(s);
 }
@@ -121,7 +120,7 @@ void stepper_jog(pincPiStepper* s)
 {
 	stepper_lock(s);
 
-	stepper_cmd(s, STEPPER_MOVE, &s->jog_move, sizeof(pincStepperMove_t));
+	stepper_cmd(s, STEPPER_CMD_MOVE, &s->jog_move, sizeof(pincStepperMove_t));
 
 	stepper_unlock(s);
 }
@@ -137,6 +136,6 @@ void stepper_update(pincPiStepper* s)
 
 void stepper_print(pincPiStepper* s)
 {
-	printf("Axis %X Update:\n\tPosition (steps):\t%d\n\n", s->config.axis, s->step_pos);
+	printf("Axis %X:\n\tPosition (steps):\t%d\n\n", s->config.axis, s->step_pos);
 }
 

@@ -2,12 +2,19 @@
 
 void stepper_init(struct stepper* s)
 {
-	uint mask = (1 << s->p_step) | (1 << s->p_dir) | (1 << s->p_ena) | (1 << s->p_motion) | (1 << s->p_sync_ready);
+	uint mask = (1 << s->p_step)		| 
+				(1 << s->p_dir)			| 
+				(1 << s->p_ena)			| 
+				(1 << s->p_motion)		| 
+				(1 << s->p_sync_ready)	|
+				(1 << s->p_move_ready);
+
 	gpio_init_mask(mask);
 	gpio_set_dir_out_masked(mask);
 	gpio_put(s->p_ena, 0);
 	gpio_put(s->p_motion, 1);
 	gpio_put(s->p_sync_ready, 1);
+	gpio_put(s->p_move_ready, 1);
 
 	sem_init(&s->sem, 0, 1);
 }
@@ -16,9 +23,9 @@ void set_dir(struct stepper* s)
 {
 	gpio_put(s->p_dir, s->dir);
 	if(s->dir)
-		s->status |= DIRECTION;
+		s->status |= PICO_STATUS_DIRECTION;
 	else
-		s->status &= ~DIRECTION;
+		s->status &= ~PICO_STATUS_DIRECTION;
 }
 
 void step(struct stepper* s)
@@ -26,7 +33,6 @@ void step(struct stepper* s)
 	gpio_put(s->p_step, 1);
 	int add = (s->dir)? 1 : -1;
 	s->pos += add;
-	s->status |= POS_CHANGE;
 	sleep_us(8);
 	gpio_put(s->p_step, 0);
 }
@@ -35,11 +41,10 @@ void stop(struct stepper* s)
 {
 	printf("\tStopping\n\n");
 	cancel_repeating_timer(s->timer);
-	s->status &= ~POS_CHANGE;
-	s->status &= ~MOTION;
-	s->status |= MOVE_READY;
+	s->status &= ~PICO_STATUS_IN_MOTION;
+	s->status |= PICO_STATUS_MOVE_READY;
 
-	gpio_put(s->p_motion, 1);
+	gpio_set_mask((1 << s->p_motion) | (1 << s->p_sync_ready) | (1 << s->p_move_ready));
 }
 
 bool line_timer_cb(picoTimer_t* timer)
@@ -83,46 +88,34 @@ bool jog_timer_cb(picoTimer_t* timer)
 	}
 }
 
-void stepper_line_move(struct stepper* s)
+void stepper_move(struct stepper* s)
 {
-	printf("\tLine Move\n");
-	s->status		&= ~MOVE_READY;
-	s->status		|= MOTION;
+	if(s->status & PICO_STATUS_IN_MOTION)
+		return;
+	else
+		stepper_print_move(&s->move);
+
+	s->status		&= ~PICO_STATUS_MOVE_READY;
+	s->status		|= PICO_STATUS_IN_MOTION;
 	s->move.delay	= 1000000 / s->move.v_sps;	// delay in us between steps
 
-	printf("\tMoving:\n");
-	printf("\tDelay:\t%d\n", s->move.delay);
-	printf("\tAxis:\t0x%2X\n", s->axis);
-
-	if(s->move.mode & SYNC_MODE)
+	if(s->move.mode & SYNC_MOVE)
 	{
 		gpio_put(s->p_sync_ready, 0);
 		sem_acquire_blocking(&s->sem);
 	}
 
-	if(s->move.mode & LINE_MODE)
+	if(s->move.mode & LINE_MOVE)
 		alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), line_timer_cb, (void*)s, s->timer);
-	else if(s->move.mode == JOG_MOVE)
+	else if(s->move.mode & JOG_MOVE)
 		alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), jog_timer_cb, (void*)s, s->timer);
-
-	gpio_put(s->p_motion, 0);
-	gpio_put(s->p_sync_ready, 1);
-}
-
-void stepper_move(struct stepper* s)
-{
-	stepper_print_move(&s->move);
-	switch(s->move.mode)
+	else
 	{
-		case LINE:
-		case JOG_MOVE:
-		case LINE_MODE | SYNC_MODE:
-			stepper_line_move(s);
-			break;
-
-		default:
-			break;
+		stop(s);
+		return;
 	}
+
+	gpio_clr_mask((1 << s->p_motion) | (1 << s->p_move_ready));
 }
 
 void stepper_msg_handle(struct stepper* s, uint8_t* msg)
@@ -133,9 +126,7 @@ void stepper_msg_handle(struct stepper* s, uint8_t* msg)
 
 	switch(msg[0])
 	{
-		case STEPPER_MOVE:
-			if(s->status & MOTION)
-				return;
+		case STEPPER_CMD_MOVE:
 			memset(&s->move, 0, sizeof(pincStepperMove_t));
 			memcpy(&s->move, &msg[1], sizeof(pincStepperMove_t));
 			stepper_move(s);

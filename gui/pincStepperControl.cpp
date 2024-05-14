@@ -72,14 +72,19 @@ void pincStepperControl::sync_move(pincStepperMove_t* move)
 {
 	gpioWrite(SYNC_PIN, 0);
 	
-	move->mode |= SYNC_MODE;
+	move->mode |= SYNC_MOVE;
 
 	std::vector<sem_t*> sems;
 
 	for(auto it = m_steppers.begin(); it != m_steppers.end(); it++)
 	{
-		stepper_move(it->second.get(), move);
-		sems.push_back(&it->second->sync_sem);
+		if(it->second->status & PICO_STATUS_MOVE_READY)
+		{
+			stepper_move(it->second.get(), move);
+			sems.push_back(&it->second->sync_sem);
+		}
+		else
+			return;
 	}
 
 	for(auto& sem : sems)

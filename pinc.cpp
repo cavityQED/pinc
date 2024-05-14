@@ -131,10 +131,10 @@ int main(int argc, char *argv[])
 
 	memset(&sync_move, 0, sizeof(pincStepperMove_t));
 
-	sync_move.mode	= LINE_MODE | SYNC_MODE;
+	sync_move.mode	= LINE_MOVE | SYNC_MOVE;
 	sync_move.v_sps	= config.jog_speed;
-	sync_move.end.x	= config.spmm;
-	sync_move.end.y = config.spmm;
+	sync_move.end.x	= 10 * config.spmm;
+	sync_move.end.y = 10 * config.spmm;
 
 	QAction* test_move = new QAction(ctrl_panel);
 	ctrl_panel->addAction(test_move);
