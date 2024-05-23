@@ -20,9 +20,9 @@
 #define PICO_PIN_SYNC_SIGNAL	14
 #define PICO_PIN_SPI_MSG_REQ	15
 
-#define PICO_PIN_STEP			16
-#define PICO_PIN_DIR			17
-#define PICO_PIN_ENABLE			28
+#define PICO_PIN_STEP			6
+#define PICO_PIN_DIR			7
+#define PICO_PIN_ENABLE			8
 
 typedef struct repeating_timer picoTimer_t;
 struct stepper
