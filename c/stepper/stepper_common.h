@@ -89,7 +89,7 @@ static void stepper_get_default_config(pincStepperConfig_t* config)
 
 	config->spi_client_cs	= -1;
 	config->spi_bpw			= 8;
-	config->spi_fpga_speed	= 500000;
+	config->spi_fpga_speed	= 2000000;
 	config->spi_pico_speed	= 4000000;
 }
 

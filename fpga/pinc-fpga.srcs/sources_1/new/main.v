@@ -73,15 +73,18 @@ module top
 
     reg  b_clr;
     reg  b_en;
-    signal_interrupt    b_sig   (clk, rst, b_clr, b_en, b_out, intr[0]);
+    wire b_int_new;
+    signal_interrupt    b_sig   (clk, rst, b_clr, b_en, b_out, b_int_new, intr[0]);
     
     reg x_clr;
     reg x_en;
-    signal_interrupt    x_sig   (clk, rst, x_clr, x_en, x_out, intr[1]);
+    wire x_int_new;
+    signal_interrupt    x_sig   (clk, rst, x_clr, x_en, x_out, x_int_new, intr[1]);
 
     reg y_clr;
     reg y_en;
-    signal_interrupt    y_sig   (clk, rst, y_clr, y_en, y_out, intr[2]);
+    wire y_int_new;
+    signal_interrupt    y_sig   (clk, rst, y_clr, y_en, y_out, y_int_new, intr[2]);
 
     reg         data_rw;
     reg [7:0]   data_addr;
@@ -162,12 +165,12 @@ module top
             spi_tx_valid    <= 1'b1;
         end
 
-        if(x_int_fall) begin
+        if(x_int_new) begin
             data_addr       <= X_STATUS_REG;
             wr_byte         <= x_out;
             wr_valid        <= 1'b1;
         end
-        else if(y_int_fall) begin
+        else if(y_int_new) begin
             data_addr       <= Y_STATUS_REG;
             wr_byte         <= y_out;
             wr_valid        <= 1'b1;

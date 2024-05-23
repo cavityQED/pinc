@@ -35,7 +35,7 @@ module spi
     reg    spi_clk_rst;
     reg    spi_clk_en;
 
-    debounce #(.TICK(50)) spi_clk_db
+    debounce #(.TICK(5)) spi_clk_db
     (
         clk,
         rst,

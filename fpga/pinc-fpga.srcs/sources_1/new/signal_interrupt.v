@@ -10,6 +10,7 @@ module signal_interrupt
     input en,
     input [MSB-1:0] in,
 
+    output reg new_signal,
     output reg intr
 );
 
@@ -17,6 +18,7 @@ module signal_interrupt
     wire          w_flip = (r_in ^ in) > 0;
 
     always @(posedge clk) begin
+        new_signal  <= 1'b0;
         if(~rst) begin
             intr    <= 1'b1;
             if(PULL)
@@ -29,8 +31,9 @@ module signal_interrupt
             intr    <= 1'b1;
         end
         else if(en) begin
-            r_in    <= in;
-            intr    <= intr & ~w_flip;
+            r_in        <= in;
+            intr        <= intr & ~w_flip;
+            new_signal  <= w_flip;
         end
     end
 
