@@ -47,24 +47,27 @@ void stop(struct stepper* s)
 	gpio_set_mask((1 << s->p_motion) | (1 << s->p_sync_ready) | (1 << s->p_move_ready));
 }
 
-bool line_timer_cb(picoTimer_t* timer)
+bool sync_timer_cb(picoTimer_t* timer)
 {
-	static struct stepper* s;
-	s = (struct stepper*)timer->user_data;
-	
-	line_step_2d(&s->move);
-	s->dir = s->move.step_dir;
-	set_dir(s);
+	struct stepper* s = (struct stepper*)timer->user_data;
+
+	if(s->move.mode & LINE_MOVE)
+		line_step_2d(&s->move);
+	else if(s->move.mode & CURVE_MOVE)
+		curve_step_2d(&s->move);
 
 	if(s->move.stop)
 	{
 		stop(s);
 		return false;
 	}
-
-	if(s->axis == s->move.step_axis)
+	else if(s->axis == s->move.step_axis)
+	{
+		s->dir = s->move.step_dir;
+		set_dir(s);
 		step(s);
-
+	}
+	
 	return true;
 }
 
@@ -95,27 +98,26 @@ void stepper_move(struct stepper* s)
 	else
 		stepper_print_move(&s->move);
 
+	gpio_clr_mask((1 << s->p_motion) | (1 << s->p_move_ready));
+
 	s->status		&= ~PICO_STATUS_MOVE_READY;
 	s->status		|= PICO_STATUS_IN_MOTION;
 	s->move.delay	= 1000000 / s->move.v_sps;	// delay in us between steps
 
-	if(s->move.mode & SYNC_MOVE)
+	if(s->move.mode & JOG_MOVE)
+		alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), jog_timer_cb, (void*)s, s->timer);
+	else if(s->move.mode & SYNC_MOVE)
 	{
 		gpio_put(s->p_sync_ready, 0);
 		sem_acquire_blocking(&s->sem);
+		alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), sync_timer_cb, (void*)s, s->timer);
 	}
-
-	if(s->move.mode & LINE_MOVE)
-		alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), line_timer_cb, (void*)s, s->timer);
-	else if(s->move.mode & JOG_MOVE)
-		alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), jog_timer_cb, (void*)s, s->timer);
 	else
 	{
 		stop(s);
 		return;
 	}
 
-	gpio_clr_mask((1 << s->p_motion) | (1 << s->p_move_ready));
 }
 
 void stepper_msg_handle(struct stepper* s, uint8_t* msg)

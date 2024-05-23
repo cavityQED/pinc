@@ -18,6 +18,7 @@ static pthread_mutexattr_t	spi_mutex_attr;
 
 static pincStepperControl*	steppers;
 static pincStepperMove_t	sync_move;
+static pincStepperMove_t	curve_move;
 
 static void shutdown(int signum)
 {
@@ -29,6 +30,12 @@ static void sync_test(bool checked)
 {
 	printf("SYNC TEST\n");
 	steppers->sync_move(&sync_move);
+}
+
+static void curve_test(bool checked)
+{
+	printf("CURVE TEST\n");
+	steppers->sync_move(&curve_move);
 }
 
 int main(int argc, char *argv[])
@@ -130,11 +137,20 @@ int main(int argc, char *argv[])
 	mainWindow->show();
 
 	memset(&sync_move, 0, sizeof(pincStepperMove_t));
+	memset(&curve_move, 0, sizeof(pincStepperMove_t));
 
 	sync_move.mode	= LINE_MOVE | SYNC_MOVE;
 	sync_move.v_sps	= config.jog_speed;
 	sync_move.end.x	= 10 * config.spmm;
 	sync_move.end.y = 10 * config.spmm;
+
+
+	curve_move.mode		= CURVE_MOVE | SYNC_MOVE;
+	curve_move.v_sps	= config.jog_speed;
+	curve_move.end.x	= 10 * config.spmm;
+	curve_move.center.x = curve_move.end.x / 2;
+	curve_move.radius	= curve_move.end.x / 2;
+	curve_move.cw		= 1;
 
 	QAction* test_move = new QAction(ctrl_panel);
 	ctrl_panel->addAction(test_move);
@@ -142,6 +158,13 @@ int main(int argc, char *argv[])
 	QObject::connect(	test_move,
 						&QAction::triggered,
 						sync_test);
+
+	QAction* curve_action = new QAction(ctrl_panel);
+	ctrl_panel->addAction(curve_action);
+	curve_action->setShortcut(Qt::Key_F2);
+	QObject::connect(	curve_action,
+						&QAction::triggered,
+						curve_test);
 
 	return app.exec();
 }

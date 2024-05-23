@@ -2,7 +2,6 @@
 
 void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 {
-
 	pincPiStepper*		s 		= (pincPiStepper*)dev;
 	pincSPIclient_t*	client	= &s->fpga_spi_client;
 

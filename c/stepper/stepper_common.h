@@ -133,12 +133,19 @@ static inline float slope_xy(p_cartesian cur, p_cartesian end)
 #define YPOS	0x02
 #define ABOVE	0x04
 #define BELOW	0x08
+#define INSIDE	0x10
+#define CW		0x20
+#define QUAD_1	XPOS | YPOS
+#define QUAD_2	XPOS
+#define QUAD_3	0x00
+#define QUAD_4	YPOS
 
 typedef struct
 {
 	uint8_t			mode;
 	p_cartesian		cur;		// current point
 	p_cartesian		end;		// end point
+	p_cartesian		center;		// center of curve move
 	uint32_t		v_sps;		// speed [steps/s]
 	uint32_t		radius;		// [steps]
 	uint32_t		steps;		// used instead of cur/end for jog mode
@@ -182,27 +189,72 @@ static void line_step_2d(pincStepperMove_t* move)
 
 	switch(mask)
 	{
-		// quadrant 1
-		case ABOVE | XPOS | YPOS:	move->cur.x++; move->step_axis = X_AXIS; move->step_dir = 1; break;
-		case BELOW | XPOS | YPOS:	move->cur.y++; move->step_axis = Y_AXIS; move->step_dir = 1; break;
+		case QUAD_1 | ABOVE:	move->cur.x++; move->step_axis = X_AXIS; move->step_dir = 1; break;
+		case QUAD_1 | BELOW:	move->cur.y++; move->step_axis = Y_AXIS; move->step_dir = 1; break;
 
-		// quadrant 2
-		case ABOVE | YPOS:			move->cur.x--; move->step_axis = X_AXIS; move->step_dir = 0; break;
-		case BELOW | YPOS:			move->cur.y++; move->step_axis = Y_AXIS; move->step_dir = 1; break;
+		case QUAD_2 | ABOVE:	move->cur.y--; move->step_axis = Y_AXIS; move->step_dir = 0; break;
+		case QUAD_2 | BELOW:	move->cur.x++; move->step_axis = X_AXIS; move->step_dir = 1; break;
 
-		// quadrant 3
-		case ABOVE:					move->cur.y--; move->step_axis = Y_AXIS; move->step_dir = 0; break;
-		case BELOW:					move->cur.x--; move->step_axis = X_AXIS; move->step_dir = 0; break;
+		case QUAD_3 | ABOVE:	move->cur.y--; move->step_axis = Y_AXIS; move->step_dir = 0; break;
+		case QUAD_3 | BELOW:	move->cur.x--; move->step_axis = X_AXIS; move->step_dir = 0; break;
 			
-		// quadrant 4
-		case ABOVE | XPOS:			move->cur.y--; move->step_axis = Y_AXIS; move->step_dir = 0; break;
-		case BELOW | XPOS:			move->cur.x++; move->step_axis = X_AXIS; move->step_dir = 1; break;
+		case QUAD_4 | ABOVE:	move->cur.x--; move->step_axis = X_AXIS; move->step_dir = 0; break;
+		case QUAD_4 | BELOW:	move->cur.y++; move->step_axis = Y_AXIS; move->step_dir = 1; break;
 
 		default:
 			break;
 	}
 }
 
+static void curve_step_2d(pincStepperMove_t* move)
+{
+	if(pnt_cmp_cart(move->cur, move->end))
+	{
+		printf("\tSetting Stop True\n");
+		move->stop = true;
+		return;
+	}
+
+	int cur_x = move->cur.x - move->center.x;
+	int cur_y = move->cur.y - move->center.y;
+	int dxy			= (cur_x*cur_x)+(cur_y*cur_y) - (move->radius*move->radius);
+	uint8_t mask	= 0x00;
+
+	if(dxy < 0)
+		mask |= INSIDE;
+	if(cur_x > 0)
+		mask |= XPOS;
+	if(cur_y > 0)
+		mask |= YPOS;
+	if(move->cw)
+		mask |= CW;
+
+	switch(mask)
+	{
+		case QUAD_1 | INSIDE | CW:	move->cur.x++;	move->step_axis = X_AXIS;	move->step_dir = 1; break;
+		case QUAD_1 | INSIDE:		move->cur.y++;	move->step_axis = Y_AXIS;	move->step_dir = 1; break;
+		case QUAD_1 | CW:			move->cur.y--;	move->step_axis = Y_AXIS;	move->step_dir = 0; break;
+		case QUAD_1:				move->cur.x--;	move->step_axis = X_AXIS;	move->step_dir = 0; break;
+
+		case QUAD_2 | INSIDE | CW:	move->cur.y--;	move->step_axis = Y_AXIS;	move->step_dir = 0; break;
+		case QUAD_2 | INSIDE:		move->cur.x++;	move->step_axis = X_AXIS;	move->step_dir = 1; break;
+		case QUAD_2 | CW:			move->cur.x--;	move->step_axis = X_AXIS;	move->step_dir = 0; break;
+		case QUAD_2:				move->cur.y++;	move->step_axis = Y_AXIS;	move->step_dir = 1; break;
+
+		case QUAD_3 | INSIDE | CW:	move->cur.x--;	move->step_axis = X_AXIS;	move->step_dir = 0; break;
+		case QUAD_3 | INSIDE:		move->cur.y--;	move->step_axis = Y_AXIS;	move->step_dir = 0; break;
+		case QUAD_3 | CW:			move->cur.y++;	move->step_axis = Y_AXIS;	move->step_dir = 1; break;
+		case QUAD_3:				move->cur.x++;	move->step_axis = X_AXIS;	move->step_dir = 1; break;
+
+		case QUAD_4 | INSIDE | CW:	move->cur.y++;	move->step_axis = Y_AXIS;	move->step_dir = 1; break;
+		case QUAD_4 | INSIDE:		move->cur.x--;	move->step_axis = X_AXIS;	move->step_dir = 0; break;
+		case QUAD_4 | CW:			move->cur.x++;	move->step_axis = X_AXIS;	move->step_dir = 1; break;
+		case QUAD_4:				move->cur.y--;	move->step_axis = Y_AXIS;	move->step_dir = 0; break;
+
+		default:
+			break;
+	}
+}
 
 
 
