@@ -146,13 +146,17 @@ typedef struct
 	p_cartesian		cur;		// current point
 	p_cartesian		end;		// end point
 	p_cartesian		center;		// center of curve move
-	uint32_t		v_sps;		// speed [steps/s]
+	uint32_t		v_sps;		// current speed [steps/s]
+	uint32_t		v0_sps;		// start speed [steps/s]
+	uint32_t		vf_sps;		// max speed [steps/s]
 	uint32_t		radius;		// [steps]
 	uint32_t		steps;		// used instead of cur/end for jog mode
 	bool			cw;			// 0 - counterclockwise; 1 - clockwise
 
 	uint8_t			step_axis;
 	uint32_t		delay;		// delay in us between steps
+	uint32_t		time;		// time in us from start of move
+	uint32_t		accel;		// acceleration [steps/s/s]
 	bool			step_dir;
 	bool			stop;
 
