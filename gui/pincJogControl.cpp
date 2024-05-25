@@ -47,6 +47,11 @@ pincJogControl::pincJogControl(QWidget* parent) : QGroupBox(parent)
 	m_button_z_pos		= new QPushButton("Z+");
 	m_button_z_neg		= new QPushButton("Z-");
 
+	m_button_x_pos->setShortcut(Qt::Key_D);
+	m_button_x_neg->setShortcut(Qt::Key_A);
+	m_button_y_pos->setShortcut(Qt::Key_W);
+	m_button_y_neg->setShortcut(Qt::Key_S);
+
 	connect(m_button_x_pos, &QPushButton::clicked, [this] {jog(X_AXIS, 1);});
 	connect(m_button_x_neg, &QPushButton::clicked, [this] {jog(X_AXIS, 0);});
 	connect(m_button_y_pos, &QPushButton::clicked, [this] {jog(Y_AXIS, 1);});
