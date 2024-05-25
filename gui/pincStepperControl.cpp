@@ -70,7 +70,6 @@ void pincStepperControl::jog(PINC_AXIS axis, bool dir)
 
 void pincStepperControl::sync_move(pincStepperMove_t* move)
 {
-	gpioWrite(SYNC_PIN, 0);
 	
 	move->mode |= SYNC_MOVE;
 
@@ -86,6 +85,8 @@ void pincStepperControl::sync_move(pincStepperMove_t* move)
 		else
 			return;
 	}
+	
+	gpioWrite(SYNC_PIN, 0);
 
 	for(auto& sem : sems)
 		sem_wait(sem);
