@@ -3,7 +3,8 @@ set(LIBRARY_SOURCE_FILES	pinc_gui.cpp
 							pincMainWindow.cpp
 							pincControlModeButtons.cpp
 							pincStepperControl.cpp
-							pincJogControl.cpp)
+							pincJogControl.cpp
+							pincStepperMove.cpp)
 
 set(LINKED_LIBRARIES		Qt5::Core
 							Qt5::Widgets

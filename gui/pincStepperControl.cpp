@@ -70,18 +70,25 @@ void pincStepperControl::jog(PINC_AXIS axis, bool dir)
 	}
 }
 
-void pincStepperControl::sync_move(pincStepperMove_t* move)
+void pincStepperControl::sync_move(pincStepperMove_t* move, bool convert)
 {
-	
 	move->mode |= SYNC_MOVE;
 
 	std::vector<sem_t*> sems;
+	pincStepperMove_t	steps_move;
 
 	for(auto it = m_steppers.begin(); it != m_steppers.end(); it++)
 	{
 		if(it->second->status & PICO_STATUS_MOVE_READY)
 		{
-			stepper_move(it->second.get(), move);
+			if(convert)
+			{
+				stepper_move_mm_to_steps(move, &steps_move, it->second->config.spmm);
+				stepper_move(it->second.get(), &steps_move);
+			}
+			else
+				stepper_move(it->second.get(), move);
+
 			sems.push_back(&it->second->sync_sem);
 		}
 		else

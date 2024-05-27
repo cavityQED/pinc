@@ -5,5 +5,6 @@
 #include "gui/pincControlModeButtons.h"
 #include "gui/pincJogControl.h"
 #include "gui/pincStepperControl.h"
+#include "gui/pincStepperMove.h"
 
 #endif

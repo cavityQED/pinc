@@ -29,7 +29,7 @@ public:
 public:
 
 	void jog(PINC_AXIS axis, bool dir);
-	void sync_move(pincStepperMove_t* move);
+	void sync_move(pincStepperMove_t* move, bool convert = false);
 
 protected:
 

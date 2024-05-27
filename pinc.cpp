@@ -17,6 +17,7 @@ static pthread_mutex_t		pin_req_mutex;
 static pthread_mutexattr_t	spi_mutex_attr;
 
 static pincStepperControl*	steppers;
+static pincStepperMove*		move_window;
 static pincStepperMove_t	sync_move;
 static pincStepperMove_t	curve_move;
 
@@ -50,8 +51,10 @@ int main(int argc, char *argv[])
 	pincJogControl*			jog_panel	= new pincJogControl();
 	QWidget*				central		= new QWidget();
 	QVBoxLayout*			vlayout		= new QVBoxLayout();
+	QHBoxLayout*			hlayout		= new QHBoxLayout();
 	
 	steppers	= new pincStepperControl();
+	move_window	= new pincStepperMove();
 
 	pthread_mutexattr_init(&spi_mutex_attr);
 	pthread_mutexattr_settype(&spi_mutex_attr, PTHREAD_MUTEX_ERRORCHECK | PTHREAD_MUTEX_DEFAULT);
@@ -74,8 +77,10 @@ int main(int argc, char *argv[])
 
 	vlayout->addWidget(ctrl_panel);
 	vlayout->addWidget(jog_panel);
+	hlayout->addLayout(vlayout);
+	hlayout->addWidget(move_window);
 
-	central->setLayout(vlayout);
+	central->setLayout(hlayout);
 	mainWindow->setCentralWidget(central);
 
 	QObject::connect(	ctrl_panel,
@@ -87,6 +92,11 @@ int main(int argc, char *argv[])
 						&pincJogControl::jog,
 						steppers,
 						&pincStepperControl::jog);
+
+	QObject::connect(	move_window,
+						&pincStepperMove::move,
+						steppers,
+						&pincStepperControl::sync_move);
 
 	mainWindow->setStyleSheet(	
 		"QMainWindow {"

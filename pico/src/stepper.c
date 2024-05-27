@@ -129,7 +129,7 @@ void stepper_move(struct stepper* s)
 	if(s->move.mode & JOG_MOVE)
 		if(s->move.accel != 0)
 		{
-			s->move.a_phase = ACCEL;
+			s->move.a_phase = INITIAL;
 			s->move.a_steps = 0;
 			alarm_pool_add_alarm_in_us(	s->alarmPool,
 										s->move.delay,

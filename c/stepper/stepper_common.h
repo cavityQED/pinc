@@ -184,6 +184,25 @@ static void stepper_print_move(pincStepperMove_t* m)
 
 }
 
+static void stepper_move_mm_to_steps(pincStepperMove_t* mm_move, pincStepperMove_t* steps_move, uint32_t spmm)
+{
+	memcpy(steps_move, mm_move, sizeof(pincStepperMove_t));
+
+	steps_move->cur.x		= spmm * mm_move->cur.x;
+	steps_move->cur.y		= spmm * mm_move->cur.y;
+	steps_move->cur.z		= spmm * mm_move->cur.z;
+	steps_move->end.x		= spmm * mm_move->end.x;
+	steps_move->end.y		= spmm * mm_move->end.y;
+	steps_move->end.z		= spmm * mm_move->end.z;
+	steps_move->center.x	= spmm * mm_move->center.x;
+	steps_move->center.y	= spmm * mm_move->center.y;
+	steps_move->center.z	= spmm * mm_move->center.z;
+	steps_move->v0_sps		= spmm * mm_move->v0_sps;
+	steps_move->vf_sps		= spmm * mm_move->vf_sps;
+	steps_move->accel		= spmm * mm_move->accel;
+	steps_move->radius		= spmm * mm_move->radius;
+}
+
 static inline void stepper_accel(pincStepperMove_t* m)
 {
 	if(m->steps == 0)
