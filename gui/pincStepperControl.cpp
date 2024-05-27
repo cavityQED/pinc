@@ -40,9 +40,10 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	new_stepper->pico_spi_client.tr.cs_change		= config->spi_cs_change;
 
 	memset(&new_stepper->jog_move, 0, sizeof(pincStepperMove_t));
-	new_stepper->jog_move.steps = config->spmm;
-	new_stepper->jog_move.v_sps = config->jog_speed;
-	new_stepper->jog_move.accel = config->accel;
+	new_stepper->jog_move.steps		= config->spmm;
+	new_stepper->jog_move.v0_sps	= config->min_speed;
+	new_stepper->jog_move.vf_sps	= config->jog_speed;
+	new_stepper->jog_move.accel		= config->accel;
 
 	stepper_print_move(&new_stepper->jog_move);
 
@@ -64,18 +65,23 @@ void pincStepperControl::jog(PINC_AXIS axis, bool dir)
 
 		stepper->jog_move.mode		= JOG_MOVE;
 		stepper->jog_move.step_dir	= dir;
-		stepper->jog_move.v0_sps	= stepper->config.min_speed;
-		stepper->jog_move.vf_sps	= stepper->config.jog_speed;
 		stepper_jog(stepper.get());
 	}
 }
 
 void pincStepperControl::sync_move(pincStepperMove_t* move, bool convert)
 {
-	move->mode |= SYNC_MOVE;
+	move->mode		|= SYNC_MOVE;
+	move->a_phase	= INITIAL;
+	move->a_steps	= 0;
+	move->steps 	= total(move->cur, move->end);
 
 	std::vector<sem_t*> sems;
 	pincStepperMove_t	steps_move;
+
+	float linearize = (float)total(move->cur, move->end) / length(move->cur, move->end);
+	move->v0_sps *= linearize;
+	move->vf_sps *= linearize;
 
 	for(auto it = m_steppers.begin(); it != m_steppers.end(); it++)
 	{

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <math.h>
 
 #define STEPPER_CMD_CONFIG		0xA0
 #define STEPPER_CMD_PRINT		0xB1
@@ -116,10 +117,43 @@ typedef struct
 } p_cartesian;
 
 static inline bool pnt_cmp_cart(p_cartesian p1, p_cartesian p2)
-	{return ((p1.x == p2.x) && (p1.y == p2.y) && (p1.z == p2.z));}
+	{	return ((p1.x == p2.x) && (p1.y == p2.y) && (p1.z == p2.z));}
 
 static inline float slope_xy(p_cartesian cur, p_cartesian end)
-	{return (float)(end.y - cur.y) / (float)(end.x - cur.x);}
+	{	return (float)(end.y - cur.y) / (float)(end.x - cur.x);}
+
+static inline int pnt_axis_value(p_cartesian pnt, PINC_AXIS axis)
+	{
+		switch(axis)
+		{
+			case X_AXIS:
+				return pnt.x;
+			case Y_AXIS:
+				return pnt.y;
+			case Z_AXIS:
+				return pnt.z;
+			default:
+				return 0;
+		}
+	}
+
+static inline float length(p_cartesian cur, p_cartesian end)
+	{
+		float x = end.x - cur.x;
+		float y = end.y - cur.y;
+		float z = end.z - cur.z;
+
+		return sqrtf(x*x + y*y + z*z);
+	}
+
+static inline uint32_t total(p_cartesian cur, p_cartesian end)
+	{
+		uint32_t x = abs(end.x - cur.x);
+		uint32_t y = abs(end.y - cur.y);
+		uint32_t z = abs(end.z - cur.z);
+
+		return x+y+z;
+	}
 
 
 
@@ -177,9 +211,12 @@ static void stepper_print_move(pincStepperMove_t* m)
 	printf("\tMode:\t\t\t0x%2X\n", m->mode);
 	printf("\tCur Pos (steps):\t[%d, %d, %d]\n", m->cur.x, m->cur.y, m->cur.z);
 	printf("\tEnd Pos (steps):\t[%d, %d, %d]\n", m->end.x, m->end.y, m->end.z);
-	printf("\tSpeed (steps/s):\t%d\n", m->v_sps);
+	printf("\tCenter Pos (steps):\t[%d, %d, %d]\n", m->center.x, m->center.y, m->center.z);
+	printf("\tSpeed [v0, v, vf]:\t[%d, %d, %d]\n", m->v0_sps, m->v_sps, m->vf_sps);
 	printf("\tRadius (steps):\t\t%d\n", m->radius);
 	printf("\tClockwise:\t\t%d\n", m->cw);
+	printf("\tAccel:\t\t\t%d\n", m->accel);
+	printf("\tAccel Steps:\t\t%d\n", m->a_steps);
 	printf("\tSteps:\t\t\t%d\n\n", m->steps);
 
 }
@@ -201,6 +238,7 @@ static void stepper_move_mm_to_steps(pincStepperMove_t* mm_move, pincStepperMove
 	steps_move->vf_sps		= spmm * mm_move->vf_sps;
 	steps_move->accel		= spmm * mm_move->accel;
 	steps_move->radius		= spmm * mm_move->radius;
+	steps_move->steps		= spmm * mm_move->steps;
 }
 
 static inline void stepper_accel(pincStepperMove_t* m)
