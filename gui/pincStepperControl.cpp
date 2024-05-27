@@ -42,6 +42,7 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	memset(&new_stepper->jog_move, 0, sizeof(pincStepperMove_t));
 	new_stepper->jog_move.steps = config->spmm;
 	new_stepper->jog_move.v_sps = config->jog_speed;
+	new_stepper->jog_move.accel = config->accel;
 
 	stepper_print_move(&new_stepper->jog_move);
 
@@ -63,7 +64,8 @@ void pincStepperControl::jog(PINC_AXIS axis, bool dir)
 
 		stepper->jog_move.mode		= JOG_MOVE;
 		stepper->jog_move.step_dir	= dir;
-
+		stepper->jog_move.v0_sps	= stepper->config.min_speed;
+		stepper->jog_move.vf_sps	= stepper->config.jog_speed;
 		stepper_jog(stepper.get());
 	}
 }

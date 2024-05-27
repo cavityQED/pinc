@@ -175,6 +175,14 @@ static void stepper_print_move(pincStepperMove_t* m)
 
 }
 
+static inline void stepper_accel(pincStepperMove_t* m)
+{
+	m->v_sps = m->v_sps + m->accel/m->v_sps;
+	if(m->v_sps >= m->vf_sps)
+		m->v_sps = m->vf_sps;
+	m->delay = 1000000 / m->v_sps;
+}
+
 static void line_step_2d(pincStepperMove_t* move)
 {
 	if(pnt_cmp_cart(move->cur, move->end))

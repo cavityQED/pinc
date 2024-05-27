@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
 	config.pin_spi_hs		= X_SPI_HANDSHAKE;
 	config.spi_mutex		= &spi_mutex;
 	config.pin_req_mutex	= &pin_req_mutex;
+	config.accel			= 192000;
 	steppers->addStepper(&config);
 	config.axis				= Y_AXIS;
 	config.pin_status		= Y_STATUS_INTERRUPT;

@@ -71,6 +71,27 @@ bool sync_timer_cb(picoTimer_t* timer)
 	return true;
 }
 
+int64_t accel_alarm_callback(alarm_id_t id, void* user_data)
+{
+	struct stepper* s = (struct stepper*)user_data;
+
+	if(s->move.steps != 0)
+	{
+		s->dir = s->move.step_dir;
+		set_dir(s);
+		step(s);
+		s->move.steps = s->move.steps - 1;
+		stepper_accel(&s->move);
+		return -(int64_t)s->move.delay;
+	}
+
+	else
+	{
+		stop(s);
+		return 0;
+	}
+}
+
 bool jog_timer_cb(picoTimer_t* timer)
 {
 	static struct stepper* s;
@@ -102,15 +123,31 @@ void stepper_move(struct stepper* s)
 
 	s->status		&= ~PICO_STATUS_MOVE_READY;
 	s->status		|= PICO_STATUS_IN_MOTION;
+	s->move.v_sps	= s->move.v0_sps;
 	s->move.delay	= 1000000 / s->move.v_sps;	// delay in us between steps
 
 	if(s->move.mode & JOG_MOVE)
-		alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), jog_timer_cb, (void*)s, s->timer);
+		if(s->move.accel != 0)
+			alarm_pool_add_alarm_in_us(	s->alarmPool,
+										s->move.delay,
+										accel_alarm_callback,
+										(void*)s,
+										true);
+		else
+			alarm_pool_add_repeating_timer_us(	s->alarmPool, 
+												-(int)(s->move.delay),
+												jog_timer_cb,
+												(void*)s, 
+												s->timer);
 	else if(s->move.mode & SYNC_MOVE)
 	{
 		gpio_put(s->p_sync_ready, 0);
 		sem_acquire_blocking(&s->sem);
-		alarm_pool_add_repeating_timer_us(s->alarmPool, -(int)(s->move.delay), sync_timer_cb, (void*)s, s->timer);
+		alarm_pool_add_repeating_timer_us(	s->alarmPool, 
+											-(int)(s->move.delay),
+											sync_timer_cb,
+											(void*)s, 
+											s->timer);
 	}
 	else
 	{
