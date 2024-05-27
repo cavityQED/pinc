@@ -68,7 +68,4 @@ void step				(struct stepper* s);
 void stepper_move		(struct stepper* s);
 void stepper_msg_handle	(struct stepper* s, uint8_t* msg);
 
-bool motor_timer_cb	(struct repeating_timer* timer);
-void callback		(uint gpio, uint32_t event_mask);
-
 #endif
