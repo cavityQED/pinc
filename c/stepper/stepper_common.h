@@ -140,6 +140,14 @@ static inline float slope_xy(p_cartesian cur, p_cartesian end)
 #define QUAD_3	0x00
 #define QUAD_4	YPOS
 
+typedef enum
+{
+	INITIAL,
+	CONSTANT,
+	FINAL
+
+} ACCEL_PHASE;
+
 typedef struct
 {
 	uint8_t			mode;
@@ -155,8 +163,9 @@ typedef struct
 
 	uint8_t			step_axis;
 	uint32_t		delay;		// delay in us between steps
-	uint32_t		time;		// time in us from start of move
 	uint32_t		accel;		// acceleration [steps/s/s]
+	uint32_t		a_steps;	// number of steps during accel phase
+	uint8_t			a_phase;	// acceleration phase
 	bool			step_dir;
 	bool			stop;
 
@@ -177,10 +186,35 @@ static void stepper_print_move(pincStepperMove_t* m)
 
 static inline void stepper_accel(pincStepperMove_t* m)
 {
-	m->v_sps = m->v_sps + m->accel/m->v_sps;
-	if(m->v_sps >= m->vf_sps)
-		m->v_sps = m->vf_sps;
-	m->delay = 1000000 / m->v_sps;
+	if(m->steps == 0)
+		return;
+
+	uint32_t v = m->v_sps;
+	
+	switch(m->a_phase)
+	{
+		case INITIAL:
+			m->a_steps++;
+			v = v + m->accel/v;
+			v = (v > m->vf_sps)? m->vf_sps : v;
+			m->a_phase = (v == m->vf_sps)? CONSTANT : INITIAL;
+			break;
+
+		case CONSTANT:
+			m->a_phase = (m->steps == m->a_steps)? FINAL : CONSTANT;
+			break;
+
+		case FINAL:
+			v = v - m->accel/v;
+			v = (v < m->v0_sps)? m->v0_sps : v;
+			break;
+
+		default:
+			break;
+	}
+
+	m->v_sps = v;
+	m->delay = 1000000 / v;
 }
 
 static void line_step_2d(pincStepperMove_t* move)
