@@ -54,7 +54,7 @@ void node_swap_data(Node* high, Node* low)
 
 void print_node(Node* node)
 {
-	printf("Node (%d, 0x%X):\t", node->key, ((uint32_t)node) & 0xFFFF);
+	printf("Node (%d, 0x%X):\t", node->key, ((uint64_t)node) & 0xFFFF);
 	printf("(L: %d,   P: %d,   R: %d,   H: %d,   S: %d)  \n", 
 					(node->left)?	node->left->key		: -1,
 					(node->parent)?	node->parent->key	: -1,
