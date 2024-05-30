@@ -17,6 +17,22 @@ typedef struct
 
 } signal_t;
 
+static inline void signal_update(signal_t* sig_out, uint8_t sig_in)
+{
+	sig_out->pre 	= sig_out->cur;
+	sig_out->del 	= sig_out->pre ^ sig_in;
+	sig_out->low 	= sig_out->del & sig_in;
+	sig_out->high	= sig_out->del & ~sig_in;
+	sig_out->cur 	= sig_in;
+}
+
+static inline void signal_print(signal_t* sig)
+{
+	printf("Signal:\n");
+	printf("\t[Pre, Cur, Del]:\t[%2X, %2X, %2X]\n", sig->pre, sig->cur, sig->del);
+	printf("\t[High, Low]:\t\t[%2X, %2X]\n", sig->high, sig->low);
+	printf("\tMask:\t\t\t%4X\n\n", sig->mask);
+}
 
 
 
