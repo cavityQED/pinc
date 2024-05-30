@@ -61,11 +61,11 @@ static void wheel_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 		{
 			switch(wheel_signal.mask)
 			{
-				case 0x8421:
+				case 0x2184:
 					steppers->jog_last_axis(true);
 					break;
 
-				case 0x4812:
+				case 0x1248:
 					steppers->jog_last_axis(false);
 					break;
 
