@@ -19,6 +19,15 @@
 
 typedef struct
 {
+	uint8_t			cmd;
+	uint32_t		size;
+	uint8_t*		tx;
+	uint8_t*		rx;
+
+} pincPiStepperMsg;
+
+typedef struct
+{
 	uint8_t				status;
 	int					step_pos;
 
@@ -33,27 +42,26 @@ typedef struct
 	pincStepperMove_t	jog_move;
 
 	uint8_t				fpga_status_addr;
-	uint8_t*			tx;
-	uint8_t*			rx;
-	
+	pincPiStepperMsg	msg;
+
 	pthread_mutex_t		mutex;
 
 	sem_t				sync_sem;
 
 } pincPiStepper;
 
-void stepper_spi_send	(pincPiStepper* s);
-void stepper_config		(pincPiStepper* s, pincStepperConfig_t* config);
-void stepper_move		(pincPiStepper* s, pincStepperMove_t* move);
-void stepper_jog		(pincPiStepper* s);
-void stepper_cmd		(pincPiStepper* s, uint8_t cmd, void* data, uint32_t bytes);
-void stepper_update		(pincPiStepper* s);
-void stepper_print		(pincPiStepper* s);
+void	stepper_spi_send	(pincPiStepper* s);
+void	stepper_config		(pincPiStepper* s, pincStepperConfig_t* config);
+void	stepper_move		(pincPiStepper* s, pincStepperMove_t* move);
+void	stepper_jog			(pincPiStepper* s);
+void	stepper_update		(pincPiStepper* s);
+void	stepper_print		(pincPiStepper* s);
+void	stepper_pin_isr		(int gpio, int level, uint32_t tick, void* dev);
+void	stepper_write_msg	(pincPiStepper* stepper, uint8_t cmd, void* src, uint32_t bytes);
+void	stepper_send_msg	(pincPiStepper* stepper);
+void	stepper_read_msg	(pincPiStepper* stepper);
 
-void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev);
-
-void* stepper_thread_routine(void* arg);
-void* stepper_read_fpga	(void* arg);
+void*	stepper_read_fpga	(void* arg);
 
 static inline void stepper_launch_thread(pincPiStepper* s, void* (*func)(void*))
 {

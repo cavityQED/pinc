@@ -27,6 +27,8 @@ void* stepper_read_fpga(void* arg)
 
 	if(stepper->status_sig.low & PICO_STATUS_SPI_READY)
 		pin_request_post(&stepper->spi_request);
+	if(stepper->status_sig.high & PICO_STATUS_SPI_READY)
+		pin_request_unlock(&stepper->spi_request);
 	if(stepper->status_sig.low & PICO_STATUS_SYNC_READY)
 		sem_post(&stepper->sync_sem);
 
@@ -34,54 +36,46 @@ void* stepper_read_fpga(void* arg)
 		stepper_update(stepper);
 }
 
-void stepper_spi_send(pincPiStepper* s)
-{
-	pincStepperUpdate_t	update;
-
-	pin_request_blocking(&s->spi_request);
-
-	spi_send(&s->pico_spi_client);
-	
-	memcpy(&update, s->rx, sizeof(pincStepperUpdate_t));
-
-	s->step_pos	= update.step_pos;
-
-	free(s->tx);
-	free(s->rx);
-
-	stepper_print(s);
-	
-	pin_request_reset(&s->spi_request);
-}
-
-void* stepper_thread_routine(void* arg)
-{
-	pincPiStepper* stepper = (pincPiStepper*)arg;
-
-	stepper_lock(stepper);
-
-	stepper_spi_send(stepper);
-
-	stepper_unlock(stepper);
-}
-
-void stepper_cmd(pincPiStepper* s, uint8_t cmd, void* data, uint32_t bytes)
+void stepper_write_msg(pincPiStepper* stepper, uint8_t cmd, void* src, uint32_t bytes)
 {
 	uint32_t msg_size = bytes + 1;
-	s->tx = malloc(msg_size);
-	s->rx = malloc(msg_size);
+	stepper->msg.tx = malloc(msg_size);
+	stepper->msg.rx = malloc(msg_size);
 
-	s->tx[0] = cmd;
-	if(data)
-		memcpy(&s->tx[1], data, bytes);
+	stepper->msg.tx[0] = cmd;
+	if(src)
+		memcpy(&stepper->msg.tx[1], src, bytes);
 	else
-		memset(&s->tx[1], 0, bytes);
+		memset(&stepper->msg.tx[1], 0, bytes);
 
-	s->pico_spi_client.tr.len		= msg_size;
-	s->pico_spi_client.tr.tx_buf	= (unsigned long)s->tx;
-	s->pico_spi_client.tr.rx_buf	= (unsigned long)s->rx;
+	stepper->pico_spi_client.tr.len		= msg_size;
+	stepper->pico_spi_client.tr.tx_buf	= (unsigned long)stepper->msg.tx;
+	stepper->pico_spi_client.tr.rx_buf	= (unsigned long)stepper->msg.rx;
+}
 
-	stepper_launch_thread(s, stepper_thread_routine);
+void stepper_send_msg(pincPiStepper* stepper)
+{
+	pin_request_blocking(&stepper->spi_request);
+
+	spi_send(&stepper->pico_spi_client);
+
+	stepper_read_msg(stepper);
+
+	pin_request_reset(&stepper->spi_request);
+}
+
+void stepper_read_msg(pincPiStepper* stepper)
+{
+	pincStepperUpdate_t update;
+
+	memcpy(&update, stepper->msg.rx, sizeof(pincStepperUpdate_t));
+
+	stepper->step_pos	= update.step_pos;
+
+	free(stepper->msg.tx);
+	free(stepper->msg.rx);
+
+	stepper_print(stepper);
 }
 
 void stepper_config(pincPiStepper* s, pincStepperConfig_t* config)
@@ -90,34 +84,60 @@ void stepper_config(pincPiStepper* s, pincStepperConfig_t* config)
 
 	memcpy(&s->config, config, sizeof(pincStepperConfig_t));
 
-	stepper_cmd(s, STEPPER_CMD_CONFIG, config, sizeof(pincStepperConfig_t));
+	stepper_write_msg(	s,
+						STEPPER_CMD_CONFIG,
+						&s->config,
+						sizeof(pincStepperConfig_t));
+
+	stepper_send_msg(s);
 
 	stepper_unlock(s);
 }
 
 void stepper_move(pincPiStepper* s, pincStepperMove_t* move)
 {
+	printf("Stepper Move\n");
+
 	stepper_lock(s);
 
-	stepper_cmd(s, STEPPER_CMD_MOVE, move, sizeof(pincStepperMove_t));
+	stepper_write_msg(	s,
+						STEPPER_CMD_MOVE,
+						move,
+						sizeof(pincStepperMove_t));
+
+	stepper_send_msg(s);
 
 	stepper_unlock(s);
 }
 
 void stepper_jog(pincPiStepper* s)
 {
+	printf("Stepper Jog\n");
+
 	stepper_lock(s);
 
-	stepper_cmd(s, STEPPER_CMD_MOVE, &s->jog_move, sizeof(pincStepperMove_t));
+	stepper_write_msg(	s,
+						STEPPER_CMD_MOVE,
+						&s->jog_move,
+						sizeof(pincStepperMove_t));
+
+	stepper_send_msg(s);
 
 	stepper_unlock(s);
 }
 
 void stepper_update(pincPiStepper* s)
 {
+	printf("Stepper Update\n");
+
 	stepper_lock(s);
 
-	stepper_cmd(s, STEPPER_CMD_UPDATE, NULL, sizeof(pincStepperUpdate_t));
+	stepper_write_msg(	s,
+						STEPPER_CMD_UPDATE,
+						NULL,
+						sizeof(pincStepperUpdate_t));
+
+	stepper_send_msg(s);
 
 	stepper_unlock(s);
 }
