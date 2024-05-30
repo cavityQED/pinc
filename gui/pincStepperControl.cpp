@@ -50,8 +50,6 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	new_stepper->jog_move.vf_sps	= config->jog_speed;
 	new_stepper->jog_move.accel		= config->accel;
 
-	stepper_print_move(&new_stepper->jog_move);
-
 	new_stepper->pin_status = config->pin_status;
 	gpioSetMode(new_stepper->pin_status, PI_INPUT);
 	gpioSetPullUpDown(new_stepper->pin_status, PI_PUD_UP);
