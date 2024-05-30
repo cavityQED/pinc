@@ -98,12 +98,10 @@ int main(int argc, char *argv[])
 	pthread_mutexattr_init(&spi_mutex_attr);
 	pthread_mutexattr_settype(&spi_mutex_attr, PTHREAD_MUTEX_ERRORCHECK | PTHREAD_MUTEX_DEFAULT);
 	pthread_mutex_init(&spi_mutex, &spi_mutex_attr);
-	pthread_mutex_init(&pin_req_mutex, &spi_mutex_attr);
 
 	pincStepperConfig_t	config;
 	stepper_get_default_config(&config);
 	config.spi_mutex		= &spi_mutex;
-	config.pin_req_mutex	= &pin_req_mutex;
 	config.accel			= 400000;
 
 	config.axis				= X_AXIS;

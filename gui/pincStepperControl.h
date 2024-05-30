@@ -42,6 +42,7 @@ protected:
 	
 	PINC_AXIS	m_last_axis;
 
+	sem_t	pin_req_sem;
 };
 
 #endif

@@ -9,6 +9,8 @@ pincStepperControl::pincStepperControl(QWidget* parent) : QGroupBox(parent)
 	
 	ioctl(fd_CS0, SPI_IOC_WR_MODE, &spi_mode);
 	ioctl(fd_CS1, SPI_IOC_WR_MODE, &spi_mode);
+
+	sem_init(&pin_req_sem, 0, 1);
 }
 
 void pincStepperControl::addStepper(pincStepperConfig_t* config)
@@ -16,7 +18,7 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	std::shared_ptr<pincPiStepper> new_stepper = std::make_shared<pincPiStepper>();
 
 	std::memcpy(&new_stepper->config, config, sizeof(pincStepperConfig_t));
-	pin_request_init(&new_stepper->spi_request, config->pin_spi_hs, 1, config->pin_req_mutex);
+	pin_request_init(&new_stepper->spi_request, config->pin_spi_hs, 1, &pin_req_sem);
 
 	sem_init(&new_stepper->sync_sem, 0, 0);
 
