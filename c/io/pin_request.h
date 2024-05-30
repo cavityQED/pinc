@@ -21,8 +21,8 @@ static inline void signal_update(signal_t* sig_out, uint8_t sig_in)
 {
 	sig_out->pre 	= sig_out->cur;
 	sig_out->del 	= sig_out->pre ^ sig_in;
-	sig_out->low 	= sig_out->del & sig_in;
-	sig_out->high	= sig_out->del & ~sig_in;
+	sig_out->low 	= sig_out->del & ~sig_in;
+	sig_out->high	= sig_out->del & sig_in;
 	sig_out->cur 	= sig_in;
 }
 
