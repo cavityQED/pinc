@@ -63,16 +63,20 @@ int main(int argc, char *argv[])
 
 	pincStepperConfig_t	config;
 	stepper_get_default_config(&config);
-	config.axis				= X_AXIS;
-	config.pin_status		= X_STATUS_INTERRUPT;
-	config.pin_spi_hs		= X_SPI_HANDSHAKE;
 	config.spi_mutex		= &spi_mutex;
 	config.pin_req_mutex	= &pin_req_mutex;
 	config.accel			= 400000;
+
+	config.axis				= X_AXIS;
+	config.pin_status		= X_STATUS_INTERRUPT;
+	config.pin_spi_hs		= X_SPI_HANDSHAKE;
+	config.fpga_addr		= X_FPGA_STATUS_ADDR;
 	steppers->addStepper(&config);
+	
 	config.axis				= Y_AXIS;
 	config.pin_status		= Y_STATUS_INTERRUPT;
 	config.pin_spi_hs		= Y_SPI_HANDSHAKE;
+	config.fpga_addr		= Y_FPGA_STATUS_ADDR;
 	steppers->addStepper(&config);
 
 	vlayout->addWidget(ctrl_panel);

@@ -2,50 +2,36 @@
 
 void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 {
-	pincPiStepper*		s 		= (pincPiStepper*)dev;
-	pincSPIclient_t*	client	= &s->fpga_spi_client;
+	pincPiStepper* stepper = (pincPiStepper*)dev;
 
-	uint8_t tx[2] = {0,0};
-	uint8_t rx[2] = {0,0};
+	if(!level)
+		stepper_launch_thread(stepper, stepper_read_fpga);
+}
 
-	switch(gpio)
-	{
-		case X_STATUS_INTERRUPT:
-			tx[0] = X_FPGA_STATUS_ADDR;
-			break;
-		case Y_STATUS_INTERRUPT:
-			tx[0] = Y_FPGA_STATUS_ADDR;
-			break;
+void* stepper_read_fpga(void* arg)
+{
+	pincPiStepper* stepper = (pincPiStepper*)arg;
 
-		default:
-			break;
-	}
+	uint8_t tx[FPGA_SPI_MSG_SIZE] = {0};
+	uint8_t rx[FPGA_SPI_MSG_SIZE] = {0};
 
+	tx[0] = stepper->fpga_status_addr;
 
-	if(!level) // start spi
-	{
-		spi_write_msg(client, tx, 2);
+	stepper->fpga_spi_client.tr.len	= FPGA_SPI_MSG_SIZE;
+	stepper->fpga_spi_client.tr.tx_buf = (unsigned long)tx;
+	stepper->fpga_spi_client.tr.rx_buf = (unsigned long)rx;
 
-		spi_send(client);
+	spi_send(&stepper->fpga_spi_client);
 
-		spi_read_msg(client, rx, 2);
+	signal_update(&stepper->status_sig, rx[1]);
 
-		uint8_t pre_status	= s->status;
-		uint8_t del_status	= pre_status ^ rx[1];
-		uint8_t high_flip	= del_status & rx[1];
-		uint8_t low_flip	= del_status & ~rx[1];
-		s->status = rx[1];
+	if(stepper->status_sig.low & PICO_STATUS_SPI_READY)
+		pin_request_post(&stepper->spi_request);
+	if(stepper->status_sig.low & PICO_STATUS_SYNC_READY)
+		sem_post(&stepper->sync_sem);
 
-		if(low_flip & PICO_STATUS_SPI_READY)
-			pin_request_post(&s->spi_request);
-		else if(low_flip & PICO_STATUS_SYNC_READY)
-			sem_post(&s->sync_sem);
-		else if(high_flip & PICO_STATUS_IN_MOTION)
-		{
-			if(!s->spi_request.fired)
-				stepper_update(s);
-		}
-	}
+	if(stepper->status_sig.high & PICO_STATUS_IN_MOTION)
+		stepper_update(stepper);
 }
 
 void stepper_spi_send(pincPiStepper* s)
@@ -95,9 +81,7 @@ void stepper_cmd(pincPiStepper* s, uint8_t cmd, void* data, uint32_t bytes)
 	s->pico_spi_client.tr.tx_buf	= (unsigned long)s->tx;
 	s->pico_spi_client.tr.rx_buf	= (unsigned long)s->rx;
 
-	pthread_t thread;
-	pthread_create(&thread, NULL, stepper_thread_routine, s);
-	pthread_detach(thread);
+	stepper_launch_thread(s, stepper_thread_routine);
 }
 
 void stepper_config(pincPiStepper* s, pincStepperConfig_t* config)

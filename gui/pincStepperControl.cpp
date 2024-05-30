@@ -20,6 +20,7 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	sem_init(&new_stepper->sync_sem, 0, 0);
 
 	new_stepper->status = 0xFF;
+	new_stepper->status_sig.cur = 0xFF;
 
 	std::memset(&new_stepper->fpga_spi_client.tr, 0, sizeof(spiTr));
 	new_stepper->fpga_spi_client.cs					= -1;
@@ -29,6 +30,7 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	new_stepper->fpga_spi_client.tr.delay_usecs		= config->spi_delay;
 	new_stepper->fpga_spi_client.tr.bits_per_word	= config->spi_bpw;
 	new_stepper->fpga_spi_client.tr.cs_change		= config->spi_cs_change;
+	new_stepper->fpga_status_addr					= config->fpga_addr;
 
 	std::memset(&new_stepper->pico_spi_client.tr, 0, sizeof(spiTr));
 	new_stepper->pico_spi_client.cs					= config->spi_client_cs;

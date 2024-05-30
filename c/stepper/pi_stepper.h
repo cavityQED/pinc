@@ -7,6 +7,8 @@
 #include "c/spi/spi_client.h"
 #include "c/io/pin_request.h"
 
+#define FPGA_SPI_MSG_SIZE	2
+
 #define X_SPI_HANDSHAKE		6
 #define X_STATUS_INTERRUPT	21
 #define X_FPGA_STATUS_ADDR	0xA0
@@ -23,11 +25,14 @@ typedef struct
 	int					pin_status;
 
 	pin_request_t		spi_request;
+	signal_t			status_sig;
+
 	pincSPIclient_t		pico_spi_client;
 	pincSPIclient_t		fpga_spi_client;
 	pincStepperConfig_t	config;
 	pincStepperMove_t	jog_move;
 
+	uint8_t				fpga_status_addr;
 	uint8_t*			tx;
 	uint8_t*			rx;
 	
@@ -45,8 +50,17 @@ void stepper_cmd		(pincPiStepper* s, uint8_t cmd, void* data, uint32_t bytes);
 void stepper_update		(pincPiStepper* s);
 void stepper_print		(pincPiStepper* s);
 
-void* stepper_thread_routine(void* arg);
 void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev);
+
+void* stepper_thread_routine(void* arg);
+void* stepper_read_fpga	(void* arg);
+
+static inline void stepper_launch_thread(pincPiStepper* s, void* (*func)(void*))
+{
+	pthread_t thread;
+	pthread_create(&thread, NULL, func, s);
+	pthread_detach(thread);	
+}
 
 static inline void stepper_lock(pincPiStepper* s)
 {

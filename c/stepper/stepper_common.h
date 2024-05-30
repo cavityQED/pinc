@@ -71,6 +71,7 @@ typedef struct
 
 	int					pin_status;		// status interrupt pin
 	int					pin_spi_hs;		// spi handshake pin
+	uint8_t				fpga_addr;		// address to read status from FPGA
 
 	pthread_mutex_t*	spi_mutex;
 	pthread_mutex_t*	pin_req_mutex;
