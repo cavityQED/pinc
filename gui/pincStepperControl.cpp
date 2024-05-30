@@ -70,7 +70,8 @@ void pincStepperControl::jog(PINC_AXIS axis, bool dir)
 
 		stepper->jog_move.mode		= JOG_MOVE;
 		stepper->jog_move.step_dir	= dir;
-		stepper_jog(stepper.get());
+		if(stepper->status_sig.cur & PICO_STATUS_MOVE_READY)
+			stepper_jog(stepper.get());
 	}
 }
 
