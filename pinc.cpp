@@ -7,15 +7,15 @@
 
 #include <pigpio.h>
 
-// static QTimer*				timer;
-// static uint8_t				mode;
-// static std::vector<gBlock*>	program;
-// static size_t				program_idx;
+#define WHEEL_STATUS_INTERRUPT	27
+#define WHEEL_STATUS_ADDR		0x90
 
 static pthread_mutex_t		spi_mutex;
 static pthread_mutex_t		pin_req_mutex;
 static pthread_mutexattr_t	spi_mutex_attr;
 
+static signal_t				wheel_signal;
+static pincSPIclient_t		fpga_client;
 static pincStepperControl*	steppers;
 static pincStepperMove*		move_window;
 static pincStepperMove_t	sync_move;
@@ -37,6 +37,45 @@ static void curve_test(bool checked)
 {
 	printf("CURVE TEST\n");
 	steppers->sync_move(&curve_move);
+}
+
+static void wheel_pin_isr(int gpio, int level, uint32_t tick, void* dev)
+{
+	static uint8_t tx[2] = {WHEEL_STATUS_ADDR, 0};
+	static uint8_t rx[2] = {0, 0};
+
+	if(!level)
+	{
+		spi_write_msg(&fpga_client, tx, 2);
+
+		spi_send(&fpga_client);
+
+		spi_read_msg(&fpga_client, rx, 2);
+
+		signal_update(&wheel_signal, rx[1]);
+		wheel_signal.mask <<= 4; 
+		wheel_signal.mask |= (wheel_signal.high & 0x03) << 2;
+		wheel_signal.mask |= (wheel_signal.low & 0x03);
+
+		if(wheel_signal.cur == 0xFF)
+		{
+			switch(wheel_signal.mask)
+			{
+				case 0x8421:
+					steppers->jog_last_axis(true);
+					break;
+
+				case 0x4812:
+					steppers->jog_last_axis(false);
+					break;
+
+				default:
+					break;
+			}
+
+			wheel_signal.mask = 0x0000;
+		}
+	}
 }
 
 int main(int argc, char *argv[])
@@ -78,6 +117,21 @@ int main(int argc, char *argv[])
 	config.pin_spi_hs		= Y_SPI_HANDSHAKE;
 	config.fpga_addr		= Y_FPGA_STATUS_ADDR;
 	steppers->addStepper(&config);
+
+	std::memset(&fpga_client.tr, 0, sizeof(spiTr));
+	int spi_mode = SPI_MODE_0;
+	fpga_client.cs					= -1;
+	fpga_client.fd					= open("/dev/spidev0.0", O_RDWR);
+	fpga_client.mutex				= &spi_mutex;
+	fpga_client.tr.speed_hz			= config.spi_fpga_speed;
+	fpga_client.tr.delay_usecs		= config.spi_delay;
+	fpga_client.tr.bits_per_word	= config.spi_bpw;
+	fpga_client.tr.cs_change		= config.spi_cs_change;
+	ioctl(fpga_client.fd, SPI_IOC_WR_MODE, &spi_mode);
+	gpioSetMode(WHEEL_STATUS_INTERRUPT, PI_INPUT);
+	gpioSetPullUpDown(WHEEL_STATUS_INTERRUPT, PI_PUD_UP);
+	gpioSetISRFuncEx(WHEEL_STATUS_INTERRUPT, FALLING_EDGE, 0, wheel_pin_isr, NULL);
+	wheel_signal.cur = 0xFF;
 
 	vlayout->addWidget(ctrl_panel);
 	vlayout->addWidget(jog_panel);

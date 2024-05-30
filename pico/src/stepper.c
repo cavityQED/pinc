@@ -83,8 +83,6 @@ int64_t jog_alarm_callback(alarm_id_t id, void* user_data)
 
 	if(s->move.steps != 0)
 	{
-		s->dir = s->move.step_dir;
-		set_dir(s);
 		step(s);
 		s->move.steps = s->move.steps - 1;
 		if(s->move.accel)
@@ -101,9 +99,6 @@ int64_t jog_alarm_callback(alarm_id_t id, void* user_data)
 
 void stepper_move(struct stepper* s)
 {
-	if(s->status & PICO_STATUS_IN_MOTION)
-		return;
-
 	gpio_clr_mask((1 << s->p_motion) | (1 << s->p_move_ready));
 
 	s->status		&= ~PICO_STATUS_MOVE_READY;
@@ -111,14 +106,18 @@ void stepper_move(struct stepper* s)
 	s->move.v_sps	= s->move.v0_sps;
 	s->move.delay	= 1000000 / s->move.v_sps;	// delay in us between steps
 
-	stepper_print_move(&s->move);
+//	stepper_print_move(&s->move);
 
 	if(s->move.mode & JOG_MOVE)
+	{
+		s->dir = s->move.step_dir;
+		set_dir(s);
 		alarm_pool_add_alarm_in_us(	s->alarmPool,
 									s->move.delay,
 									jog_alarm_callback,
 									(void*)s,
 									true);
+	}	
 	else if(s->move.mode & SYNC_MOVE)
 	{
 		s->status |= PICO_STATUS_SYNC_READY;
@@ -146,9 +145,12 @@ void stepper_msg_handle(struct stepper* s, uint8_t* msg)
 	switch(msg[0])
 	{
 		case STEPPER_CMD_MOVE:
-			memset(&s->move, 0, sizeof(pincStepperMove_t));
-			memcpy(&s->move, &msg[1], sizeof(pincStepperMove_t));
-			stepper_move(s);
+			if(!(s->status & PICO_STATUS_IN_MOTION))
+			{
+				memset(&s->move, 0, sizeof(pincStepperMove_t));
+				memcpy(&s->move, &msg[1], sizeof(pincStepperMove_t));
+				stepper_move(s);
+			}
 			break;
 
 		case STEPPER_CMD_CONFIG:

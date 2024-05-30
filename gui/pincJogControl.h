@@ -20,6 +20,7 @@ public:
 signals:
 
 	void jog(PINC_AXIS axis, bool dir);
+	void jog_last_axis(bool dir);
 	void setJogSteps(uint32_t steps);
 
 protected:
@@ -34,7 +35,6 @@ protected:
 	QPushButton* m_button_y_neg;
 	QPushButton* m_button_z_pos;
 	QPushButton* m_button_z_neg;
-
 };
 
 
