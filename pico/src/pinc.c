@@ -119,9 +119,8 @@ int main()
 								1,
 								msg_spinlock);
 
-	for(uint8_t i = MAX_SPI_TRANSFER_LENGTH; i > 0; i--)
-		spi_out_buf[i-1] = i;
-	spi_out_buf[0] = 0x80;
+	memset(spi_in_buf, 0, MAX_SPI_TRANSFER_LENGTH);
+	memset(spi_out_buf, 0, MAX_SPI_TRANSFER_LENGTH);
 
 	spi.pio		= pio0;
 	spi.sm		= 0;
