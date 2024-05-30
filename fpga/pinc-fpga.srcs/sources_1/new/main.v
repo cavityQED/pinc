@@ -10,14 +10,20 @@ module top
     input           spi_mosi,
     output          spi_miso,
     
-    input [7:0]     button_status,
+    output          wheel_high,
+
+    input [1:0]     wheel_status,
     input [3:0]     x_status,
     input [3:0]     y_status,
     
     output [2:0]    intr
 );
-    parameter X_STATUS_REG = 8'hA0;
-    parameter Y_STATUS_REG = 8'hB0;
+
+    assign wheel_high = 1'b1;
+
+    parameter WHEEL_STATUS_REG  = 8'h90;
+    parameter X_STATUS_REG      = 8'hA0;
+    parameter Y_STATUS_REG      = 8'hB0;
 
     reg         spi_tx_valid;
     reg  [7:0]  spi_tx_byte;
@@ -53,11 +59,11 @@ module top
     debounce #(.TICK(10), .MSB(4)) cs_db
     (clk, rst, 1'b1, spi_cs, 1'b0, spi_cs_rise, spi_cs_fall, spi_cs_out);
 
-    wire [7:0] b_rise;
-    wire [7:0] b_fall;
-    wire [7:0] b_out;
-    debounce button_db[7:0]
-    (clk, rst, 1'b1, button_status, 1'b1, b_rise, b_fall, b_out);
+    wire [7:0] w_rise;
+    wire [7:0] w_fall;
+    wire [7:0] w_out;
+    debounce #(.TICK(10)) wheel_db[7:0]
+    (clk, rst, 1'b1, {6'h3F, wheel_status}, 1'b1, w_rise, w_fall, w_out);
 
     wire [7:0] x_rise;
     wire [7:0] x_fall;
@@ -71,10 +77,10 @@ module top
     debounce #(.TICK(10)) y_db[7:0]
     (clk, rst, 1'b1, {4'hF, y_status}, 1'b1, y_rise, y_fall, y_out);
 
-    reg  b_clr;
-    reg  b_en;
-    wire b_int_new;
-    signal_interrupt    b_sig   (clk, rst, b_clr, b_en, b_out, b_int_new, intr[0]);
+    reg  w_clr;
+    reg  w_en;
+    wire w_int_new;
+    signal_interrupt    w_sig   (clk, rst, w_clr, w_en, w_out, w_int_new, intr[0]);
     
     reg x_clr;
     reg x_en;
@@ -117,7 +123,7 @@ module top
     initial begin
         spi_tx_byte     <= 8'h00;
         spi_byte_num    <= 8'h00;
-        b_en            <= 1'b1;
+        w_en            <= 1'b1;
         x_en            <= 1'b1;
         y_en            <= 1'b1;
     end
@@ -136,15 +142,16 @@ module top
         data_rw         <= 1'b0;
         spi_tx_valid    <= 1'b0;
         wr_valid        <= 1'b0;
-        b_clr           <= 1'b1;
+        w_clr           <= 1'b1;
         x_clr           <= 1'b1;
         y_clr           <= 1'b1;
 
         if(spi_cs_rise) begin
             spi_byte_num    <= 8'h00;
             case (rd_addr)
-                X_STATUS_REG    : x_clr <= 1'b0;
-                Y_STATUS_REG    : y_clr <= 1'b0;
+                X_STATUS_REG        : x_clr <= 1'b0;
+                Y_STATUS_REG        : y_clr <= 1'b0;
+                WHEEL_STATUS_REG    : w_clr <= 1'b0;
             endcase
         end
 
@@ -173,6 +180,11 @@ module top
         else if(y_int_new) begin
             data_addr       <= Y_STATUS_REG;
             wr_byte         <= y_out;
+            wr_valid        <= 1'b1;
+        end
+        else if(w_int_new) begin
+            data_addr       <= WHEEL_STATUS_REG;
+            wr_byte         <= w_out;
             wr_valid        <= 1'b1;
         end
     end

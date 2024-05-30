@@ -26,6 +26,12 @@ set_property PACKAGE_PIN N9 [get_ports {button_status[5]}];		set_property IOSTAN
 set_property PACKAGE_PIN R7 [get_ports {button_status[6]}];		set_property IOSTANDARD LVCMOS33 [get_ports {button_status[6]}];	set_property PULLUP true [get_ports {button_status[6]}]
 set_property PACKAGE_PIN T9 [get_ports {button_status[7]}];		set_property IOSTANDARD LVCMOS33 [get_ports {button_status[7]}];	set_property PULLUP true [get_ports {button_status[7]}]
 
+
+set_property PACKAGE_PIN T10 [get_ports {wheel_high}];			set_property IOSTANDARD LVCMOS33 [get_ports {wheel_high}];
+set_property PACKAGE_PIN R6 [get_ports {wheel_status[0]}];		set_property IOSTANDARD LVCMOS33 [get_ports {wheel_status[0]}];	set_property PULLUP true [get_ports {wheel_status[0]}]
+set_property PACKAGE_PIN P9 [get_ports {wheel_status[1]}];		set_property IOSTANDARD LVCMOS33 [get_ports {wheel_status[1]}];	set_property PULLUP true [get_ports {wheel_status[1]}]
+
+
 set_property PACKAGE_PIN T8 [get_ports {x_status[0]}];		set_property IOSTANDARD LVCMOS33 [get_ports {x_status[0]}];		set_property PULLUP true [get_ports {x_status[0]}]
 set_property PACKAGE_PIN T5 [get_ports {x_status[1]}];		set_property IOSTANDARD LVCMOS33 [get_ports {x_status[1]}];		set_property PULLUP true [get_ports {x_status[1]}]
 set_property PACKAGE_PIN R8 [get_ports {x_status[2]}];		set_property IOSTANDARD LVCMOS33 [get_ports {x_status[2]}];		set_property PULLUP true [get_ports {x_status[2]}]
