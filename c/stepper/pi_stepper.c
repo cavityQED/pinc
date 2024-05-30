@@ -41,7 +41,10 @@ void stepper_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 		else if(low_flip & PICO_STATUS_SYNC_READY)
 			sem_post(&s->sync_sem);
 		else if(high_flip & PICO_STATUS_IN_MOTION)
-			stepper_update(s);
+		{
+			if(!s->spi_request.fired)
+				stepper_update(s);
+		}
 	}
 }
 
@@ -100,6 +103,8 @@ void stepper_cmd(pincPiStepper* s, uint8_t cmd, void* data, uint32_t bytes)
 void stepper_config(pincPiStepper* s, pincStepperConfig_t* config)
 {
 	stepper_lock(s);
+
+	memcpy(&s->config, config, sizeof(pincStepperConfig_t));
 
 	stepper_cmd(s, STEPPER_CMD_CONFIG, config, sizeof(pincStepperConfig_t));
 
