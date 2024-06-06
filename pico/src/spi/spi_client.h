@@ -110,7 +110,7 @@ static inline void pio_spi_dma_start(struct spi_client* spi)
 
 static inline void pio_spi_client_transfer(struct spi_client* spi)
 {
-	pio_spi_client_disable(spi);
+	// pio_spi_client_disable(spi);
 	pio_spi_dma_start(spi);
 	pio_spi_client_enable(spi);
 }

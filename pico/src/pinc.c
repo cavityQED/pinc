@@ -54,7 +54,7 @@ static void get_spi_msg()
 	spi.tx_buf = spi_out_buf;
 
 	pio_spi_client_transfer_blocking(&spi);
-	
+	pio_spi_client_disable(&spi);
 	queue_remove_blocking(&spiQueue, &spi);
 }
 
