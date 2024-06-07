@@ -11,6 +11,9 @@ pincStepperControl::pincStepperControl(QWidget* parent) : QGroupBox(parent)
 	ioctl(fd_CS1, SPI_IOC_WR_MODE, &spi_mode);
 
 	sem_init(&pin_req_sem, 0, 1);
+
+	gpioSetMode(SYNC_PIN, PI_OUTPUT);
+	gpioWrite(SYNC_PIN, 0);
 }
 
 void pincStepperControl::addStepper(pincStepperConfig_t* config)
@@ -77,6 +80,8 @@ void pincStepperControl::jog(PINC_AXIS axis, bool dir)
 
 void pincStepperControl::sync_move(pincStepperMove_t* move, bool convert)
 {
+	gpioWrite(SYNC_PIN, 0);
+
 	move->mode		|= SYNC_MOVE;
 	move->a_phase	= INITIAL;
 	move->a_steps	= 0;
@@ -91,7 +96,7 @@ void pincStepperControl::sync_move(pincStepperMove_t* move, bool convert)
 
 	for(auto it = m_steppers.begin(); it != m_steppers.end(); it++)
 	{
-		if(it->second->status & PICO_STATUS_MOVE_READY)
+		if(it->second->status_sig.cur & PICO_STATUS_MOVE_READY)
 		{
 			if(convert)
 			{
@@ -107,7 +112,6 @@ void pincStepperControl::sync_move(pincStepperMove_t* move, bool convert)
 			return;
 	}
 	
-	gpioWrite(SYNC_PIN, 0);
 
 	for(auto& sem : sems)
 		sem_wait(sem);

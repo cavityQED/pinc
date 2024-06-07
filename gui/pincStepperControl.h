@@ -13,7 +13,7 @@ extern "C" {
 	#include "c/stepper/pi_stepper.h" 
 }
 
-#define SYNC_PIN	16
+#define SYNC_PIN	23
 
 class pincStepperControl : public QGroupBox
 {
