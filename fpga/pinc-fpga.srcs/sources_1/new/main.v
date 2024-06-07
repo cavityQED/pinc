@@ -11,30 +11,53 @@ module top
     output          spi_miso,
 
     input [3:0]     x_status,
+    input           x_en_in,
+    input           x_dir_in,
+    input           x_step_in,
+    output          x_en_out,
+    output          x_dir_out,
+    output          x_step_out,
+
     input [3:0]     y_status,
+    input           y_en_in,
+    input           y_dir_in,
+    input           y_step_in,
+    output          y_en_out,
+    output          y_dir_out,
+    output          y_step_out,    
 
     output [7:0]    out,
     output [2:1]    intr
 );
+    // for now just assign stepper driver outputs directly to inputs
+    // interlocks will be implemented at some point
+    assign x_en_out     = x_en_in;
+    assign x_dir_out    = x_dir_in;
+    assign x_step_out   = x_step_in;
+    assign y_en_out     = y_en_in;
+    assign y_dir_out    = y_dir_in;
+    assign y_step_out   = y_step_in;
 
     localparam X_STATUS_REG     = 8'hA0;
     localparam Y_STATUS_REG     = 8'hB0;
 
+    wire            x_intr;
     wire            x_signal;
     reg             x_clr;
     wire [3:0]      x_sync;
     wire [3:0]      x_db;
     sync x0[3:0]    (clk, rst, x_status, x_sync);
     db   x1[3:0]    (clk, rst, x_sync, x_db);
-    signal_interrupt #(.MSB(4)) x2 (clk, rst, x_clr, 1'b1, x_db, x_signal, intr[1]);
+    signal_interrupt #(.MSB(4)) x2 (clk, rst, x_clr, 1'b1, x_db, x_signal, x_intr);
 
+    wire            y_intr;
     wire            y_signal;
     reg             y_clr;
     wire [3:0]      y_sync;
     wire [3:0]      y_db;
     sync y0[3:0]    (clk, rst, y_status, y_sync);
     db   y1[3:0]    (clk, rst, y_sync, y_db);
-    signal_interrupt #(.MSB(4)) y2 (clk, rst, y_clr, 1'b1, y_db, y_signal, intr[2]);
+    signal_interrupt #(.MSB(4)) y2 (clk, rst, y_clr, 1'b1, y_db, y_signal, y_intr);
 
     reg [7:0]   data_addr;
     reg [7:0]   data_rd_addr;
@@ -95,6 +118,11 @@ module top
     assign out[1]   = x_db[1];
     assign out[2]   = x_db[2];
     assign out[3]   = x_db[3];
+    assign out[4]   = x_intr;
+    assign out[6]   = x_step_in;
+    assign out[7]   = y_step_in;
+    assign intr[1]  = x_intr;
+    assign intr[2]  = y_intr;
     assign spi_miso = spi_miso_reg;
 
     initial begin

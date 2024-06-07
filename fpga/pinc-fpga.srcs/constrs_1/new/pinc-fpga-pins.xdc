@@ -29,10 +29,24 @@ set_property PACKAGE_PIN B5 [get_ports {x_status[1]}];		set_property IOSTANDARD 
 set_property PACKAGE_PIN A4 [get_ports {x_status[2]}];		set_property IOSTANDARD LVCMOS33 [get_ports {x_status[2]}];		set_property PULLTYPE PULLUP [get_ports {x_status[2]}]
 set_property PACKAGE_PIN A3 [get_ports {x_status[3]}];		set_property IOSTANDARD LVCMOS33 [get_ports {x_status[3]}];		set_property PULLTYPE PULLUP [get_ports {x_status[3]}]
 
+set_property PACKAGE_PIN D1 [get_ports {x_en_in}];			set_property IOSTANDARD LVCMOS33 [get_ports {x_en_in}]
+set_property PACKAGE_PIN A2 [get_ports {x_dir_in}];			set_property IOSTANDARD LVCMOS33 [get_ports {x_dir_in}]
+set_property PACKAGE_PIN E1 [get_ports {x_step_in}];		set_property IOSTANDARD LVCMOS33 [get_ports {x_step_in}]
+set_property PACKAGE_PIN T8 [get_ports {x_step_out}];		set_property IOSTANDARD LVCMOS33 [get_ports {x_step_out}]
+set_property PACKAGE_PIN T5 [get_ports {x_dir_out}];		set_property IOSTANDARD LVCMOS33 [get_ports {x_dir_out}]
+set_property PACKAGE_PIN R8 [get_ports {x_en_out}];			set_property IOSTANDARD LVCMOS33 [get_ports {x_en_out}]
+
 set_property PACKAGE_PIN B7 [get_ports {y_status[0]}];		set_property IOSTANDARD LVCMOS33 [get_ports {y_status[0]}];		set_property PULLTYPE PULLUP [get_ports {y_status[0]}]
 set_property PACKAGE_PIN B6 [get_ports {y_status[1]}];		set_property IOSTANDARD LVCMOS33 [get_ports {y_status[1]}];		set_property PULLTYPE PULLUP [get_ports {y_status[1]}]
 set_property PACKAGE_PIN A5 [get_ports {y_status[2]}];		set_property IOSTANDARD LVCMOS33 [get_ports {y_status[2]}];		set_property PULLTYPE PULLUP [get_ports {y_status[2]}]
 set_property PACKAGE_PIN B4 [get_ports {y_status[3]}];		set_property IOSTANDARD LVCMOS33 [get_ports {y_status[3]}];		set_property PULLTYPE PULLUP [get_ports {y_status[3]}]
+
+set_property PACKAGE_PIN E2 [get_ports {y_en_in}];			set_property IOSTANDARD LVCMOS33 [get_ports {y_en_in}]
+set_property PACKAGE_PIN B2 [get_ports {y_dir_in}];			set_property IOSTANDARD LVCMOS33 [get_ports {y_dir_in}]
+set_property PACKAGE_PIN F2 [get_ports {y_step_in}];		set_property IOSTANDARD LVCMOS33 [get_ports {y_step_in}]
+set_property PACKAGE_PIN T7 [get_ports {y_step_out}];		set_property IOSTANDARD LVCMOS33 [get_ports {y_step_out}]
+set_property PACKAGE_PIN R5 [get_ports {y_dir_out}];		set_property IOSTANDARD LVCMOS33 [get_ports {y_dir_out}]
+set_property PACKAGE_PIN P8 [get_ports {y_en_out}];			set_property IOSTANDARD LVCMOS33 [get_ports {y_en_out}]
 
 set_property PACKAGE_PIN G5 [get_ports {spi_clk}];			set_property IOSTANDARD LVCMOS33 [get_ports {spi_clk}] 
 set_property PACKAGE_PIN F5 [get_ports {spi_miso}];			set_property IOSTANDARD LVCMOS33 [get_ports {spi_miso}]
