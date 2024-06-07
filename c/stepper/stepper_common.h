@@ -22,10 +22,10 @@
 #define STEPPER_CMD_UPDATE		0xBB
 #define STEPPER_CMD_MOVE		0xF1
 
-static const uint8_t PICO_STATUS_SPI_READY	= 0x08;
-static const uint8_t PICO_STATUS_MOVE_READY	= 0x04;
-static const uint8_t PICO_STATUS_SYNC_READY	= 0x02;
-static const uint8_t PICO_STATUS_IN_MOTION	= 0x01;
+static const uint8_t PICO_STATUS_SPI_READY	= 0x01;
+static const uint8_t PICO_STATUS_MOVE_READY	= 0x02;
+static const uint8_t PICO_STATUS_SYNC_READY	= 0x04;
+static const uint8_t PICO_STATUS_IN_MOTION	= 0x08;
 static const uint8_t PICO_STATUS_DIRECTION	= 0x10;
 
 static const uint8_t JOG_MOVE	= 0x01;
@@ -90,7 +90,7 @@ static void stepper_get_default_config(pincStepperConfig_t* config)
 
 	config->spi_client_cs	= -1;
 	config->spi_bpw			= 8;
-	config->spi_fpga_speed	= 50000;
+	config->spi_fpga_speed	= 2000000;
 	config->spi_pico_speed	= 4000000;
 }
 
