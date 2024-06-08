@@ -11,20 +11,26 @@ module top
     output          spi_miso,
 
     input [3:0]     x_status,
+    input           x_limit,
     input           x_en_in,
     input           x_dir_in,
     input           x_step_in,
+    output          x_alarm,
     output          x_en_out,
     output          x_dir_out,
     output          x_step_out,
+    output          x_limit_com,
 
     input [3:0]     y_status,
+    input           y_limit,
     input           y_en_in,
     input           y_dir_in,
     input           y_step_in,
+    output          y_alarm,
     output          y_en_out,
     output          y_dir_out,
-    output          y_step_out,    
+    output          y_step_out,
+    output          y_limit_com,
 
     input           wheel_a,
     input           wheel_b,
@@ -32,14 +38,28 @@ module top
     output [7:0]    out,
     output [2:0]    intr
 );
-    // for now just assign stepper driver outputs directly to inputs
-    // interlocks will be implemented at some point
+
+    wire       x_limit_sync;
+    wire       x_limit_db;
+    sync x3    (clk, rst, x_limit, x_limit_sync);
+    db #(.TICK(200000))   x4    (clk, rst, x_limit_sync, x_limit_db);
+
+    wire       y_limit_sync;
+    wire       y_limit_db;
+    sync y3    (clk, rst, y_limit, y_limit_sync);
+    db #(.TICK(200000))   y4    (clk, rst, y_limit_sync, y_limit_db);
+
+    assign x_alarm      = x_limit_db;
     assign x_en_out     = x_en_in;
     assign x_dir_out    = x_dir_in;
-    assign x_step_out   = x_step_in;
+    assign x_step_out   = x_step_in & x_limit_db;
+    assign y_alarm      = y_limit_db;
     assign y_en_out     = y_en_in;
     assign y_dir_out    = y_dir_in;
-    assign y_step_out   = y_step_in;
+    assign y_step_out   = y_step_in & y_limit_db;
+
+    assign x_limit_com  = 1'b0;
+    assign y_limit_com  = 1'b0;
 
     localparam WHEEL_STATUS_REG = 8'h90;
     localparam X_STATUS_REG     = 8'hA0;
@@ -53,6 +73,7 @@ module top
     sync x0[3:0]    (clk, rst, x_status, x_sync);
     db   x1[3:0]    (clk, rst, x_sync, x_db);
     signal_interrupt #(.MSB(4)) x2 (clk, rst, x_clr, 1'b1, x_db, x_signal, x_intr);
+
 
     wire            y_intr;
     wire            y_signal;
@@ -127,14 +148,15 @@ module top
         rx_valid
     );
 
-    assign out[0]   = x_db[0];
-    assign out[1]   = w_intr;
-    assign out[2]   = wheel_a;
-    assign out[3]   = wheel_b;
-    assign out[4]   = x_intr;
-    assign out[5]   = y_intr;
-    assign out[6]   = x_step_in;
-    assign out[7]   = y_step_in;
+    assign out[0]   = x_db[3];
+    assign out[1]   = x_intr;
+    assign out[2]   = y_db[3];
+    assign out[3]   = y_intr;
+    assign out[4]   = x_step_out;
+    assign out[5]   = x_limit_db;
+    assign out[6]   = y_step_out;
+    assign out[7]   = y_limit_db;
+
     assign intr[0]  = w_intr;
     assign intr[1]  = x_intr;
     assign intr[2]  = y_intr;
