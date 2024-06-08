@@ -26,8 +26,11 @@ module top
     output          y_dir_out,
     output          y_step_out,    
 
+    input           wheel_a,
+    input           wheel_b,
+
     output [7:0]    out,
-    output [2:1]    intr
+    output [2:0]    intr
 );
     // for now just assign stepper driver outputs directly to inputs
     // interlocks will be implemented at some point
@@ -38,6 +41,7 @@ module top
     assign y_dir_out    = y_dir_in;
     assign y_step_out   = y_step_in;
 
+    localparam WHEEL_STATUS_REG = 8'h90;
     localparam X_STATUS_REG     = 8'hA0;
     localparam Y_STATUS_REG     = 8'hB0;
 
@@ -58,6 +62,15 @@ module top
     sync y0[3:0]    (clk, rst, y_status, y_sync);
     db   y1[3:0]    (clk, rst, y_sync, y_db);
     signal_interrupt #(.MSB(4)) y2 (clk, rst, y_clr, 1'b1, y_db, y_signal, y_intr);
+
+    wire            w_intr;
+    wire            w_signal;
+    reg             w_clr;
+    wire [1:0]      w_sync;
+    wire [1:0]      w_db;
+    sync w0 [1:0]   (clk, rst, {wheel_a, wheel_b}, w_sync);
+    db   w1 [1:0]   (clk, rst, w_sync, w_db);
+    signal_interrupt #(.MSB(2)) w2 (clk, rst, w_clr, 1'b1, w_db, w_signal, w_intr);   
 
     reg [7:0]   data_addr;
     reg [7:0]   data_rd_addr;
@@ -115,12 +128,14 @@ module top
     );
 
     assign out[0]   = x_db[0];
-    assign out[1]   = x_db[1];
-    assign out[2]   = x_db[2];
-    assign out[3]   = x_db[3];
+    assign out[1]   = w_intr;
+    assign out[2]   = wheel_a;
+    assign out[3]   = wheel_b;
     assign out[4]   = x_intr;
+    assign out[5]   = y_intr;
     assign out[6]   = x_step_in;
     assign out[7]   = y_step_in;
+    assign intr[0]  = w_intr;
     assign intr[1]  = x_intr;
     assign intr[2]  = y_intr;
     assign spi_miso = spi_miso_reg;
@@ -146,12 +161,14 @@ module top
         data_wr_valid   <= 1'b0;
         x_clr           <= 1'b1;
         y_clr           <= 1'b1;
+        w_clr           <= 1'b1;
 
         if(spi_cs_rise) begin
             spi_byte_num    <= 8'h00;
             case (data_rd_addr)
-                X_STATUS_REG    : x_clr <= 1'b0;
-                Y_STATUS_REG    : y_clr <= 1'b0;
+                X_STATUS_REG        : x_clr <= 1'b0;
+                Y_STATUS_REG        : y_clr <= 1'b0;
+                WHEEL_STATUS_REG    : w_clr <= 1'b0;
             endcase
         end
 
@@ -181,6 +198,11 @@ module top
             data_addr       <= Y_STATUS_REG;
             data_wr_valid   <= 1'b1;
             data_in         <= {4'hF, y_db};
+        end
+        else if(w_signal) begin
+            data_addr       <= WHEEL_STATUS_REG;
+            data_wr_valid   <= 1'b1;
+            data_in         <= {6'h3F, w_db};
         end
     end
 
