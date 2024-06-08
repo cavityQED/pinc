@@ -20,7 +20,7 @@ endmodule
 
 
 module sync
-#( parameter PULL = 1'b1)
+#(  parameter PULL = 1'b1)
 (
 	input		clk,
 	input		rst,
@@ -118,6 +118,44 @@ module edges
 			prev	<= in;
 			rise	<= (prev ^ in) & in;
 			fall	<= (prev ^ in) & ~in;
+		end
+	end
+
+endmodule
+
+
+
+module signal
+#(	parameter 			MSB		= 7,
+	parameter 			TICK	= 5,
+	parameter [MSB:0]	PULL	= {(MSB){1'b1}})
+(
+	input				clk,
+	input				rst,
+	input				en,
+	input				clr,
+	input 		[MSB:0]	in,
+	output	reg	[MSB:0]	out,
+	output	reg			flip,
+	output	reg			intr
+);
+
+	wire [MSB:0]	in_sync, in_db;
+	wire			flip_wire = (in_db ^ out) > 0;
+	
+	sync			sync_mod[MSB:0]	(clk, rst, in, in_sync);
+	db				db_mod[MSB:0]	(clk, rst, in_sync, in_db);
+
+	always @(posedge clk) begin
+		if(~rst) begin
+			out		<= in_db;
+			flip	<= 1'b0;
+			intr	<= 1'b1;	
+		end
+		else if(en) begin
+			out		<= in_db;
+			flip	<= flip_wire;
+			intr	<= ~clr | (intr & ~flip_wire);
 		end
 	end
 

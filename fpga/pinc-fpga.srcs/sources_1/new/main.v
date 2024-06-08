@@ -65,33 +65,53 @@ module top
     localparam X_STATUS_REG     = 8'hA0;
     localparam Y_STATUS_REG     = 8'hB0;
 
-    wire            x_intr;
-    wire            x_signal;
-    reg             x_clr;
-    wire [3:0]      x_sync;
-    wire [3:0]      x_db;
-    sync x0[3:0]    (clk, rst, x_status, x_sync);
-    db   x1[3:0]    (clk, rst, x_sync, x_db);
-    signal_interrupt #(.MSB(4)) x2 (clk, rst, x_clr, 1'b1, x_db, x_signal, x_intr);
+    reg         x_status_intr_clear;
+    wire        x_status_flip;
+    wire        x_status_intr;
+    wire [3:0]  x_status_out;
+    signal      #(.MSB(3)) xsig
+    (
+        .clk    (clk),
+        .rst    (rst),
+        .en     (1'b1),
+        .clr    (x_status_intr_clear),
+        .in     (x_status),
+        .out    (x_status_out),
+        .flip   (x_status_flip),
+        .intr   (x_status_intr)
+    );
 
+    reg         y_status_intr_clear;
+    wire        y_status_flip;
+    wire        y_status_intr;
+    wire [3:0]  y_status_out;
+    signal      #(.MSB(3)) ysig
+    (
+        .clk    (clk),
+        .rst    (rst),
+        .en     (1'b1),
+        .clr    (y_status_intr_clear),
+        .in     (y_status),
+        .out    (y_status_out),
+        .flip   (y_status_flip),
+        .intr   (y_status_intr)
+    );
 
-    wire            y_intr;
-    wire            y_signal;
-    reg             y_clr;
-    wire [3:0]      y_sync;
-    wire [3:0]      y_db;
-    sync y0[3:0]    (clk, rst, y_status, y_sync);
-    db   y1[3:0]    (clk, rst, y_sync, y_db);
-    signal_interrupt #(.MSB(4)) y2 (clk, rst, y_clr, 1'b1, y_db, y_signal, y_intr);
-
-    wire            w_intr;
-    wire            w_signal;
-    reg             w_clr;
-    wire [1:0]      w_sync;
-    wire [1:0]      w_db;
-    sync w0 [1:0]   (clk, rst, {wheel_a, wheel_b}, w_sync);
-    db   w1 [1:0]   (clk, rst, w_sync, w_db);
-    signal_interrupt #(.MSB(2)) w2 (clk, rst, w_clr, 1'b1, w_db, w_signal, w_intr);   
+    reg         w_status_intr_clear;
+    wire        w_status_flip;
+    wire        w_status_intr;
+    wire [1:0]  w_status_out;
+    signal      #(.MSB(1)) wsig
+    (
+        .clk    (clk),
+        .rst    (rst),
+        .en     (1'b1),
+        .clr    (w_status_intr_clear),
+        .in     (w_status),
+        .out    (w_status_out),
+        .flip   (w_status_flip),
+        .intr   (w_status_intr)
+    );
 
     reg [7:0]   data_addr;
     reg [7:0]   data_rd_addr;
@@ -148,18 +168,18 @@ module top
         rx_valid
     );
 
-    assign out[0]   = x_db[3];
-    assign out[1]   = x_intr;
-    assign out[2]   = y_db[3];
-    assign out[3]   = y_intr;
+    assign out[0]   = x_status_out[0];
+    assign out[1]   = x_status_out[1];
+    assign out[2]   = x_status_out[3];
+    assign out[3]   = x_status_intr;
     assign out[4]   = x_step_out;
     assign out[5]   = x_limit_db;
     assign out[6]   = y_step_out;
     assign out[7]   = y_limit_db;
 
-    assign intr[0]  = w_intr;
-    assign intr[1]  = x_intr;
-    assign intr[2]  = y_intr;
+    assign intr[0]  = w_status_intr;
+    assign intr[1]  = x_status_intr;
+    assign intr[2]  = y_status_intr;
     assign spi_miso = spi_miso_reg;
 
     initial begin
@@ -178,19 +198,19 @@ module top
     end
 
     always @(posedge clk) begin
-        tx_valid        <= 1'b0;
-        data_read       <= 1'b0;
-        data_wr_valid   <= 1'b0;
-        x_clr           <= 1'b1;
-        y_clr           <= 1'b1;
-        w_clr           <= 1'b1;
+        tx_valid            <= 1'b0;
+        data_read           <= 1'b0;
+        data_wr_valid       <= 1'b0;
+        x_status_intr_clear <= 1'b1;
+        y_status_intr_clear <= 1'b1;
+        w_status_intr_clear <= 1'b1;
 
         if(spi_cs_rise) begin
             spi_byte_num    <= 8'h00;
             case (data_rd_addr)
-                X_STATUS_REG        : x_clr <= 1'b0;
-                Y_STATUS_REG        : y_clr <= 1'b0;
-                WHEEL_STATUS_REG    : w_clr <= 1'b0;
+                X_STATUS_REG        : x_status_intr_clear <= 1'b0;
+                Y_STATUS_REG        : y_status_intr_clear <= 1'b0;
+                WHEEL_STATUS_REG    : w_status_intr_clear <= 1'b0;
             endcase
         end
 
@@ -211,20 +231,20 @@ module top
             tx_valid        <= 1'b1;
         end
 
-        if(x_signal) begin
+        if(x_status_flip) begin
             data_addr       <= X_STATUS_REG;
             data_wr_valid   <= 1'b1;
-            data_in         <= {4'hF, x_db};
+            data_in         <= {4'hF, x_status_out};
         end
-        else if(y_signal) begin
+        else if(y_status_flip) begin
             data_addr       <= Y_STATUS_REG;
             data_wr_valid   <= 1'b1;
-            data_in         <= {4'hF, y_db};
+            data_in         <= {4'hF, y_status_out};
         end
-        else if(w_signal) begin
+        else if(w_status_flip) begin
             data_addr       <= WHEEL_STATUS_REG;
             data_wr_valid   <= 1'b1;
-            data_in         <= {6'h3F, w_db};
+            data_in         <= {6'h3F, w_status_out};
         end
     end
 
