@@ -20,6 +20,7 @@
 #define PICO_PIN_SYNC_SIGNAL	14
 #define PICO_PIN_SPI_MSG_REQ	15
 
+#define PICO_PIN_ALARM			18
 #define PICO_PIN_STEP			19
 #define PICO_PIN_DIR			20
 #define PICO_PIN_ENABLE			21

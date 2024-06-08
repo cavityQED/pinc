@@ -32,6 +32,12 @@ static void gpio_isr(uint pin, uint32_t event_mask)
 			if(event_mask & GPIO_IRQ_EDGE_RISE)
 				sem_release(&motor.sem);
 			break;
+
+		case PICO_PIN_ALARM:
+			if(event_mask & GPIO_IRQ_EDGE_FALL)
+				motor.move.stop = true;
+			break;
+
 		default:
 			break;
 	}
@@ -101,6 +107,14 @@ int main()
 	gpio_pull_down(PICO_PIN_SYNC_SIGNAL);
 	gpio_set_irq_enabled_with_callback(	PICO_PIN_SYNC_SIGNAL,
 										GPIO_IRQ_EDGE_RISE,
+										true,
+										gpio_isr);
+
+	gpio_init(PICO_PIN_ALARM);
+	gpio_set_dir(PICO_PIN_ALARM, GPIO_IN);
+	gpio_pull_down(PICO_PIN_ALARM);
+	gpio_set_irq_enabled_with_callback(	PICO_PIN_ALARM,
+										GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL,
 										true,
 										gpio_isr);
 
