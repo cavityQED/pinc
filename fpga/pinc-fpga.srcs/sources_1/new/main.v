@@ -10,6 +10,8 @@ module top
     input           spi_mosi,
     output          spi_miso,
 
+    input           stepper_sync,
+
     input [3:0]     x_status,
     input           x_limit,
     input           x_en_in,
@@ -39,23 +41,23 @@ module top
     output [2:0]    intr
 );
 
-    wire       x_limit_sync;
     wire       x_limit_db;
-    sync x3    (clk, rst, x_limit, x_limit_sync);
-    db #(.TICK(200000))   x4    (clk, rst, x_limit_sync, x_limit_db);
+    db #(.TICK(200000)) xdb (clk, rst, x_limit, x_limit_db);
 
-    wire       y_limit_sync;
     wire       y_limit_db;
-    sync y3    (clk, rst, y_limit, y_limit_sync);
-    db #(.TICK(200000))   y4    (clk, rst, y_limit_sync, y_limit_db);
+    db #(.TICK(200000)) ydb (clk, rst, y_limit, y_limit_db);
 
-    wire all_limits = x_limit_db & y_limit_db;
+    wire        stepper_sync_db;
+    db #(.PULL(1'b0))   sdb (clk, rst, stepper_sync, stepper_sync_db);
 
-    assign x_alarm      = all_limits;
+    wire any_limit      = x_limit_db & y_limit_db;
+    wire sync_alarm     = ~(stepper_sync_db & ~any_limit);
+
+    assign x_alarm      = x_limit_db & sync_alarm;
     assign x_en_out     = x_en_in;
     assign x_dir_out    = x_dir_in;
     assign x_step_out   = x_step_in;
-    assign y_alarm      = all_limits;
+    assign y_alarm      = y_limit_db & sync_alarm;
     assign y_en_out     = y_en_in;
     assign y_dir_out    = y_dir_in;
     assign y_step_out   = y_step_in;

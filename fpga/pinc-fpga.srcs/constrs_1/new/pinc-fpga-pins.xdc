@@ -12,6 +12,8 @@ set_property IOSTANDARD LVCMOS33 [get_ports {clk}]
 
 set_property PACKAGE_PIN M6 [get_ports {rst}];				set_property IOSTANDARD LVCMOS33 [get_ports {rst}];            set_property PULLTYPE PULLUP [get_ports {rst}]
 
+set_property PACKAGE_PIN H5 [get_ports {stepper_sync}];				set_property IOSTANDARD LVCMOS33 [get_ports {stepper_sync}];
+
 set_property PACKAGE_PIN R13 [get_ports {out[0]}];			set_property IOSTANDARD LVCMOS33 [get_ports {out[0]}]
 set_property PACKAGE_PIN R12 [get_ports {out[1]}];			set_property IOSTANDARD LVCMOS33 [get_ports {out[1]}]
 set_property PACKAGE_PIN R10 [get_ports {out[2]}];			set_property IOSTANDARD LVCMOS33 [get_ports {out[2]}]
