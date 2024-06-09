@@ -50,16 +50,15 @@ module top
     db #(.TICK(200000))   y4    (clk, rst, y_limit_sync, y_limit_db);
 
     wire all_limits = x_limit_db & y_limit_db;
-    wire step_alarm = ~all_limits;
 
-    assign x_alarm      = step_alarm;
+    assign x_alarm      = all_limits;
     assign x_en_out     = x_en_in;
     assign x_dir_out    = x_dir_in;
-    assign x_step_out   = x_step_in & all_limits;
-    assign y_alarm      = step_alarm;
+    assign x_step_out   = x_step_in;
+    assign y_alarm      = all_limits;
     assign y_en_out     = y_en_in;
     assign y_dir_out    = y_dir_in;
-    assign y_step_out   = y_step_in & all_limits;
+    assign y_step_out   = y_step_in;
 
     assign x_limit_com  = 1'b0;
     assign y_limit_com  = 1'b0;

@@ -21,6 +21,7 @@
 #define STEPPER_CMD_PAUSE		0xBA
 #define STEPPER_CMD_UPDATE		0xBB
 #define STEPPER_CMD_MOVE		0xF1
+#define STEPPER_CMD_HOME		0xF2
 
 static const uint8_t PICO_STATUS_SPI_READY	= 0x01;
 static const uint8_t PICO_STATUS_MOVE_READY	= 0x02;
@@ -32,6 +33,7 @@ static const uint8_t JOG_MOVE	= 0x01;
 static const uint8_t LINE_MOVE	= 0x02;
 static const uint8_t CURVE_MOVE	= 0x04;
 static const uint8_t SYNC_MOVE	= 0x08;
+static const uint8_t HOME_MOVE	= 0x10;
 
 typedef enum
 {
@@ -61,6 +63,7 @@ typedef struct
 	uint32_t			jog_speed;	// [steps/s]
 	uint32_t			min_speed;	// [steps/s]
 	uint32_t			max_speed;	// [steps/s]
+	uint32_t			max_steps;
 
 	int					spi_client_cs;	// additional cs; -1 if unused
 	uint8_t				spi_cs_change;	// true - deselect
@@ -87,6 +90,7 @@ static void stepper_get_default_config(pincStepperConfig_t* config)
 	config->jog_speed		= 60*spmm;
 	config->min_speed		= 10*spmm;
 	config->max_speed		= 50*spmm;
+	config->max_steps		= 200*spmm;
 
 	config->spi_client_cs	= -1;
 	config->spi_bpw			= 8;

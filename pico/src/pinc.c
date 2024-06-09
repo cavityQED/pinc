@@ -24,7 +24,7 @@ static void gpio_isr(uint pin, uint32_t event_mask)
 			{	
 				// spi transfer complete
 				pio_spi_client_disable(&spi);
-				queue_try_add(&msgQueue, spi.rx_buf);
+				queue_try_add(&motor.msgQueue, spi.rx_buf);
 			}
 			break;
 
@@ -35,7 +35,13 @@ static void gpio_isr(uint pin, uint32_t event_mask)
 
 		case PICO_PIN_ALARM:
 			if(event_mask & GPIO_IRQ_EDGE_FALL)
-				motor.move.stop = true;
+			{
+				motor.move.steps	= 0;
+				motor.move.stop 	= true;
+				motor.alarm			= true;
+			}
+			else if(event_mask & GPIO_IRQ_EDGE_RISE)
+				motor.alarm			= false;
 			break;
 
 		default:
@@ -72,21 +78,18 @@ static void core1_main()
 	motor.p_motion		= PICO_PIN_MOTION;
 	motor.p_sync_ready	= PICO_PIN_SYNC_READY;
 	motor.p_move_ready	= PICO_PIN_MOVE_READY;
-	motor.spmm			= 800;
-	motor.move.delay	= 125;
 	motor.alarmPool		= alarm_pool_create(1, 2);
-	motor.timer			= &step_timer;
 	stepper_init(&motor);
 
 	uint8_t msg[MAX_SPI_TRANSFER_LENGTH];
 
 	while(1)
 	{
-		queue_peek_blocking(&msgQueue, msg);
+		queue_peek_blocking(&motor.msgQueue, msg);
 
 		stepper_msg_handle(&motor, msg);
 
-		queue_remove_blocking(&msgQueue, msg);
+		queue_remove_blocking(&motor.msgQueue, msg);
 	}
 }
 
@@ -124,13 +127,6 @@ int main()
 								sizeof(struct spi_client*),
 								1,
 								spi_spinlock);
-
-	static uint msg_spinlock;
-	msg_spinlock = spin_lock_claim_unused(true);
-	queue_init_with_spinlock(	&msgQueue,
-								MAX_SPI_TRANSFER_LENGTH,
-								1,
-								msg_spinlock);
 
 	memset(spi_in_buf, 0, MAX_SPI_TRANSFER_LENGTH);
 	memset(spi_out_buf, 0, MAX_SPI_TRANSFER_LENGTH);

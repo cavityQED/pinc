@@ -11,6 +11,7 @@
 #include "hardware/gpio.h"
 
 #include "c/stepper/stepper_common.h"
+#include "spi/spi_client.h"
 
 #define PICO_PIN_MOTION			10
 #define PICO_PIN_SYNC_READY		11
@@ -37,28 +38,27 @@ struct stepper
 	int			p_move_ready;
 	int			pos;			// position (steps)
 
-	PINC_AXIS	axis;
+	bool		homed;
+	bool		alarm;
+
 	uint8_t		status;
-	uint16_t	spmm;	//steps per mm
 
-	uint32_t	accel;
-	uint32_t	jog_speed;
-	uint32_t	min_speed;
-	uint32_t	max_speed;
+	pincStepperMove_t		move;
+	pincStepperConfig_t		config;
+	alarm_pool_t*			alarmPool;
+	alarm_id_t				alarm_id;
+	queue_t					msgQueue;
 
-	pincStepperMove_t	move;
-	picoTimer_t*		timer;
-	alarm_pool_t*		alarmPool;
-	semaphore_t			sem;
+	semaphore_t				sem;
 };
 
 static struct stepper	motor;
 
 static inline void set_speed(struct stepper* s, float mmps)
-	{s->move.delay = 1000000 / mmps / s->spmm;}
+	{s->move.delay = 1000000 / mmps / s->config.spmm;}
 
 static inline float mm_pos(const struct stepper* s)
-	{return (float)s->pos/s->spmm;}
+	{return (float)s->pos/s->config.spmm;}
 
 static inline bool check_status(struct stepper* s, uint8_t mask)
 	{return s->status & mask;}
@@ -67,6 +67,7 @@ void stepper_init		(struct stepper* s);
 void set_dir			(struct stepper* s);
 void step				(struct stepper* s);
 void stepper_move		(struct stepper* s);
+void stepper_home		(struct stepper* s);
 void stepper_msg_handle	(struct stepper* s, uint8_t* msg);
 
 #endif

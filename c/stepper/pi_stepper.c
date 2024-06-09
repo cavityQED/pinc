@@ -126,10 +126,22 @@ void stepper_jog(pincPiStepper* s)
 	stepper_unlock(s);
 }
 
+void stepper_home(pincPiStepper* s)
+{
+	stepper_lock(s);
+
+	stepper_write_msg(	s,
+						STEPPER_CMD_HOME,
+						NULL,
+						sizeof(pincStepperUpdate_t));
+
+	stepper_send_msg(s);
+
+	stepper_unlock(s);
+}
+
 void stepper_update(pincPiStepper* s)
 {
-	printf("Stepper Update\n");
-
 	stepper_lock(s);
 
 	stepper_write_msg(	s,

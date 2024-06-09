@@ -29,6 +29,7 @@ public:
 public:
 
 	void jog(PINC_AXIS axis, bool dir);
+	void home(PINC_AXIS axis, bool dir);
 	void jog_last_axis(bool dir) {jog(m_last_axis, dir);}
 	void sync_move(pincStepperMove_t* move, bool convert = false);
 

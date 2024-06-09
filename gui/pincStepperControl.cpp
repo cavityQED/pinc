@@ -78,6 +78,18 @@ void pincStepperControl::jog(PINC_AXIS axis, bool dir)
 	}
 }
 
+void pincStepperControl::home(PINC_AXIS axis, bool dir)
+{
+
+	if(m_steppers.contains(axis))
+	{
+		auto stepper = m_steppers.at(axis);
+
+		stepper_home(stepper.get());
+	}
+}
+
+
 void pincStepperControl::sync_move(pincStepperMove_t* move, bool convert)
 {
 	gpioWrite(SYNC_PIN, 0);
