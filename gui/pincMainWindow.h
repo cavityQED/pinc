@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 #include "c/stepper/stepper_common.h"
+#include "pincStepperControl.h"
 
 class pincMainWindow : public QMainWindow
 {
@@ -14,6 +15,8 @@ public:
 	pincMainWindow(QWidget* parent = nullptr);
 	~pincMainWindow() {}
 
+	void setStepperControl(pincStepperControl* ctrl) {m_stepper_ctrl = ctrl;}
+
 public:
 
 	void setControlMode(CONTROL_MODE mode);
@@ -21,7 +24,8 @@ public:
 
 protected:
 
-	CONTROL_MODE	m_ctrl_mode;
+	CONTROL_MODE			m_ctrl_mode;
+	pincStepperControl*		m_stepper_ctrl;
 
 };
 

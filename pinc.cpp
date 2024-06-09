@@ -138,6 +138,7 @@ int main(int argc, char *argv[])
 
 	central->setLayout(hlayout);
 	mainWindow->setCentralWidget(central);
+	mainWindow->setStepperControl(steppers);
 
 	QObject::connect(	ctrl_panel,
 						&pincControlModeButtons::controlModeChange,
@@ -146,8 +147,8 @@ int main(int argc, char *argv[])
 
 	QObject::connect(	jog_panel,
 						&pincJogControl::jog,
-						steppers,
-						&pincStepperControl::jog);
+						mainWindow,
+						&pincMainWindow::jog);
 
 	QObject::connect(	move_window,
 						&pincStepperMove::move,

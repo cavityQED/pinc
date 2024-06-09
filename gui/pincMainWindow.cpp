@@ -2,7 +2,7 @@
 
 pincMainWindow::pincMainWindow(QWidget* parent) : QMainWindow(parent)
 {
-
+	m_ctrl_mode = EDIT_CTRL;
 }
 
 void pincMainWindow::setControlMode(CONTROL_MODE mode)
@@ -54,31 +54,9 @@ void pincMainWindow::setControlMode(CONTROL_MODE mode)
 
 void pincMainWindow::jog(PINC_AXIS axis, bool dir)
 {
-	if(m_ctrl_mode != JOG_CTRL)
-		return;
+	if(m_ctrl_mode == JOG_CTRL)
+		m_stepper_ctrl->jog(axis, dir);
 
-	const char* dir_string = (dir)? "Positive" : "Negative";
-	switch(axis)
-	{
-		case X_AXIS:
-		{
-			printf("Jogging X Axis in %s Direction\n", dir_string);
-			break;
-		}
-
-		case Y_AXIS:
-		{
-			printf("Jogging Y Axis in %s Direction\n", dir_string);
-			break;
-		}
-
-		case Z_AXIS:
-		{
-			printf("Jogging Z Axis in %s Direction\n", dir_string);
-			break;
-		}
-
-		default:
-			break;
-	}
+	else if(m_ctrl_mode == HOME_CTRL)
+		m_stepper_ctrl->home(axis, dir);
 }
