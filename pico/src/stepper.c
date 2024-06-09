@@ -2,7 +2,8 @@
 
 void stepper_init(struct stepper* s)
 {
-	s->alarm = false;
+	s->alarm	= false;
+	s->homed	= false;
 
 	uint mask = (1 << s->p_step)		| 
 				(1 << s->p_dir)			| 
@@ -171,11 +172,23 @@ void stepper_home(struct stepper*s)
 {
 	memset(&s->move, 0, sizeof(pincStepperMove_t));
 
-	s->move.mode		= HOME_MOVE | JOG_MOVE;
-	s->move.step_dir	= 0;
-	s->move.steps		= s->config.max_steps;
 	s->move.v0_sps		= s->config.min_speed;
-	s->move.vf_sps		= s->config.min_speed;
+
+	if(s->homed)
+	{
+		s->move.mode		= JOG_MOVE;
+		s->move.step_dir	= 0;
+		s->move.steps		= s->pos;
+		s->move.vf_sps		= s->config.jog_speed;
+		s->move.accel		= s->config.accel;
+	}
+	else
+	{
+		s->move.mode		= HOME_MOVE | JOG_MOVE;
+		s->move.step_dir	= 0;
+		s->move.steps		= s->config.max_steps;
+		s->move.vf_sps		= s->config.min_speed;
+	}
 
 	stepper_move(s);
 }
