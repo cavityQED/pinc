@@ -110,7 +110,7 @@ module top
         .rst    (rst),
         .en     (1'b1),
         .clr    (w_status_intr_clear),
-        .in     (w_status),
+        .in     ({wheel_a, wheel_b}),
         .out    (w_status_out),
         .flip   (w_status_flip),
         .intr   (w_status_intr)
