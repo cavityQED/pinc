@@ -46,7 +46,8 @@ endmodule
 
 
 module db
-#(	parameter TICK	= 5)
+#(	parameter TICK	= 5,
+	parameter PULL	= 1'b1)
 (
 	input		clk,
 	input		rst,
@@ -54,7 +55,9 @@ module db
 
 	output reg	out
 );
-	
+	wire in_sync;
+	sync #(.PULL(PULL)) s0 (clk, rst, in, in_sync);
+
 	localparam	cbits = $clog2(TICK);
 
 	reg				r_counting;
@@ -64,24 +67,24 @@ module db
 		if(~rst) begin
 			r_count		<= 0;
 			r_counting	<= 1'b0;
-			out			<= in;
+			out			<= in_sync;
 		end
 		else begin
 			if(r_counting) begin
 				if(r_count == TICK) begin
 					r_count		<= 0;
 					r_counting	<= 1'b0;
-					out			<= in;
+					out			<= in_sync;
 				end
 				else
 					r_count		<= r_count + 1'b1;
 			end
 			else begin
-				if(out ^ in) begin
+				if(out ^ in_sync) begin
 					r_counting	<= 1'b1;
 				end
 				else
-					out	<= in;
+					out	<= in_sync;
 			end
 		end
 	end
