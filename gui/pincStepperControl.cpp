@@ -19,6 +19,9 @@ pincStepperControl::pincStepperControl(QWidget* parent) : QGroupBox(parent)
 				&QTimer::timeout,
 				this,
 				&pincStepperControl::update);
+
+	m_pos_layout.setSizeConstraint(QLayout::SetFixedSize);
+	setLayout(&m_pos_layout);
 }
 
 void pincStepperControl::addStepper(pincStepperConfig_t* config)
@@ -66,6 +69,10 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	stepper_config(new_stepper.get(), config);
 
 	m_steppers.insert(std::make_pair((PINC_AXIS)config->axis, new_stepper));
+
+	pincPosition* pos = new pincPosition((PINC_AXIS)config->axis);
+	m_pos_layout.addWidget(pos);
+	m_positions.insert(std::make_pair((PINC_AXIS)config->axis, pos));
 }
 
 void pincStepperControl::jog(PINC_AXIS axis, bool dir)
@@ -147,6 +154,9 @@ void pincStepperControl::update()
 	{
 		stepper_update(it->second.get());
 		no_motion = no_motion && (it->second->status_sig.cur & PICO_STATUS_IN_MOTION);
+		auto pos = m_positions.at((PINC_AXIS)it->second->config.axis);
+		if(pos)
+			pos->set((double)it->second->step_pos / it->second->config.spmm);
 	}
 
 	if(no_motion)

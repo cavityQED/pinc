@@ -10,6 +10,8 @@
 #include <QButtonGroup>
 #include <QTimer>
 
+#include "pincPosition.h"
+
 extern "C" {
 	#include "c/stepper/pi_stepper.h" 
 }
@@ -41,6 +43,7 @@ public:
 protected:
 
 	std::map<PINC_AXIS, std::shared_ptr<pincPiStepper>>	m_steppers;
+	std::map<PINC_AXIS, pincPosition*>	m_positions;
 
 	uint8_t	spi_mode;
 	int		fd_CS0;
@@ -51,6 +54,8 @@ protected:
 	sem_t	pin_req_sem;
 
 	QTimer	m_timer;
+
+	QVBoxLayout	m_pos_layout;
 };
 
 #endif
