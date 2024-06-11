@@ -16,6 +16,5 @@ static picoTimer_t			step_timer;
 static struct spi_client	spi;
 static struct stepper		motor;
 static queue_t				spiQueue;
-static queue_t				msgQueue;
 
 #endif

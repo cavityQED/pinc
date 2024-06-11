@@ -105,7 +105,7 @@ module top
     wire        w_status_flip;
     wire        w_status_intr;
     wire [1:0]  w_status_out;
-    signal      #(.MSB(1)) wsig
+    signal      #(.MSB(1), .TICK(200000)) wsig
     (
         .clk    (clk),
         .rst    (rst),

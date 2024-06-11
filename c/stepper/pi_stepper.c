@@ -96,8 +96,6 @@ void stepper_config(pincPiStepper* s, pincStepperConfig_t* config)
 
 void stepper_move(pincPiStepper* s, pincStepperMove_t* move)
 {
-	printf("Stepper Move\n");
-
 	stepper_lock(s);
 
 	stepper_write_msg(	s,
@@ -112,8 +110,6 @@ void stepper_move(pincPiStepper* s, pincStepperMove_t* move)
 
 void stepper_jog(pincPiStepper* s)
 {
-	printf("Stepper Jog\n");
-
 	stepper_lock(s);
 
 	stepper_write_msg(	s,
@@ -156,6 +152,6 @@ void stepper_update(pincPiStepper* s)
 
 void stepper_print(pincPiStepper* s)
 {
-	printf("Axis %X:\n\tPosition (steps):\t%d\n\n", s->config.axis, s->step_pos);
+	printf("Axis %X position (steps):\t%d\n\n", s->config.axis, s->step_pos);
 }
 

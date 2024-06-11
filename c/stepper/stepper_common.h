@@ -91,6 +91,7 @@ static void stepper_get_default_config(pincStepperConfig_t* config)
 	config->min_speed		= 10*spmm;
 	config->max_speed		= 50*spmm;
 	config->max_steps		= 200*spmm;
+	config->accel			= 2000*spmm;
 
 	config->spi_client_cs	= -1;
 	config->spi_bpw			= 8;

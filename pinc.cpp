@@ -27,18 +27,6 @@ static void shutdown(int signum)
 	exit(signum);
 }
 
-static void sync_test(bool checked)
-{
-	printf("SYNC TEST\n");
-	steppers->sync_move(&sync_move);
-}
-
-static void curve_test(bool checked)
-{
-	printf("CURVE TEST\n");
-	steppers->sync_move(&curve_move);
-}
-
 static void wheel_pin_isr(int gpio, int level, uint32_t tick, void* dev)
 {
 	static uint8_t tx[2] = {WHEEL_STATUS_ADDR, 0};
@@ -200,39 +188,13 @@ int main(int argc, char *argv[])
 			"left:					10px;"
 			"color:					#CAEEFF;"
 			"}"
+
+		"QLabel{"
+			"color:					#CAEEFF;"
+			"}"
 	);
 
 	mainWindow->show();
-
-	memset(&sync_move, 0, sizeof(pincStepperMove_t));
-	memset(&curve_move, 0, sizeof(pincStepperMove_t));
-
-	sync_move.mode	= LINE_MOVE | SYNC_MOVE;
-	sync_move.v_sps	= config.jog_speed;
-	sync_move.end.x	= 10 * config.spmm;
-	sync_move.end.y = 10 * config.spmm;
-
-
-	curve_move.mode		= CURVE_MOVE | SYNC_MOVE;
-	curve_move.v_sps	= config.jog_speed;
-	curve_move.end.x	= 10 * config.spmm;
-	curve_move.center.x = curve_move.end.x / 2;
-	curve_move.radius	= curve_move.end.x / 2;
-	curve_move.cw		= 1;
-
-	QAction* test_move = new QAction(ctrl_panel);
-	ctrl_panel->addAction(test_move);
-	test_move->setShortcut(Qt::Key_F1);
-	QObject::connect(	test_move,
-						&QAction::triggered,
-						sync_test);
-
-	QAction* curve_action = new QAction(ctrl_panel);
-	ctrl_panel->addAction(curve_action);
-	curve_action->setShortcut(Qt::Key_F2);
-	QObject::connect(	curve_action,
-						&QAction::triggered,
-						curve_test);
 
 	return app.exec();
 }
