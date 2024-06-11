@@ -14,6 +14,11 @@ pincStepperControl::pincStepperControl(QWidget* parent) : QGroupBox(parent)
 
 	gpioSetMode(SYNC_PIN, PI_OUTPUT);
 	gpioWrite(SYNC_PIN, 0);
+
+	connect(	&m_timer,
+				&QTimer::timeout,
+				this,
+				&pincStepperControl::update);
 }
 
 void pincStepperControl::addStepper(pincStepperConfig_t* config)
@@ -74,7 +79,10 @@ void pincStepperControl::jog(PINC_AXIS axis, bool dir)
 		stepper->jog_move.mode		= JOG_MOVE;
 		stepper->jog_move.step_dir	= dir;
 		if(stepper->status_sig.cur & PICO_STATUS_MOVE_READY)
+		{
 			stepper_jog(stepper.get());
+			monitor_start(10);
+		}
 	}
 }
 
@@ -86,14 +94,13 @@ void pincStepperControl::home(PINC_AXIS axis, bool dir)
 		auto stepper = m_steppers.at(axis);
 
 		stepper_home(stepper.get());
+		monitor_start(10);
 	}
 }
 
 
 void pincStepperControl::sync_move(pincStepperMove_t* move, bool convert)
 {
-	gpioWrite(SYNC_PIN, 0);
-
 	move->mode		|= SYNC_MOVE;
 	move->a_phase	= INITIAL;
 	move->a_steps	= 0;
@@ -129,4 +136,22 @@ void pincStepperControl::sync_move(pincStepperMove_t* move, bool convert)
 		sem_wait(sem);
 
 	gpioWrite(SYNC_PIN, 1);
+	monitor_start(10);
+}
+
+void pincStepperControl::update()
+{
+	bool no_motion = true;
+
+	for(auto it = m_steppers.begin(); it != m_steppers.end(); it++)
+	{
+		stepper_update(it->second.get());
+		no_motion = no_motion && (it->second->status_sig.cur & PICO_STATUS_IN_MOTION);
+	}
+
+	if(no_motion)
+	{
+		gpioWrite(SYNC_PIN, 0);
+		monitor_stop();
+	}
 }

@@ -8,6 +8,7 @@
 #include <QGridLayout>
 #include <QPushButton>
 #include <QButtonGroup>
+#include <QTimer>
 
 extern "C" {
 	#include "c/stepper/pi_stepper.h" 
@@ -25,6 +26,10 @@ public:
 	~pincStepperControl() {}
 
 	void addStepper(pincStepperConfig_t* config);
+
+	void monitor_start(int msec)	{m_timer.start(msec);}
+	void monitor_stop()				{m_timer.stop();}
+	void update();
 
 public:
 
@@ -44,6 +49,8 @@ protected:
 	PINC_AXIS	m_last_axis;
 
 	sem_t	pin_req_sem;
+
+	QTimer	m_timer;
 };
 
 #endif
