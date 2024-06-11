@@ -37,7 +37,6 @@ public:
 
 	void jog(PINC_AXIS axis, bool dir);
 	void home(PINC_AXIS axis, bool dir);
-	void jog_last_axis(bool dir) {jog(m_last_axis, dir);}
 	void sync_move(pincStepperMove_t* move, bool convert = false);
 
 protected:
@@ -49,8 +48,6 @@ protected:
 	int		fd_CS0;
 	int		fd_CS1;
 	
-	PINC_AXIS	m_last_axis;
-
 	sem_t	pin_req_sem;
 
 	QTimer	m_timer;

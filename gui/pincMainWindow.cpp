@@ -52,7 +52,7 @@ void pincMainWindow::setControlMode(CONTROL_MODE mode)
 	}
 }
 
-void pincMainWindow::jog(PINC_AXIS axis, bool dir)
+void pincMainWindow::jog(const PINC_AXIS axis, bool dir)
 {
 	if(m_ctrl_mode == JOG_CTRL)
 		m_stepper_ctrl->jog(axis, dir);

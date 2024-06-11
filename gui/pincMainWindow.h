@@ -20,7 +20,7 @@ public:
 public:
 
 	void setControlMode(CONTROL_MODE mode);
-	void jog(PINC_AXIS axis, bool dir);
+	void jog(const PINC_AXIS axis, bool dir);
 
 protected:
 

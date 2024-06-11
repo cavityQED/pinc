@@ -2,7 +2,6 @@
 
 pincStepperControl::pincStepperControl(QWidget* parent) : QGroupBox(parent)
 {
-	m_last_axis = X_AXIS;
 	spi_mode	= SPI_MODE_0;
 	fd_CS0		= open("/dev/spidev0.0", O_RDWR);
 	fd_CS1		= open("/dev/spidev0.1", O_RDWR);
@@ -77,8 +76,6 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 
 void pincStepperControl::jog(PINC_AXIS axis, bool dir)
 {
-	m_last_axis = axis;
-
 	if(m_steppers.contains(axis))
 	{
 		auto stepper = m_steppers.at(axis);
