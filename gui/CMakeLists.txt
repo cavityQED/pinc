@@ -1,11 +1,16 @@
 set(CMAKE_CXX_STANDARD 20)
-set(LIBRARY_SOURCE_FILES	pinc_gui.cpp
-							pincMainWindow.cpp
+set(LIBRARY_SOURCE_FILES	pincMainWindow.cpp
 							pincControlModeButtons.cpp
 							pincStepperControl.cpp
 							pincJogControl.cpp
 							pincStepperMove.cpp
-							pincPosition.cpp)
+							pincPosition.cpp
+							pincCentralWindow.cpp
+							pincButton.cpp
+							pincStyle.cpp
+							pincLabel.cpp
+							pincPanel.cpp
+							pincEditWindow.cpp)
 
 set(LINKED_LIBRARIES		Qt5::Core
 							Qt5::Widgets
