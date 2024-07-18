@@ -9,8 +9,11 @@
 #include <QPushButton>
 #include <QButtonGroup>
 #include <QTimer>
+#include <QDebug>
 
+#include "pincPanel.h"
 #include "pincPosition.h"
+#include "pincStyle.h"
 
 extern "C" {
 	#include "c/stepper/pi_stepper.h" 
@@ -18,7 +21,7 @@ extern "C" {
 
 #define SYNC_PIN	23
 
-class pincStepperControl : public QGroupBox
+class pincStepperControl : public pincPanel
 {
 	Q_OBJECT
 
@@ -36,7 +39,7 @@ public:
 public:
 
 	void jog(PINC_AXIS axis, bool dir);
-	void home(PINC_AXIS axis, bool dir);
+	void home(PINC_AXIS axis);
 	void sync_move(pincStepperMove_t* move, bool convert = false);
 
 protected:
@@ -52,7 +55,7 @@ protected:
 
 	QTimer	m_timer;
 
-	QVBoxLayout	m_pos_layout;
+	QVBoxLayout* layout;
 };
 
 #endif

@@ -1,6 +1,6 @@
 #include "pincStepperControl.h"
 
-pincStepperControl::pincStepperControl(QWidget* parent) : QGroupBox(parent)
+pincStepperControl::pincStepperControl(QWidget* parent) : pincPanel("Position", parent)
 {
 	spi_mode	= SPI_MODE_0;
 	fd_CS0		= open("/dev/spidev0.0", O_RDWR);
@@ -19,8 +19,9 @@ pincStepperControl::pincStepperControl(QWidget* parent) : QGroupBox(parent)
 				this,
 				&pincStepperControl::update);
 
-	m_pos_layout.setSizeConstraint(QLayout::SetFixedSize);
-	setLayout(&m_pos_layout);
+	layout = new QVBoxLayout();
+	layout->setContentsMargins(10,10,10,10);
+	setLayout(layout);
 }
 
 void pincStepperControl::addStepper(pincStepperConfig_t* config)
@@ -70,7 +71,7 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	m_steppers.insert(std::make_pair((PINC_AXIS)config->axis, new_stepper));
 
 	pincPosition* pos = new pincPosition((PINC_AXIS)config->axis);
-	m_pos_layout.addWidget(pos);
+	layout->addWidget(pos);
 	m_positions.insert(std::make_pair((PINC_AXIS)config->axis, pos));
 }
 
@@ -90,7 +91,7 @@ void pincStepperControl::jog(PINC_AXIS axis, bool dir)
 	}
 }
 
-void pincStepperControl::home(PINC_AXIS axis, bool dir)
+void pincStepperControl::home(PINC_AXIS axis)
 {
 
 	if(m_steppers.contains(axis))
