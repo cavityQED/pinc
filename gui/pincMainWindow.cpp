@@ -3,6 +3,8 @@
 pincMainWindow::pincMainWindow(QWidget* parent) : QMainWindow(parent)
 {
 	m_ctrl_mode = EDIT_CTRL;
+
+	setPalette(pincStyle::pincWindowPalette);
 }
 
 void pincMainWindow::setControlMode(CONTROL_MODE mode)
@@ -52,11 +54,11 @@ void pincMainWindow::setControlMode(CONTROL_MODE mode)
 	}
 }
 
-void pincMainWindow::jog(const PINC_AXIS axis, bool dir)
+void pincMainWindow::tryjog(const PINC_AXIS axis, bool dir)
 {
 	if(m_ctrl_mode == JOG_CTRL)
-		m_stepper_ctrl->jog(axis, dir);
+		jog(axis, dir);
 
 	else if(m_ctrl_mode == HOME_CTRL)
-		m_stepper_ctrl->home(axis, dir);
+		home(axis);
 }

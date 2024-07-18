@@ -5,6 +5,8 @@
 
 #include "c/stepper/stepper_common.h"
 #include "pincStepperControl.h"
+#include "pincColors.h"
+#include "pincStyle.h"
 
 class pincMainWindow : public QMainWindow
 {
@@ -20,7 +22,12 @@ public:
 public:
 
 	void setControlMode(CONTROL_MODE mode);
+	void tryjog(const PINC_AXIS axis, bool dir);
+
+signals:
+
 	void jog(const PINC_AXIS axis, bool dir);
+	void home(const PINC_AXIS axis);
 
 protected:
 
