@@ -1,20 +1,13 @@
 #include "pincControlModeButtons.h"
 
-pincControlModeButtons::pincControlModeButtons(QWidget* parent) : QGroupBox(parent)
+pincControlModeButtons::pincControlModeButtons(QWidget* parent) : pincPanel("Control Mode", parent)
 {
-	m_button_jog	= new QPushButton("JOG");
-	m_button_auto	= new QPushButton("AUTO");
-	m_button_edit	= new QPushButton("EDIT");
-	m_button_mdi	= new QPushButton("MDI");
-	m_button_home	= new QPushButton("HOME");
-	m_button_man	= new QPushButton("MAN");
-
-	m_button_jog->setCheckable(true);
-	m_button_auto->setCheckable(true);
-	m_button_edit->setCheckable(true);
-	m_button_mdi->setCheckable(true);
-	m_button_home->setCheckable(true);
-	m_button_man->setCheckable(true);
+	m_button_jog	= new pincButton("JOG");
+	m_button_auto	= new pincButton("AUTO");
+	m_button_edit	= new pincButton("EDIT");
+	m_button_mdi	= new pincButton("MDI");
+	m_button_home	= new pincButton("HOME");
+	m_button_man	= new pincButton("MAN");
 
 	connect(m_button_jog, &QPushButton::toggled, 
 		[this](bool checked) 
@@ -64,25 +57,24 @@ pincControlModeButtons::pincControlModeButtons(QWidget* parent) : QGroupBox(pare
 			else return;
 		});
 
-
 	QButtonGroup* mode_button_group = new QButtonGroup();
-	mode_button_group->setExclusive(true);
 	mode_button_group->addButton(m_button_jog);
 	mode_button_group->addButton(m_button_auto);
 	mode_button_group->addButton(m_button_edit);
 	mode_button_group->addButton(m_button_mdi);
 	mode_button_group->addButton(m_button_home);
 	mode_button_group->addButton(m_button_man);
+	mode_button_group->setExclusive(true);
+	m_button_edit->setChecked(true);
 
-	QGridLayout* layout = new QGridLayout();
-	layout->addWidget(m_button_jog, 0, 0);
-	layout->addWidget(m_button_auto, 0, 1);
-	layout->addWidget(m_button_home, 0, 2);
-	layout->addWidget(m_button_edit, 1, 0);
-	layout->addWidget(m_button_mdi, 1, 1);
-	layout->addWidget(m_button_man, 1, 2);
+	QGridLayout* grid = new QGridLayout();
+	grid->addWidget(m_button_jog, 0, 0);
+	grid->addWidget(m_button_auto, 0, 1);
+	grid->addWidget(m_button_home, 0, 2);
+	grid->addWidget(m_button_edit, 1, 0);
+	grid->addWidget(m_button_mdi, 1, 1);
+	grid->addWidget(m_button_man, 1, 2);
+	grid->setSizeConstraint(QLayout::SetFixedSize);
 
-	setLayout(layout);
-	setTitle("Control Mode");
-
+	setLayout(grid);
 }
