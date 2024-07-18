@@ -12,10 +12,7 @@ static pthread_mutex_t		spi_mutex;
 static pthread_mutex_t		pin_req_mutex;
 static pthread_mutexattr_t	spi_mutex_attr;
 
-static pincStepperControl*	steppers;
-static pincStepperMove*		move_window;
-static pincStepperMove_t	sync_move;
-static pincStepperMove_t	curve_move;
+static pincStyle* style;
 
 Q_DECLARE_METATYPE(PINC_AXIS);
 
@@ -27,7 +24,9 @@ static void shutdown(int signum)
 
 int main(int argc, char *argv[])
 {	
+	style = new pincStyle();
 	QApplication app(argc, argv);
+	app.setStyle(style);
 
 	gpioInitialise();
 	gpioSetSignalFunc(SIGINT, shutdown);
@@ -36,15 +35,14 @@ int main(int argc, char *argv[])
 	pthread_mutexattr_settype(&spi_mutex_attr, PTHREAD_MUTEX_ERRORCHECK | PTHREAD_MUTEX_DEFAULT);
 	pthread_mutex_init(&spi_mutex, &spi_mutex_attr);
 
+	pincStepperControl*		steppers	= new pincStepperControl();
 	pincMainWindow*			mainWindow	= new pincMainWindow();
+	pincCentralWindow*		central		= new pincCentralWindow();
 	pincControlModeButtons*	ctrl_panel	= new pincControlModeButtons();
 	pincJogControl*			jog_panel	= new pincJogControl();
-	QWidget*				central		= new QWidget();
+	pincEditWindow*			editWindow	= new pincEditWindow();
 	QVBoxLayout*			vlayout		= new QVBoxLayout();
 	QHBoxLayout*			hlayout		= new QHBoxLayout();
-	
-	steppers	= new pincStepperControl();
-	move_window	= new pincStepperMove();
 
 	pincStepperConfig_t	config;
 	stepper_get_default_config(&config);
@@ -65,15 +63,18 @@ int main(int argc, char *argv[])
 
 	jog_panel->wheel_config(&spi_mutex, config.spi_fpga_speed);
 
+	vlayout->addWidget(steppers);
 	vlayout->addWidget(ctrl_panel);
 	vlayout->addWidget(jog_panel);
-	hlayout->addWidget(steppers);
 	hlayout->addLayout(vlayout);
-	hlayout->addWidget(move_window);
+	hlayout->addWidget(editWindow);
+	hlayout->setStretchFactor(vlayout, 0);
+	hlayout->setStretchFactor(editWindow, 1);
 
-	central->setLayout(hlayout);
+	central->addLayout(hlayout);
 	mainWindow->setCentralWidget(central);
 	mainWindow->setStepperControl(steppers);
+	mainWindow->setPalette(pincStyle::pincWindowPalette);
 
 	QObject::connect(	ctrl_panel,
 						&pincControlModeButtons::controlModeChange,
@@ -81,66 +82,21 @@ int main(int argc, char *argv[])
 						&pincMainWindow::setControlMode);
 
 	qRegisterMetaType<PINC_AXIS>();
+
 	QObject::connect(	jog_panel,
 						&pincJogControl::jog,
 						mainWindow,
-						&pincMainWindow::jog);
+						&pincMainWindow::tryjog);
 
-	QObject::connect(	move_window,
-						&pincStepperMove::move,
+	QObject::connect(	mainWindow,
+						&pincMainWindow::jog,
 						steppers,
-						&pincStepperControl::sync_move);
+						&pincStepperControl::jog);
 
-	mainWindow->setStyleSheet(	
-		"QMainWindow {"
-			"background-color:	#525151;"
-			"}"
-
-		"QPushButton{"	
-			"background-color:	#22AAFF;"
-			"border-style:		outset;"
-			"border-width:		2px;"
-			"border-color:		#CAEEFF;"
-			"border-radius: 	4px;"
-			"font: 				bold 12pt;"
-			"outline:			0;"
-			"min-width:			50px;"
-			"max-width:			50px;"
-			"min-height:		50px;"
-			"max-height:		50px;"
-			"}"
-			
-		"QPushButton:pressed{"
-			"background-color:	#FA88A8;"
-			"border-style:		inset;"
-			"}"
-			
-		"QPushButton:checked{"
-			"background-color:	#FA88A8;"
-			"border-color:		#CAEEFF;"
-			"}"
-
-		"QGroupBox{"
-			"border-style:		inset;"
-			"border: 			1px solid #22AAFF;"
-			"padding-top:		10px;"
-			"margin-top:		10px;"
-			"outline:			0;"
-			"font:				bold 12pt;"
-			"}"
-			
-		"QGroupBox::title{"
-			"subcontrol-position:	top left;"
-			"subcontrol-origin:		margin;"
-			"top: 					2px;"
-			"left:					10px;"
-			"color:					#CAEEFF;"
-			"}"
-
-		"QLabel{"
-			"color:					#CAEEFF;"
-			"}"
-	);
+	QObject::connect(	mainWindow,
+						&pincMainWindow::home,
+						steppers,
+						&pincStepperControl::home);
 
 	mainWindow->show();
 
