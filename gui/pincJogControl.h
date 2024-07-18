@@ -11,11 +11,14 @@
 #include "c/spi/spi_client.h"
 #include "c/io/pin_request.h"
 #include "c/stepper/stepper_common.h"
+#include "pincPanel.h"
+#include "pincButton.h"
+#include "pincStyle.h"
 
 #define WHEEL_STATUS_INTERRUPT	27
 #define WHEEL_STATUS_ADDR		0x90
 
-class pincJogControl : public QGroupBox
+class pincJogControl : public pincPanel
 {
 	Q_OBJECT
 
@@ -36,16 +39,16 @@ signals:
 
 protected:
 
-	QPushButton*	m_button_max_jog;
-	QPushButton*	m_button_med_jog;
-	QPushButton*	m_button_min_jog;
+	pincButton*	m_button_max_jog;
+	pincButton*	m_button_med_jog;
+	pincButton*	m_button_min_jog;
 
-	QPushButton*	m_button_x_pos;
-	QPushButton*	m_button_x_neg;
-	QPushButton*	m_button_y_pos;
-	QPushButton*	m_button_y_neg;
-	QPushButton*	m_button_z_pos;
-	QPushButton*	m_button_z_neg;
+	pincButton*	m_button_x_pos;
+	pincButton*	m_button_x_neg;
+	pincButton*	m_button_y_pos;
+	pincButton*	m_button_y_neg;
+	pincButton*	m_button_z_pos;
+	pincButton*	m_button_z_neg;
 
 	PINC_AXIS		m_last_axis;
 

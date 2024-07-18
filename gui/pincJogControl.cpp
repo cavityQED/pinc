@@ -1,51 +1,43 @@
 #include "pincJogControl.h"
 
-pincJogControl::pincJogControl(QWidget* parent) : QGroupBox(parent)
+pincJogControl::pincJogControl(QWidget* parent) : pincPanel("Jog Control", parent)
 {
-	m_button_max_jog	= new QPushButton("100");
-	m_button_med_jog	= new QPushButton("10"); 
-	m_button_min_jog	= new QPushButton("1");
-
-	m_button_max_jog->setCheckable(true);
-	m_button_med_jog->setCheckable(true);
-	m_button_min_jog->setCheckable(true);
+	m_button_max_jog = new pincButton("100");
+	m_button_med_jog = new pincButton("10"); 
+	m_button_min_jog = new pincButton("1");
 
 	QButtonGroup* steps_group = new QButtonGroup();
 	steps_group->addButton(m_button_max_jog);
 	steps_group->addButton(m_button_med_jog);
 	steps_group->addButton(m_button_min_jog);
 	steps_group->setExclusive(true);
+	m_button_med_jog->setChecked(true);
 
 	connect(m_button_max_jog, &QPushButton::toggled,
-		[this](bool checked)
-		{
-			if(checked)
-				setJogSteps(800);
-			else return;
-		});
+		[this](bool checked) {if(checked) setJogSteps(800);});
 
 	connect(m_button_med_jog, &QPushButton::toggled,
-		[this](bool checked)
-		{
-			if(checked)
-				setJogSteps(400);
-			else return;
-		});
+		[this](bool checked) {if(checked) setJogSteps(400);});
 
 	connect(m_button_min_jog, &QPushButton::toggled,
-		[this](bool checked)
-		{
-			if(checked)
-				setJogSteps(100);
-			else return;
-		});
+		[this](bool checked) {if(checked) setJogSteps(100);});
 
-	m_button_x_pos		= new QPushButton("X+");
-	m_button_x_neg		= new QPushButton("X-");
-	m_button_y_pos		= new QPushButton("Y+");
-	m_button_y_neg		= new QPushButton("Y-");
-	m_button_z_pos		= new QPushButton("Z+");
-	m_button_z_neg		= new QPushButton("Z-");
+	m_button_x_pos = new pincButton("X+");
+	m_button_x_neg = new pincButton("X-");
+	m_button_y_pos = new pincButton("Y+");
+	m_button_y_neg = new pincButton("Y-");
+	m_button_z_pos = new pincButton("Z+");
+	m_button_z_neg = new pincButton("Z-");
+
+	QButtonGroup* dir_group = new QButtonGroup();
+	dir_group->addButton(m_button_x_pos);
+	dir_group->addButton(m_button_x_neg);
+	dir_group->addButton(m_button_y_pos);
+	dir_group->addButton(m_button_y_neg);
+	dir_group->addButton(m_button_z_pos);
+	dir_group->addButton(m_button_z_neg);
+	dir_group->setExclusive(true);
+	m_button_x_pos->setChecked(true);
 
 	m_button_x_pos->setShortcut(Qt::Key_D);
 	m_button_x_neg->setShortcut(Qt::Key_A);
@@ -70,11 +62,12 @@ pincJogControl::pincJogControl(QWidget* parent) : QGroupBox(parent)
 	layout->addWidget(m_button_y_neg, 3, 1);
 	layout->addWidget(m_button_z_pos, 1, 2);
 	layout->addWidget(m_button_z_neg, 3, 0);
-
-	setLayout(layout);
-	setTitle("Jog Control");
+	layout->setSizeConstraint(QLayout::SetFixedSize);
 
 	m_last_axis = X_AXIS;
+
+	setLayout(layout);
+	setCheckable(true);
 }
 
 void pincJogControl::wheel_config(pthread_mutex_t* spi_mutex, int spi_speed)
