@@ -168,9 +168,6 @@ void pincStyle::drawComplexControl(	ComplexControl control,
 				frame.features		= QStyleOptionFrame::Rounded;
 				frame.lineWidth		= 5;
 
-				if(const pincPanel* panel = qobject_cast<const pincPanel*>(widget))
-					frame.state		|= panel->frameState();
-
 				// draw background
 				painter->fillRect(box->rect.adjusted(5,5,-5,-5), frame.palette.color(QPalette::Window));
 
