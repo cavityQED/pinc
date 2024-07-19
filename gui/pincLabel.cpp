@@ -9,6 +9,8 @@ pincLabel::pincLabel(const QString& str, QWidget* parent) : QLabel(str, parent)
 	setFont(f);
 
 	setMouseTracking(true);
+
+	m_selected = false;
 }
 
 void pincLabel::enterEvent(QEvent* event)
@@ -19,6 +21,18 @@ void pincLabel::enterEvent(QEvent* event)
 
 void pincLabel::leaveEvent(QEvent* event)
 {
-	setBackgroundRole(QPalette::Window);
-	setForegroundRole(QPalette::Text);
+	setBackgroundRole(m_selected? QPalette::Highlight : QPalette::Window);
+	setForegroundRole(m_selected? QPalette::BrightText : QPalette::Text);
+}
+
+void pincLabel::mouseReleaseEvent(QMouseEvent* event)
+{
+	if(frameRect().contains(event->localPos().toPoint()))
+	{
+		if(m_selected)
+			return;
+		
+		m_selected = true;
+		emit selected(this);
+	}
 }

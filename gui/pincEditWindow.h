@@ -3,37 +3,14 @@
 
 #include <QGroupBox>
 #include <QVBoxLayout>
-#include <QList>
 #include <QLineEdit>
 #include <QLabel>
-#include <QAbstractScrollArea>
 #include <QScrollArea>
-#include <QScrollBar>
-#include <QSize>
 #include <QPaintEvent>
 
 #include "pincPanel.h"
 #include "pincStyle.h"
 #include "pincLabel.h"
-
-class pincLabelScroll : public QScrollArea
-{
-	Q_OBJECT
-
-public:
-
-	pincLabelScroll(QWidget* parent = nullptr);
-	~pincLabelScroll() {}
-
-	void addLabel(QLabel* label);
-	void addLine(const QList<QLabel*>& labels);
-
-protected:
-
-
-};
-
-
 
 class pincEditWindow : public pincPanel
 {
@@ -44,14 +21,24 @@ public:
 	pincEditWindow(QWidget* parent = nullptr);
 	~pincEditWindow() {}
 
+public:
+
+	virtual bool eventFilter(QObject* obj, QEvent* evt);
+
+public:
+
+	void setCurLabel(pincLabel* label);
+	void addLine(const QString& str);
+
 protected:
 
-	pincPanel*			m_text_panel;
-	pincPanel*			m_line_panel;
-	QLineEdit*			m_line_input;
-	pincLabelScroll*	m_scroll;
+	pincPanel*		m_text_panel;
+	pincPanel*		m_line_panel;
+	pincLabel*		m_cur_label;
 
-
+	QLineEdit*		m_line_input;
+	QScrollArea*	m_scroll;
+	QVBoxLayout*	m_scroll_layout;
 };
 
 #endif
