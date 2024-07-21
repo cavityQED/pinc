@@ -24,6 +24,8 @@ public:
 signals:
 
 	void selected(pincLabel* label);
+	void textChange(const QString& text);
+	void remove();
 
 protected:
 

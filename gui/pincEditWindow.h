@@ -1,16 +1,18 @@
 #ifndef PINC_EDIT_WINDOW_H
 #define PINC_EDIT_WINDOW_H
 
-#include <QGroupBox>
+#include <iostream>
+
 #include <QVBoxLayout>
 #include <QLineEdit>
 #include <QLabel>
 #include <QScrollArea>
-#include <QPaintEvent>
 
 #include "pincPanel.h"
 #include "pincStyle.h"
 #include "pincLabel.h"
+
+#include "gcode/gBlock.h"
 
 class pincEditWindow : public pincPanel
 {

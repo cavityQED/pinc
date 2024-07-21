@@ -15,6 +15,7 @@ if(Qt5Core_FOUND)
 
 	add_subdirectory(spi)
 	add_subdirectory(gui)
+	add_subdirectory(gcode)
 
 	include_directories(${CMAKE_SOURCE_DIR})
 
@@ -25,7 +26,8 @@ if(Qt5Core_FOUND)
 							pigpio
 							c_pinc
 							spiLib
-							guiLib)
+							guiLib
+							gcodeLib)
 
 	add_library				(pincLib)
 	target_link_libraries	(pincLib ${LINKED_LIBRARIES})

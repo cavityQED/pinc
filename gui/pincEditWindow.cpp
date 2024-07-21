@@ -12,19 +12,8 @@ pincEditWindow::pincEditWindow(QWidget* parent) : pincPanel("", parent)
 	m_scroll->setPalette(pincStyle::pincLineEditPalette);
 	m_scroll->setBackgroundRole(QPalette::Window);
 	m_scroll_layout->setSpacing(0);
+	m_scroll_layout->setContentsMargins(0,0,0,0);
 	m_scroll_layout->setSizeConstraint(QLayout::SetMinAndMaxSize);
-/*
-	pincLabel* label;
-
-	for(int i = 0; i < 20; i++)
-	{
-		label = new pincLabel("Label " + QString::number(i));
-		label->setMinimumHeight(30);
-		label->setMaximumHeight(30);
-		connect(label, &pincLabel::selected, this, &pincEditWindow::setCurLabel);
-		m_scroll_layout->addWidget(label);
-	}
-*/
 
 	QWidget* widget = new QWidget();
 	widget->setLayout(m_scroll_layout);
@@ -62,14 +51,22 @@ bool pincEditWindow::eventFilter(QObject* obj, QEvent* evt)
 		if(keyEvent->key() == Qt::Key_Return)
 		{
 			if(m_cur_label)
-				m_cur_label->setText(m_line_input->text());
+				m_cur_label->textChange(m_line_input->text());
 			else
 				addLine(m_line_input->text());
 
 			m_line_input->clear();
 			setCurLabel(nullptr);
 
-			this->setFocus();
+			return true;
+		}
+		else if(keyEvent->key() == Qt::Key_Delete)
+		{
+			if(m_cur_label)
+			{
+				m_cur_label->remove();
+				m_cur_label = nullptr;
+			}
 
 			return true;
 		}
@@ -97,10 +94,15 @@ void pincEditWindow::setCurLabel(pincLabel* label)
 
 void pincEditWindow::addLine(const QString& str)
 {
-	pincLabel* label = new pincLabel(str);
-	label->setMinimumHeight(30);
-	label->setMaximumHeight(30);
-	connect(label, &pincLabel::selected, this, &pincEditWindow::setCurLabel);
-	m_scroll->widget()->layout()->addWidget(label);
-	m_scroll->ensureWidgetVisible(label);
+	if(str.isEmpty())
+		return;
+
+	gBlock* block = new gBlock(str);
+	std::cout << block << '\n';
+
+	connect(block, &gBlock::selected, this, &pincEditWindow::setCurLabel);
+
+	static_cast<QVBoxLayout*>(m_scroll->widget()->layout())->addWidget(block);
+
+	m_line_input->setFocus();
 }

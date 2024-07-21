@@ -29,10 +29,7 @@ void pincLabel::mouseReleaseEvent(QMouseEvent* event)
 {
 	if(frameRect().contains(event->localPos().toPoint()))
 	{
-		if(m_selected)
-			return;
-		
-		m_selected = true;
-		emit selected(this);
+		m_selected = !m_selected;
+		emit selected(m_selected? this : nullptr);
 	}
 }
