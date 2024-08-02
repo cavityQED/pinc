@@ -292,8 +292,8 @@ static void line_step_2d(pincStepperMove_t* move)
 	int fx = (move->cur.x == move->end.x)? move->end.y : slope*move->cur.x;
 
 	uint8_t mask = (move->cur.y > fx)? ABOVE : BELOW;
-	mask |= (move->end.x > 0)? XPOS : 0x00;
-	mask |= (move->end.y > 0)? YPOS : 0x00;
+	mask |= (move->end.x > move->cur.x)? XPOS : 0x00;
+	mask |= (move->end.y > move->cur.y)? YPOS : 0x00;
 
 	switch(mask)
 	{
