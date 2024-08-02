@@ -25,7 +25,9 @@ public:
 
 public:
 
-	virtual bool eventFilter(QObject* obj, QEvent* evt);
+	virtual bool eventFilter(QObject* obj, QEvent* evt) override;
+
+	gBlock* getBlock() {return static_cast<gBlock*>(m_scroll->widget()->layout()->itemAt(0)->widget());}
 
 public:
 

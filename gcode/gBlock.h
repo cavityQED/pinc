@@ -33,7 +33,7 @@ public:
 	double&				num()			{return m_num;}
 	const double&		num()	const	{return m_num;}
 
-	const QMap<QChar,double>&		args()		const	{return m_args;}
+	const QMap<QChar, double>&		args()		const	{return m_args;}
 	const QMap<QChar, pincLabel*>&	labels()	const	{return m_labels;}
 
 signals:

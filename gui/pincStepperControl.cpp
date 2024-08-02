@@ -36,6 +36,11 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	new_stepper->status = 0xFF;
 	new_stepper->status_sig.cur = 0xFF;
 
+	new_stepper->pin_status = config->pin_status;
+	gpioSetMode(new_stepper->pin_status, PI_INPUT);
+	gpioSetPullUpDown(new_stepper->pin_status, PI_PUD_UP);
+	gpioSetISRFuncEx(new_stepper->pin_status, FALLING_EDGE, 0, stepper_pin_isr, new_stepper.get());
+
 	std::memset(&new_stepper->fpga_spi_client.tr, 0, sizeof(spiTr));
 	new_stepper->fpga_spi_client.cs					= -1;
 	new_stepper->fpga_spi_client.fd					= fd_CS0;
@@ -61,11 +66,6 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	new_stepper->jog_move.vf_sps	= config->jog_speed;
 	new_stepper->jog_move.accel		= config->accel;
 
-	new_stepper->pin_status = config->pin_status;
-	gpioSetMode(new_stepper->pin_status, PI_INPUT);
-	gpioSetPullUpDown(new_stepper->pin_status, PI_PUD_UP);
-	gpioSetISRFuncEx(new_stepper->pin_status, FALLING_EDGE, 0, stepper_pin_isr, new_stepper.get());
-
 	stepper_config(new_stepper.get(), config);
 
 	m_steppers.insert(std::make_pair((PINC_AXIS)config->axis, new_stepper));
@@ -73,6 +73,20 @@ void pincStepperControl::addStepper(pincStepperConfig_t* config)
 	pincPosition* pos = new pincPosition((PINC_AXIS)config->axis);
 	layout->addWidget(pos);
 	m_positions.insert(std::make_pair((PINC_AXIS)config->axis, pos));
+}
+
+double pincStepperControl::pos(PINC_AXIS axis)
+{
+	double pos = 0;
+
+	if(m_steppers.contains(axis))
+	{
+		auto stepper = m_steppers.at(axis);
+		pos = stepper->step_pos;
+		pos /= stepper->config.spmm;
+	}
+
+	return pos;
 }
 
 void pincStepperControl::jog(PINC_AXIS axis, bool dir)
@@ -136,12 +150,126 @@ void pincStepperControl::sync_move(pincStepperMove_t* move, bool convert)
 			return;
 	}
 	
-
 	for(auto& sem : sems)
 		sem_wait(sem);
 
 	gpioWrite(SYNC_PIN, 1);
 	monitor_start(10);
+}
+
+void pincStepperControl::sync_move(pincMove* move)
+{
+	move->mode		|= SYNC_MOVE;
+
+	std::vector<sem_t*> sems;
+	pincStepperMove_t	step_move;
+
+	for(auto it = m_steppers.begin(); it != m_steppers.end(); it++)
+	{
+		if(it->second->status_sig.cur & PICO_STATUS_MOVE_READY)
+		{
+			std::memset(&step_move, 0, sizeof(pincStepperMove_t));
+			int spmm = it->second->config.spmm;
+
+			step_move.mode		= move->mode;
+
+			step_move.cur		= (move->cur * spmm).step();
+			step_move.end		= (move->end * spmm).step();
+			step_move.center	= (move->ctr * spmm).step();
+
+			step_move.cw		= move->cw;
+			step_move.vf_sps	= move->feed * spmm;
+			step_move.radius	= move->radius * spmm;
+
+			stepper_move(it->second.get(), &step_move);
+
+			sems.push_back(&it->second->sync_sem);
+		}
+
+		else
+			return;
+	}
+
+	for(auto& sem : sems)
+		sem_wait(sem);
+
+	gpioWrite(SYNC_PIN, 1);
+	monitor_start(50);
+}
+
+void pincStepperControl::run(const gBlock& block)
+{
+	pincMove move;
+	std::memset(&move, 0, sizeof(pincMove));
+
+	for(auto it = block.args().begin(); it != block.args().end(); it++)
+	{
+		switch(it.key().unicode())
+		{
+			case 'F':
+				move.feed = it.value();
+				break;
+
+			case 'X':
+			case 'U':
+				move.end.x = it.value();
+				move.cur.x = (it.key() == 'X')? pos(X_AXIS) : 0;
+				break;
+
+			case 'Y':
+			case 'V':
+				move.end.y = it.value();
+				move.cur.y = (it.key() == 'Y')? pos(Y_AXIS) : 0;
+				break;
+
+			case 'Z':
+			case 'W':
+				move.end.z = it.value();
+				move.cur.z = (it.key() == 'Z')? pos(Z_AXIS) : 0;
+				break;
+
+			case 'I':
+				move.ctr.x = move.cur.x + it.value();
+				break;
+			case 'J':
+				move.ctr.y = move.cur.y + it.value();
+				break;
+			case 'K':
+				move.ctr.z = move.cur.z + it.value();
+				break;
+
+			case 'R':
+				move.radius = it.value();
+				break;
+
+			default:
+				break;
+		}
+
+		if(move.feed == 0)
+			move.feed = 10;
+	}
+
+	int block_int = (int)block.num();
+
+	switch(block_int)
+	{
+		case 1:
+			move.mode	= LINE_MOVE;
+			move.end	= move.end - move.cur;
+			move.cur	= {0,0,0};
+			break;
+
+		case 2:
+		case 3:
+			move.mode	= CURVE_MOVE;
+			move.cw		= (block.num() == 2)? 1 : 0;
+			if(!move.radius)
+				move.radius	= move.ctr.distanceTo(move.cur);
+			break;
+	}
+
+	sync_move(&move);
 }
 
 void pincStepperControl::update()

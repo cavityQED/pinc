@@ -14,6 +14,8 @@
 #include "pincPanel.h"
 #include "pincPosition.h"
 #include "pincStyle.h"
+#include "gcode/gBlock.h"
+#include "gcode/pincMove.h"
 
 extern "C" {
 	#include "c/stepper/pi_stepper.h" 
@@ -36,11 +38,15 @@ public:
 	void monitor_stop()				{m_timer.stop();}
 	void update();
 
+	double pos(PINC_AXIS axis);
+
 public:
 
 	void jog(PINC_AXIS axis, bool dir);
 	void home(PINC_AXIS axis);
 	void sync_move(pincStepperMove_t* move, bool convert = false);
+	void sync_move(pincMove* move);
+	void run(const gBlock& block);
 
 protected:
 

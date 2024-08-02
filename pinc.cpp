@@ -98,6 +98,12 @@ int main(int argc, char *argv[])
 						steppers,
 						&pincStepperControl::home);
 
+
+	QAction* mdi_run = new QAction();
+	mainWindow->addAction(mdi_run);
+	mdi_run->setShortcut(Qt::Key_F1);
+	QObject::connect(mdi_run, &QAction::triggered, [editWindow, steppers]() {steppers->run(*editWindow->getBlock());});
+
 	mainWindow->show();
 
 	return app.exec();
