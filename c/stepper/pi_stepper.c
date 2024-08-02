@@ -22,6 +22,7 @@ void* stepper_read_fpga(void* arg)
 	stepper->fpga_spi_client.tr.rx_buf = (unsigned long)rx;
 
 	spi_send(&stepper->fpga_spi_client);
+	spi_send(&stepper->fpga_spi_client);
 
 	signal_update(&stepper->status_sig, rx[1]);
 
@@ -74,8 +75,6 @@ void stepper_read_msg(pincPiStepper* stepper)
 
 	free(stepper->msg.tx);
 	free(stepper->msg.rx);
-
-	stepper_print(stepper);
 }
 
 void stepper_config(pincPiStepper* s, pincStepperConfig_t* config)
@@ -97,6 +96,12 @@ void stepper_config(pincPiStepper* s, pincStepperConfig_t* config)
 void stepper_move(pincPiStepper* s, pincStepperMove_t* move)
 {
 	stepper_lock(s);
+
+	move->v0_sps	= s->config.min_speed;
+	move->accel		= s->config.accel;
+	move->steps		= total(move->cur, move->end);
+	move->a_phase	= INITIAL;
+	move->a_steps	= 0;
 
 	stepper_write_msg(	s,
 						STEPPER_CMD_MOVE,
