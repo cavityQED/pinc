@@ -57,8 +57,7 @@ static void get_spi_msg()
 	update.status = motor.status;
 	update.step_pos = motor.pos;
 
-	printf("Status:\t%X\n", motor.status);
-	printf("Position:\t%d\n", motor.pos);
+	sleep_us(100);
 
 	memset(spi_in_buf, 0, MAX_SPI_TRANSFER_LENGTH);
 	memset(spi_out_buf, 0, MAX_SPI_TRANSFER_LENGTH);
