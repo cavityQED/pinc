@@ -108,7 +108,6 @@ void pincJogControl::wheel_input(int gpio, int level, uint32_t tick, void* dev)
 
 		if(ctrl->wheel_signal.cur == 0xFF)
 		{
-			printf("Wheel Mask: %X\n", ctrl->wheel_signal.mask);
 			switch(ctrl->wheel_signal.mask)
 			{
 				case 0x2184:

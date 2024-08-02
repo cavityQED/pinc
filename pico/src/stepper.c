@@ -138,7 +138,7 @@ void stepper_move(struct stepper* s)
 	s->move.v_sps	= s->move.v0_sps;
 	s->move.delay	= 1000000 / s->move.v_sps;	// delay in us between steps
 
-//	stepper_print_move(&s->move);
+	stepper_print_move(&s->move);
 
 	if(s->move.mode & JOG_MOVE)
 	{
@@ -195,8 +195,6 @@ void stepper_home(struct stepper*s)
 
 void stepper_msg_handle(struct stepper* s, uint8_t* msg)
 {
-	printf("MSG CMD:\t0x%2X\n", msg[0]);
-
 	switch(msg[0])
 	{
 		case STEPPER_CMD_MOVE:
