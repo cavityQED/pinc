@@ -137,6 +137,7 @@ void stepper_move(struct stepper* s)
 	s->status		|= PICO_STATUS_IN_MOTION;
 	s->move.v_sps	= s->move.v0_sps;
 	s->move.delay	= 1000000 / s->move.v_sps;	// delay in us between steps
+	s->move.slope	= slope_xy(s->move.cur, s->move.end);
 
 	stepper_print_move(&s->move);
 

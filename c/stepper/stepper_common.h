@@ -193,6 +193,7 @@ typedef struct
 	p_cartesian		cur;		// current point
 	p_cartesian		end;		// end point
 	p_cartesian		center;		// center of curve move
+	float			slope;		// slope calculated from initial cur and end vector
 	uint32_t		v_sps;		// current speed [steps/s]
 	uint32_t		v0_sps;		// start speed [steps/s]
 	uint32_t		vf_sps;		// final speed [steps/s]
@@ -288,12 +289,11 @@ static void line_step_2d(pincStepperMove_t* move)
 		return;
 	}
 
-	float slope = slope_xy(move->cur, move->end);
-	int fx = (move->cur.x == move->end.x)? move->end.y : slope*move->cur.x;
+	int fx = (move->cur.x == move->end.x)? move->end.y : move->slope*move->cur.x;
 
 	uint8_t mask = (move->cur.y > fx)? ABOVE : BELOW;
-	mask |= (move->end.x > move->cur.x)? XPOS : 0x00;
-	mask |= (move->end.y > move->cur.y)? YPOS : 0x00;
+	mask |= (move->end.x > 0)? XPOS : 0x00;
+	mask |= (move->end.y > 0)? YPOS : 0x00;
 
 	switch(mask)
 	{
