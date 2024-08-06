@@ -1,11 +1,36 @@
 #ifndef G_PROGRAM_H
 #define G_PROGRAM_H
 
-#include "common/motor_common.h"
-#include "gBlock.h"
+#include <iostream>
 
 #include <QWidget>
 #include <QStringRef>
+#include <QToolBar>
+#include <QVector>
+
+#include "gBlock.h"
+
+class gProgramToolBar : public QToolBar
+{
+	Q_OBJECT
+
+public:
+
+	gProgramToolBar(QWidget* parent = nullptr);
+	~gProgramToolBar() {}
+
+signals:
+
+	void run();
+	void hold();
+	void reset();
+	void clear();
+
+protected:
+
+
+};
+
 
 class gProgram : public QWidget
 {
@@ -18,18 +43,19 @@ public:
 	gProgram(const std::string& str, QWidget* parent = nullptr);
 	~gProgram() {}
 
-	void getBlocks(const QString& str);
+	void makeBlocks(const QString& str);
+	void addBlock(gBlock* block);
 
-	gBlock*			operator[](size_t idx)	{return m_blocks[idx];}
-	gBlock*			at(size_t idx)			{return m_blocks.at(idx);}
-	const QString&	str()					{return m_str;}
+	const QString&				str()		const	{return m_str;}
+	const QVector<gBlock*>&		blocks()	const	{return m_blocks;}
 
 	size_t size() {return m_blocks.size();}
 
 protected:
 
-	QString					m_str;
-	std::vector<gBlock*>	m_blocks;
+	QString				m_str;
+	QVector<gBlock*>	m_blocks;
+	QVBoxLayout*		m_block_layout;
 };
 
 #endif

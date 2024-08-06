@@ -1,6 +1,7 @@
 set(CMAKE_CXX_STANDARD 20)
 set(LIBRARY_SOURCE_FILES	
 							gBlock.cpp
+							gProgram.cpp
 							pincMove.cpp)
 
 set(LINKED_LIBRARIES		Qt5::Core
