@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
 	pincControlModeButtons*	ctrl_panel	= new pincControlModeButtons();
 	pincJogControl*			jog_panel	= new pincJogControl();
 	pincEditWindow*			editWindow	= new pincEditWindow();
+	gProgramToolBar*		toolbar		= new gProgramToolBar();
 	QVBoxLayout*			vlayout		= new QVBoxLayout();
 	QHBoxLayout*			hlayout		= new QHBoxLayout();
 
@@ -72,6 +73,7 @@ int main(int argc, char *argv[])
 	hlayout->setStretchFactor(editWindow, 1);
 
 	central->addLayout(hlayout);
+	mainWindow->addToolBar(toolbar);
 	mainWindow->setCentralWidget(central);
 	mainWindow->setStepperControl(steppers);
 	mainWindow->setPalette(pincStyle::pincWindowPalette);
@@ -80,6 +82,11 @@ int main(int argc, char *argv[])
 						&pincControlModeButtons::controlModeChange,
 						mainWindow,
 						&pincMainWindow::setControlMode);
+
+	QObject::connect(	toolbar,
+						&gProgramToolBar::clear,
+						editWindow,
+						&pincEditWindow::clear);
 
 	qRegisterMetaType<PINC_AXIS>();
 
