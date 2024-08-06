@@ -13,6 +13,7 @@
 #include "pincLabel.h"
 
 #include "gcode/gBlock.h"
+#include "gcode/gProgram.h"
 
 class pincEditWindow : public pincPanel
 {
@@ -29,16 +30,20 @@ public:
 
 	gBlock* getBlock() {return static_cast<gBlock*>(m_scroll->widget()->layout()->itemAt(0)->widget());}
 
+	const gProgram* program() const	{return m_program;}
+
 public:
 
 	void setCurLabel(pincLabel* label);
 	void addLine(const QString& str);
+	void clear();
 
 protected:
 
 	pincPanel*		m_text_panel;
 	pincPanel*		m_line_panel;
 	pincLabel*		m_cur_label;
+	gProgram*		m_program;
 
 	QLineEdit*		m_line_input;
 	QScrollArea*	m_scroll;

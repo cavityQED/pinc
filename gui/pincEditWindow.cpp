@@ -5,19 +5,13 @@ pincEditWindow::pincEditWindow(QWidget* parent) : pincPanel("", parent)
 	m_text_panel	= new pincPanel("Program");
 	m_line_panel	= new pincPanel("Input");
 	m_line_input	= new QLineEdit();
+	m_program		= new gProgram();
 	m_scroll		= new QScrollArea();
-	m_scroll_layout	= new QVBoxLayout();
 	m_cur_label		= nullptr;
 
 	m_scroll->setPalette(pincStyle::pincLineEditPalette);
 	m_scroll->setBackgroundRole(QPalette::Window);
-	m_scroll_layout->setSpacing(0);
-	m_scroll_layout->setContentsMargins(0,0,0,0);
-	m_scroll_layout->setSizeConstraint(QLayout::SetMinAndMaxSize);
-
-	QWidget* widget = new QWidget();
-	widget->setLayout(m_scroll_layout);
-	m_scroll->setWidget(widget);
+	m_scroll->setWidget(m_program);
 
 	m_text_panel->clrFrameState(QStyle::State_Sunken);
 	m_line_panel->clrFrameState(QStyle::State_Sunken);
@@ -102,7 +96,14 @@ void pincEditWindow::addLine(const QString& str)
 
 	connect(block, &gBlock::selected, this, &pincEditWindow::setCurLabel);
 
-	static_cast<QVBoxLayout*>(m_scroll->widget()->layout())->addWidget(block);
+	m_program->addBlock(block);
+	// static_cast<QVBoxLayout*>(m_scroll->widget()->layout())->addWidget(block);
 
 	m_line_input->setFocus();
+}
+
+void pincEditWindow::clear()
+{
+	m_program = new gProgram();
+	m_scroll->setWidget(m_program);
 }
