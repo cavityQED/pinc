@@ -87,9 +87,13 @@ void gBlock::clrArgument(QChar arg)
 		m_args.remove(arg);
 		pincLabel* label = m_labels[arg];
 		label->disconnect();
+
+		// make sure last label in layout can stretch
 		if(m_layout->indexOf(label) == (m_layout->count()-1))
 			m_layout->setStretch(m_layout->count()-2, 1);
+
 		m_layout->removeWidget(label);
+		m_labels.remove(arg);
 		delete label;
 	}
 }
