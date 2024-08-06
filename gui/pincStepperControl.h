@@ -44,7 +44,6 @@ public:
 
 	void jog(PINC_AXIS axis, bool dir);
 	void home(PINC_AXIS axis);
-	void sync_move(pincStepperMove_t* move, bool convert = false);
 	void sync_move(pincMove* move);
 	void run(const gBlock& block);
 

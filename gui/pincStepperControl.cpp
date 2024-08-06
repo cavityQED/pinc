@@ -117,46 +117,6 @@ void pincStepperControl::home(PINC_AXIS axis)
 	}
 }
 
-
-void pincStepperControl::sync_move(pincStepperMove_t* move, bool convert)
-{
-	move->mode		|= SYNC_MOVE;
-	move->a_phase	= INITIAL;
-	move->a_steps	= 0;
-	move->steps 	= total(move->cur, move->end);
-
-	std::vector<sem_t*> sems;
-	pincStepperMove_t	steps_move;
-
-	float linearize = (float)total(move->cur, move->end) / length(move->cur, move->end);
-	move->v0_sps *= linearize;
-	move->vf_sps *= linearize;
-
-	for(auto it = m_steppers.begin(); it != m_steppers.end(); it++)
-	{
-		if(it->second->status_sig.cur & PICO_STATUS_MOVE_READY)
-		{
-			if(convert)
-			{
-				stepper_move_mm_to_steps(move, &steps_move, it->second->config.spmm);
-				stepper_move(it->second.get(), &steps_move);
-			}
-			else
-				stepper_move(it->second.get(), move);
-
-			sems.push_back(&it->second->sync_sem);
-		}
-		else
-			return;
-	}
-	
-	for(auto& sem : sems)
-		sem_wait(sem);
-
-	gpioWrite(SYNC_PIN, 1);
-	monitor_start(10);
-}
-
 void pincStepperControl::sync_move(pincMove* move)
 {
 	move->mode		|= SYNC_MOVE;
