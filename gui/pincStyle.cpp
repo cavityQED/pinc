@@ -81,11 +81,16 @@ void pincStyle::drawPrimitive(	PrimitiveElement element,
 			if(option->state & State_On)
 				fillbrush.setColor(option->palette.color(QPalette::Highlight));
 
+			int linewidth = 1;
+
+			if(auto button = qobject_cast<const pincButton*>(widget))
+				linewidth = 5;
+
 			qDrawShadePanel(	painter,
 								option->rect,
 								option->palette,
 								option->state & State_Sunken,
-								5,
+								linewidth,
 								&fillbrush);
 			break;
 		}

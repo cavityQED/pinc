@@ -12,6 +12,7 @@
 #include "pincColors.h"
 #include "pincPanel.h"
 #include "pincLabel.h"
+#include "pincButton.h"
 
 class pincStyle : public QProxyStyle
 {
