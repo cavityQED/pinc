@@ -31,12 +31,13 @@ public:
 	gBlock* getBlock() {return static_cast<gBlock*>(m_scroll->widget()->layout()->itemAt(0)->widget());}
 
 	const gProgram* program() const	{return m_program;}
+	void clear() {m_program->clear();}
 
 public:
 
 	void setCurLabel(pincLabel* label);
 	void addLine(const QString& str);
-	void clear();
+	void setProgram(gProgram* m_program);
 
 protected:
 

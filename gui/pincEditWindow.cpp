@@ -102,8 +102,8 @@ void pincEditWindow::addLine(const QString& str)
 	m_line_input->setFocus();
 }
 
-void pincEditWindow::clear()
+void pincEditWindow::setProgram(gProgram* program)
 {
-	m_program = new gProgram();
+	m_program = program;
 	m_scroll->setWidget(m_program);
 }

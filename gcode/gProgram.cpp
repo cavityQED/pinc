@@ -70,6 +70,7 @@ void gProgram::makeBlocks(const QString& str)
 	{
 		blk = new gBlock(strings.next().captured());
 		m_blocks.push_back(blk);
+		m_block_layout->addWidget(blk);
 	}
 
 	for(auto b : m_blocks)
@@ -81,4 +82,16 @@ void gProgram::addBlock(gBlock* block)
 {
 	m_blocks.push_back(block);
 	m_block_layout->addWidget(block);
+}
+
+void gProgram::clear()
+{
+	QWidget().setLayout(layout());
+
+	m_block_layout = new QVBoxLayout();
+	m_block_layout->setSpacing(0);
+	m_block_layout->setContentsMargins(0,0,0,0);
+	m_block_layout->setSizeConstraint(QLayout::SetMinAndMaxSize);
+	setLayout(m_block_layout);
+	m_blocks.clear();
 }

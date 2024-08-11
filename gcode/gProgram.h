@@ -45,6 +45,7 @@ public:
 
 	void makeBlocks(const QString& str);
 	void addBlock(gBlock* block);
+	void clear();
 
 	const QString&				str()		const	{return m_str;}
 	const QVector<gBlock*>&		blocks()	const	{return m_blocks;}
