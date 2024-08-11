@@ -3,7 +3,7 @@
 pincStepperControl::pincStepperControl(QWidget* parent) : pincPanel("Position", parent)
 {
 	feedRate	= 10;
-	
+
 	spi_mode	= SPI_MODE_0;
 	fd_CS0		= open("/dev/spidev0.0", O_RDWR);
 	fd_CS1		= open("/dev/spidev0.1", O_RDWR);
@@ -233,6 +233,28 @@ void pincStepperControl::run(const gBlock& block)
 	}
 
 	sync_move(&move);
+}
+
+void pincStepperControl::pause(bool p)
+{
+	std::vector<sem_t*> sems;
+
+	for(auto it = m_steppers.begin(); it != m_steppers.end(); it++)
+	{
+		stepper_pause(it->second.get(), p);
+		sems.push_back(&it->second->sync_sem);
+	}
+
+	if(p)
+		gpioWrite(SYNC_PIN, 0);
+	else
+	{
+		for(auto& sem : sems)
+			sem_wait(sem);
+
+		gpioWrite(SYNC_PIN, 1);
+		monitor_start(50);
+	}
 }
 
 void pincStepperControl::update()

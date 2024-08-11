@@ -169,6 +169,26 @@ void stepper_move(struct stepper* s)
 	}
 }
 
+void pause(struct stepper* s, bool p)
+{
+	if(p)
+	{
+		gpio_set_mask((1 << s->p_motion) | (1 << s->p_sync_ready));
+		alarm_pool_cancel_alarm(s->alarmPool, s->alarm_id);
+	}
+	else
+	{
+		gpio_clr_mask((1 << s->p_motion) | (1 << s->p_sync_ready));
+		if(s->move.mode & SYNC_MOVE)
+			sem_acquire_blocking(&s->sem);
+		s->alarm_id = alarm_pool_add_alarm_in_us(	s->alarmPool, 
+													s->move.delay,
+													sync_alarm_callback,
+													(void*)s, 
+													true);
+	}
+}
+
 void stepper_home(struct stepper*s)
 {
 	memset(&s->move, 0, sizeof(pincStepperMove_t));
@@ -254,7 +274,7 @@ void stepper_msg_handle(struct stepper* s, uint8_t* msg)
 			break;
 
 		case STEPPER_CMD_PAUSE:
-
+			pause(s, (bool)msg[1]);
 			break;
 
 		case STEPPER_CMD_UPDATE:

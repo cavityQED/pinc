@@ -113,6 +113,21 @@ void stepper_move(pincPiStepper* s, pincStepperMove_t* move)
 	stepper_unlock(s);
 }
 
+void stepper_pause(pincPiStepper* s, bool p)
+{
+	stepper_lock(s);
+
+	uint8_t data = (uint8_t)p;
+	stepper_write_msg(	s,
+						STEPPER_CMD_PAUSE,
+						&data,
+						1);
+
+	stepper_send_msg(s);
+
+	stepper_unlock(s);
+}
+
 void stepper_jog(pincPiStepper* s)
 {
 	stepper_lock(s);

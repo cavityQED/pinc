@@ -53,6 +53,7 @@ typedef struct
 void	stepper_spi_send	(pincPiStepper* s);
 void	stepper_config		(pincPiStepper* s, pincStepperConfig_t* config);
 void	stepper_move		(pincPiStepper* s, pincStepperMove_t* move);
+void	stepper_pause		(pincPiStepper* s, bool p);
 void	stepper_jog			(pincPiStepper* s);
 void	stepper_home		(pincPiStepper* s);
 void	stepper_update		(pincPiStepper* s);

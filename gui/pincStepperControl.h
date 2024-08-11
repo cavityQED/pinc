@@ -46,6 +46,7 @@ public:
 	void home(PINC_AXIS axis);
 	void sync_move(pincMove* move);
 	void run(const gBlock& block);
+	void pause(bool p);
 
 signals:
 

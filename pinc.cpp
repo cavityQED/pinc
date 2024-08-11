@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
 	QObject::connect(	toolbar,		&gProgramToolBar::run,						processor,		&pincProcessor::run			);
 	QObject::connect(	steppers,		&pincStepperControl::moveReady,				processor,		&pincProcessor::next		);
 	QObject::connect(	processor,		&pincProcessor::blockReady,					steppers,		&pincStepperControl::run	);
+	QObject::connect(	processor,		&pincProcessor::pause,						steppers,		&pincStepperControl::pause	);
 
 	QObject::connect(	jogPanel,		&pincJogControl::jog,						processor,		&pincProcessor::jogHandle	);
 	QObject::connect(	processor,		&pincProcessor::jog,						steppers,		&pincStepperControl::jog	);
