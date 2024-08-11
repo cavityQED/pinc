@@ -12,48 +12,66 @@ pincControlModeButtons::pincControlModeButtons(QWidget* parent) : pincPanel("Con
 	connect(m_button_jog, &QPushButton::toggled, 
 		[this](bool checked) 
 		{	
-			if(checked) 
+			if(checked)
+			{
 				controlModeChange(CONTROL_MODE::JOG_CTRL);		
+				m_mode = CONTROL_MODE::JOG_CTRL;
+			}
 			else return;
 		});
 
 	connect(m_button_auto, &QPushButton::toggled, 
 		[this](bool checked) 
 		{	
-			if(checked) 
+			if(checked)
+			{
 				controlModeChange(CONTROL_MODE::AUTO_CTRL);		
+				m_mode = CONTROL_MODE::AUTO_CTRL;
+			} 
 			else return;
 		});
 
 	connect(m_button_edit, &QPushButton::toggled, 
 		[this](bool checked) 
 		{	
-			if(checked) 
+			if(checked)
+			{
 				controlModeChange(CONTROL_MODE::EDIT_CTRL);
+				m_mode = CONTROL_MODE::EDIT_CTRL;
+			} 
 			else return;
 		});
 
 	connect(m_button_mdi, &QPushButton::toggled, 
 		[this](bool checked) 
 		{	
-			if(checked) 
+			if(checked)
+			{
 				controlModeChange(CONTROL_MODE::MDI_CTRL);		
+				m_mode = CONTROL_MODE::MDI_CTRL;
+			} 
 			else return;
 		});
 
 	connect(m_button_home, &QPushButton::toggled, 
 		[this](bool checked) 
 		{	
-			if(checked) 
+			if(checked)
+			{
 				controlModeChange(CONTROL_MODE::HOME_CTRL);		
+				m_mode = CONTROL_MODE::HOME_CTRL;
+			} 
 			else return;
 		});
 
 	connect(m_button_man, &QPushButton::toggled, 
 		[this](bool checked) 
 		{	
-			if(checked) 
+			if(checked)
+			{
 				controlModeChange(CONTROL_MODE::MANUAL_CTRL);	
+				m_mode = CONTROL_MODE::MANUAL_CTRL;
+			} 
 			else return;
 		});
 
