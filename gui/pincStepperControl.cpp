@@ -2,6 +2,8 @@
 
 pincStepperControl::pincStepperControl(QWidget* parent) : pincPanel("Position", parent)
 {
+	feedRate	= 10;
+	
 	spi_mode	= SPI_MODE_0;
 	fd_CS0		= open("/dev/spidev0.0", O_RDWR);
 	fd_CS1		= open("/dev/spidev0.1", O_RDWR);
@@ -167,7 +169,8 @@ void pincStepperControl::run(const gBlock& block)
 		switch(it.key().unicode())
 		{
 			case 'F':
-				move.feed = it.value();
+				feedRate	= it.value();
+				move.feed	= feedRate;
 				break;
 
 			case 'X':
@@ -207,7 +210,7 @@ void pincStepperControl::run(const gBlock& block)
 		}
 
 		if(move.feed == 0)
-			move.feed = 10;
+			move.feed = feedRate;
 	}
 
 	int block_int = (int)block.num();
@@ -234,13 +237,15 @@ void pincStepperControl::run(const gBlock& block)
 
 void pincStepperControl::update()
 {
-	bool no_motion = true;
+	bool no_motion	= true;
+	bool move_ready	= true;
 
 	for(auto it = m_steppers.begin(); it != m_steppers.end(); it++)
 	{
 		stepper_update(it->second.get());
-		no_motion = no_motion && (it->second->status_sig.cur & PICO_STATUS_IN_MOTION);
-		auto pos = m_positions.at((PINC_AXIS)it->second->config.axis);
+		no_motion	= no_motion && (it->second->status_sig.cur & PICO_STATUS_IN_MOTION);
+		move_ready	= move_ready && (it->second->status_sig.cur & PICO_STATUS_MOVE_READY);
+		auto pos	= m_positions.at((PINC_AXIS)it->second->config.axis);
 		if(pos)
 			pos->set((double)it->second->step_pos / it->second->config.spmm);
 	}
@@ -250,4 +255,7 @@ void pincStepperControl::update()
 		gpioWrite(SYNC_PIN, 0);
 		monitor_stop();
 	}
+
+	if(move_ready)
+		emit moveReady();
 }

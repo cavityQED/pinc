@@ -47,6 +47,10 @@ public:
 	void sync_move(pincMove* move);
 	void run(const gBlock& block);
 
+signals:
+
+	void moveReady();
+
 protected:
 
 	std::map<PINC_AXIS, std::shared_ptr<pincPiStepper>>	m_steppers;
@@ -55,6 +59,7 @@ protected:
 	uint8_t	spi_mode;
 	int		fd_CS0;
 	int		fd_CS1;
+	double	feedRate;
 	
 	sem_t	pin_req_sem;
 
