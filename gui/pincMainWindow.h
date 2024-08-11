@@ -17,23 +17,6 @@ public:
 	pincMainWindow(QWidget* parent = nullptr);
 	~pincMainWindow() {}
 
-	void setStepperControl(pincStepperControl* ctrl) {m_stepper_ctrl = ctrl;}
-
-public:
-
-	void setControlMode(CONTROL_MODE mode);
-	void tryjog(const PINC_AXIS axis, bool dir);
-
-signals:
-
-	void jog(const PINC_AXIS axis, bool dir);
-	void home(const PINC_AXIS axis);
-
-protected:
-
-	CONTROL_MODE			m_ctrl_mode;
-	pincStepperControl*		m_stepper_ctrl;
-
 };
 
 #endif

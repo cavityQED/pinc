@@ -1,20 +1,4 @@
-#include "gui/pinc_gui.h"
-
-#include <QApplication>
-#include <QAction>
-#include <QMetaType>
-
-#include <signal.h>
-
-#include <pigpio.h>
-
-static pthread_mutex_t		spi_mutex;
-static pthread_mutex_t		pin_req_mutex;
-static pthread_mutexattr_t	spi_mutex_attr;
-
-static pincStyle* style;
-
-Q_DECLARE_METATYPE(PINC_AXIS);
+#include "pinc.h"
 
 static void shutdown(int signum)
 {
@@ -24,9 +8,7 @@ static void shutdown(int signum)
 
 int main(int argc, char *argv[])
 {	
-	style = new pincStyle();
 	QApplication app(argc, argv);
-	app.setStyle(style);
 
 	gpioInitialise();
 	gpioSetSignalFunc(SIGINT, shutdown);
@@ -35,15 +17,21 @@ int main(int argc, char *argv[])
 	pthread_mutexattr_settype(&spi_mutex_attr, PTHREAD_MUTEX_ERRORCHECK | PTHREAD_MUTEX_DEFAULT);
 	pthread_mutex_init(&spi_mutex, &spi_mutex_attr);
 
-	pincStepperControl*		steppers	= new pincStepperControl();
-	pincMainWindow*			mainWindow	= new pincMainWindow();
-	pincCentralWindow*		central		= new pincCentralWindow();
-	pincControlModeButtons*	ctrl_panel	= new pincControlModeButtons();
-	pincJogControl*			jog_panel	= new pincJogControl();
-	pincEditWindow*			editWindow	= new pincEditWindow();
-	gProgramToolBar*		toolbar		= new gProgramToolBar();
-	QVBoxLayout*			vlayout		= new QVBoxLayout();
-	QHBoxLayout*			hlayout		= new QHBoxLayout();
+	style 			= new pincStyle();
+	mainWindow		= new pincMainWindow();
+	centralWindow	= new pincCentralWindow();
+	editWindow		= new pincEditWindow();
+	ctrlModePanel	= new pincControlModeButtons();
+	jogPanel		= new pincJogControl();
+	steppers		= new pincStepperControl();
+	toolbar			= new gProgramToolBar();
+	processor		= new pincProcessor();
+	curProgram		= new gProgram();
+	mdiProgram		= new gProgram();
+	autoProgram		= new gProgram();
+
+	app.setStyle(style);
+	qRegisterMetaType<PINC_AXIS>();
 
 	pincStepperConfig_t	config;
 	stepper_get_default_config(&config);
@@ -62,54 +50,53 @@ int main(int argc, char *argv[])
 	config.fpga_addr		= Y_FPGA_STATUS_ADDR;
 	steppers->addStepper(&config);
 
-	jog_panel->wheel_config(&spi_mutex, config.spi_fpga_speed);
+	jogPanel->wheel_config(&spi_mutex, config.spi_fpga_speed);
+
+	QVBoxLayout* vlayout = new QVBoxLayout();
+	QHBoxLayout* hlayout = new QHBoxLayout();
 
 	vlayout->addWidget(steppers);
-	vlayout->addWidget(ctrl_panel);
-	vlayout->addWidget(jog_panel);
+	vlayout->addWidget(ctrlModePanel);
+	vlayout->addWidget(jogPanel);
 	hlayout->addLayout(vlayout);
 	hlayout->addWidget(editWindow);
 	hlayout->setStretchFactor(vlayout, 0);
 	hlayout->setStretchFactor(editWindow, 1);
 
-	central->addLayout(hlayout);
+	centralWindow->addLayout(hlayout);
 	mainWindow->addToolBar(toolbar);
-	mainWindow->setCentralWidget(central);
-	mainWindow->setStepperControl(steppers);
-	mainWindow->setPalette(pincStyle::pincWindowPalette);
+	mainWindow->setCentralWidget(centralWindow);
 
-	QObject::connect(	ctrl_panel,
+	QObject::connect(	toolbar,		&gProgramToolBar::clear,					editWindow,		&pincEditWindow::clear		);
+	QObject::connect(	toolbar,		&gProgramToolBar::hold,						processor,		&pincProcessor::hold		);
+	QObject::connect(	toolbar,		&gProgramToolBar::reset,					processor,		&pincProcessor::reset		);
+	QObject::connect(	toolbar,		&gProgramToolBar::run,						processor,		&pincProcessor::run			);
+	QObject::connect(	steppers,		&pincStepperControl::moveReady,				processor,		&pincProcessor::next		);
+	QObject::connect(	processor,		&pincProcessor::blockReady,					steppers,		&pincStepperControl::run	);
+
+	QObject::connect(	jogPanel,		&pincJogControl::jog,						processor,		&pincProcessor::jogHandle	);
+	QObject::connect(	processor,		&pincProcessor::jog,						steppers,		&pincStepperControl::jog	);
+	QObject::connect(	processor,		&pincProcessor::home,						steppers,		&pincStepperControl::home	);
+
+	QObject::connect(	processor,		&pincProcessor::jogEnable,					jogPanel,		&QGroupBox::setChecked		);
+	QObject::connect(	processor,		&pincProcessor::modeChangeEnable,			ctrlModePanel,	&QGroupBox::setChecked		);
+	QObject::connect(	processor,		&pincProcessor::editEnable,					editWindow,		&QGroupBox::setChecked		);
+
+	QObject::connect(	ctrlModePanel,	&pincControlModeButtons::controlModeChange,	processor,		&pincProcessor::setMode		);
+	QObject::connect(	ctrlModePanel,	
 						&pincControlModeButtons::controlModeChange,
-						mainWindow,
-						&pincMainWindow::setControlMode);
+						[] (CONTROL_MODE mode)
+						{
+							if(mode == AUTO_CTRL)
+								curProgram = autoProgram;
+							else if(mode == MDI_CTRL)
+								curProgram = mdiProgram;
 
-	QObject::connect(	toolbar,
-						&gProgramToolBar::clear,
-						editWindow,
-						&pincEditWindow::clear);
-
-	qRegisterMetaType<PINC_AXIS>();
-
-	QObject::connect(	jog_panel,
-						&pincJogControl::jog,
-						mainWindow,
-						&pincMainWindow::tryjog);
-
-	QObject::connect(	mainWindow,
-						&pincMainWindow::jog,
-						steppers,
-						&pincStepperControl::jog);
-
-	QObject::connect(	mainWindow,
-						&pincMainWindow::home,
-						steppers,
-						&pincStepperControl::home);
-
-
-	QAction* mdi_run = new QAction();
-	mainWindow->addAction(mdi_run);
-	mdi_run->setShortcut(Qt::Key_F1);
-	QObject::connect(mdi_run, &QAction::triggered, [editWindow, steppers]() {steppers->run(*editWindow->getBlock());});
+							editWindow->setProgram(curProgram);
+							processor->setProgram(curProgram);
+							processor->setMode(mode);
+						}	
+					);
 
 	mainWindow->show();
 

@@ -29,7 +29,7 @@ if(Qt5Core_FOUND)
 							guiLib
 							gcodeLib)
 
-	add_library				(pincLib)
+	add_library				(pincLib	pincProcessor.cpp)
 	target_link_libraries	(pincLib ${LINKED_LIBRARIES})
 	target_compile_options	(pincLib PRIVATE "-Wno-psabi")
 
